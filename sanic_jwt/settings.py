@@ -1,0 +1,7 @@
+SANIC_JWT_ALGORITHM = 'HS256'
+SANIC_JWT_AUTHORIZATION_HEADER = 'authorization'
+SANIC_JWT_AUTHORIZATION_HEADER_PREFIX = 'Bearer'
+SANIC_JWT_EXPIRATION_DELTA = 60 * 5 * 6
+SANIC_JWT_PAYLOAD_HANDLER = 'sanic_jwt.handlers.build_payload'
+SANIC_JWT_SECRET = 'This is a big secret. Shhhhh'
+SANIC_JWT_USER_ID = 'user_id'

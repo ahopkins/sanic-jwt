@@ -111,6 +111,25 @@ If it is not valid, you will also be given a reason.
         "reason": "Signature has expired"
     }
 
+## Protecting routes
+
+A route can be protected behind authentication simply by applying the `@protected()` decorator.
+
+```python
+from sanic_jwt.decorators import protected
+
+
+@app.route("/")
+async def open_route(request):
+    return json({"protected": False})
+
+
+@app.route("/protected")
+@protected()
+async def protected_route(request):
+    return json({"protected": True})
+```
+
 ## Settings
 
 `SANIC_JWT_ALGORITHM`

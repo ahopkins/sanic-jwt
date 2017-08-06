@@ -99,7 +99,10 @@ ENV/
 
 # mypy
 .mypy_cache/
+<<<<<<< HEAD
 
 
 # AMH Additional
 NOTES
+=======
+>>>>>>> bacddc5b2b0c60274abf1742d406ddebf79c5791

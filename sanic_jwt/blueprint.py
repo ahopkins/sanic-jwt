@@ -12,10 +12,10 @@ async def authenticate(request, *args, **kwargs):
     except Exception as e:
         raise e
 
-
     return json({
         'access_token': request.app.auth.get_access_token(user)
     })
+
 
 @bp.get('/verify')
 async def verify(request, *args, **kwargs):

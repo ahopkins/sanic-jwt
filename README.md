@@ -85,7 +85,7 @@ Generates an access token if the `authenticate` method is `True`. Using the exam
 The response, if the user credentials are valid:
 
     {
-        "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE1MDIwMjM4ODR9.xFFKCp57kXSNOfHKRtnjtBVtaapmOcDeC_yT3lv8-h4"
+        "access_token": "<JWT>"
     }
 
 ### `/auth/verify`
@@ -94,7 +94,7 @@ Methods: __GET__
 
 Returns with whether or not a given access token is valid.
 
-    curl -X GET -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE1MDIwMjM4ODR9.xFFKCp57kXSNOfHKRtnjtBVtaapmOcDeC_yT3lv8-h4" http://localhost:8000/auth/verify
+    curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/verify
     
 Assuming that it is valid, the response:
 

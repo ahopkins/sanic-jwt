@@ -9,7 +9,7 @@ _NOTE: This project (as of August 2017) is still in active development. Not all 
 Install from pypi using:
 
     pip install sanic-jwt
-    
+
 In order to add __Sanic JWT__, all you need to do is initialize it by passing the `sanic_jwt.initialize` method the `Sanic()` instance, and an authentication function.
 
 ```python
@@ -72,6 +72,10 @@ def authenticate(request, *args, **kwargs):
     return user
 ```
 
+## Other initialization parameters
+
+TODO
+
 ## Endpoints
 
 ### `/auth`
@@ -95,7 +99,7 @@ Methods: __GET__
 Returns with whether or not a given access token is valid.
 
     curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/verify
-    
+
 Assuming that it is valid, the response:
 
     200 Response

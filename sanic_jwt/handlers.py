@@ -1,12 +1,9 @@
-from datetime import datetime, timedelta
-
-
 def build_payload(authenticator, user):
-    user_id = getattr(user, authenticator.app.config.SANIC_JWT_USER_ID)
-    delta = timedelta(seconds=authenticator.app.config.SANIC_JWT_EXPIRATION_DELTA)
-    exp = datetime.utcnow() + delta
+    if isinstance(user, dict):
+        user_id = user.get(authenticator.app.config.SANIC_JWT_USER_ID)
+    else:
+        user_id = getattr(user, authenticator.app.config.SANIC_JWT_USER_ID)
 
     return {
         'user_id': user_id,
-        'exp': exp,
     }

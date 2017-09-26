@@ -3,7 +3,7 @@ import jwt
 
 from datetime import datetime
 from datetime import timedelta
-from sanic_jwt import exceptions
+from sanic_jwt import exceptions, utils
 
 
 class BaseAuthentication(object):
@@ -19,10 +19,10 @@ class BaseAuthentication(object):
 
 
 class SanicJWTAuthentication(BaseAuthentication):
-    def _decode(self, token):
+    def _decode(self, token, verify=True):
         secret = self._get_secret()
         algorithm = self._get_algorithm()
-        return jwt.decode(token, secret, algorithms=[algorithm])
+        return jwt.decode(token, secret, algorithms=[algorithm], verify=verify)
 
     def _get_algorithm(self):
         return self.app.config.SANIC_JWT_ALGORITHM
@@ -48,9 +48,15 @@ class SanicJWTAuthentication(BaseAuthentication):
         # - Ability to have per user secrets
         return self.app.config.SANIC_JWT_SECRET
 
-    def _get_token(self, request):
+    def _get_token(self, request, refresh_token=False):
+        cookie_token_name_key = 'SANIC_JWT_COOKIE_TOKEN_NAME' if refresh_token is False else 'SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME'
+        cookie_token_name = getattr(self.app.config, cookie_token_name_key)
+        # header_prefix_key = 'SANIC_JWT_AUTHORIZATION_HEADER_PREFIX' if refresh_token is False else 'SANIC_JWT_AUTHORIZATION_HEADER_REFRESH_PREFIX'
+        header_prefix_key = 'SANIC_JWT_AUTHORIZATION_HEADER_PREFIX'
+        header_prefix = getattr(self.app.config, header_prefix_key)
+
         if self.app.config.SANIC_JWT_COOKIE_SET:
-            token = request.cookies.get(self.app.config.SANIC_JWT_COOKIE_TOKEN_NAME, None)
+            token = request.cookies.get(cookie_token_name, None)
             if token is None:
                 raise exceptions.MissingAuthorizationCookie()
             return token
@@ -59,14 +65,28 @@ class SanicJWTAuthentication(BaseAuthentication):
             if header:
                 try:
                     prefix, token = header.split(' ')
-                    if prefix != self.app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX:
+                    # if prefix != self.app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX:
+                    if prefix != header_prefix:
                         raise Exception
                 except Exception:
                     raise exceptions.InvalidAuthorizationHeader()
 
+                if refresh_token:
+                    token = request.json.get(self.app.config.SANIC_JWT_REFRESH_TOKEN_NAME)
+
                 return token
 
             raise exceptions.MissingAuthorizationHeader()
+
+    def _get_refresh_token(self, request):
+        return self._get_token(request, refresh_token=True)
+
+    def _get_user_id(self, user):
+        if isinstance(user, dict):
+            user_id = user.get(self.app.config.SANIC_JWT_USER_ID)
+        else:
+            user_id = getattr(user, self.app.config.SANIC_JWT_USER_ID)
+        return user_id
 
     def get_access_token(self, user):
         payload = self._get_payload(user)
@@ -76,8 +96,9 @@ class SanicJWTAuthentication(BaseAuthentication):
         return jwt.encode(payload, secret, algorithm=algorithm)
 
     def get_refresh_token(self, user):
-        refresh_token = '123456789'
-        self.store_refresh_token(user=user, refresh_token=refresh_token)
+        refresh_token = utils.generate_token()
+        user_id = self._get_user_id(user)
+        self.store_refresh_token(user_id=user_id, refresh_token=refresh_token)
         return refresh_token
 
     def is_authenticated(self, request, *args, **kwargs):
@@ -88,28 +109,35 @@ class SanicJWTAuthentication(BaseAuthentication):
 
         return is_valid
 
-    def verify(self, request, return_payload=False, *args, **kwargs):
+    def verify(self, request, return_payload=False, verify=True, *args, **kwargs):
         token = self._get_token(request)
         is_valid = True
         reason = None
 
         try:
-            payload = self._decode(token)
+            payload = self._decode(token, verify=verify)
         except jwt.exceptions.ExpiredSignatureError:
             is_valid = False
             reason = 'Signature has expired'
+            payload = None
 
         if return_payload:
             return payload
 
         status = 200 if is_valid else 400
 
+        print(is_valid, status, reason)
+
         return is_valid, status, reason
 
-    def extract_payload(self, request, *args, **kwargs):
+    def retrieve_refresh_token_from_request(self, request):
+        return self._get_refresh_token(request)
+
+    def extract_payload(self, request, verify=True, *args, **kwargs):
         try:
-            payload = self.verify(request, return_payload=True, *args, **kwargs)
-        except Exception:
-            raise exceptions.Unauthorized()
+            payload = self.verify(request, return_payload=True, verify=verify, *args, **kwargs)
+        except Exception as e:
+            raise e
+            # raise exceptions.Unauthorized()
 
         return payload

@@ -13,26 +13,34 @@ reloader.start_watcher_thread()
 
 
 def store_refresh_token(*args, **kwargs):
-    user = kwargs.get('user')
+    user_id = kwargs.get('user_id')
+    user = userid_table.get(user_id)
     refresh_token = kwargs.get('refresh_token')
+    setattr(user, 'refresh_token', refresh_token)
     user.refresh_token = refresh_token
 
     save_users()
 
 
 def retrieve_user(request, *args, **kwargs):
-    payload = request.app.auth.extract_payload(request)
-    user_id = payload.get('user_id')
+    if 'user_id' in kwargs:
+        user_id = kwargs.get('user_id')
+    else:
+        if 'payload' in kwargs:
+            payload = kwargs.get('payload')
+        else:
+            payload = request.app.auth.extract_payload(request)
+        user_id = payload.get('user_id')
     user = userid_table.get(user_id)
     return user
 
 
 def retrieve_refresh_token(request, *args, **kwargs):
-    user = request.app.auth.retrieve_user(request)
+    user = request.app.auth.retrieve_user(request, **kwargs)
     return user.refresh_token
 
 
-def authenticate(request, *args, **kwargs):
+async def authenticate(request, *args, **kwargs):
     username = request.json.get('username', None)
     password = request.json.get('password', None)
 
@@ -67,7 +75,7 @@ class User(object):
         self.password = password
 
     def __str__(self):
-        return "User(id='%s')" % self.id
+        return "User(id='%s')" % self.user_id
 
     def serialized(self):
         output = [

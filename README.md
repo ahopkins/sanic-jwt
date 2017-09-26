@@ -2,7 +2,7 @@
 
 JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. This project was heavily inspired by [Flask JWT](https://github.com/mattupstate/flask-jwt) and [Django Rest Framework JWT](https://github.com/getBlimp/django-rest-framework-jwt).
 
-_NOTE: This project (as of August 2017) is still in active development. Not all features are yet implemented._
+_NOTE: This project (as of Sept 2017) is still in active development. Not all features are yet implemented. Getting close though. Then it will be time for some candy and better documentation/examples._
 
 ## Getting Started
 
@@ -114,6 +114,21 @@ If it is not valid, you will also be given a reason.
         "valid": false,
         "reason": "Signature has expired"
     }
+
+### `/auth/refresh`
+
+Methods: __POST__
+
+Validates the refresh token, and provides back a new access token.
+
+    curl -X POST -H "Authorization: Refresh <REFRESH TOKEN>" http://localhost:8000/auth/refresh
+
+The response, if the refresh token is valid.
+
+    {
+        "access_token": "<JWT>"
+    }
+
 
 ## Protecting routes
 

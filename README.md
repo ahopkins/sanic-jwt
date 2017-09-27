@@ -1,6 +1,22 @@
 # Sanic JWT
 
-JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. This project was heavily inspired by [Flask JWT](https://github.com/mattupstate/flask-jwt) and [Django Rest Framework JWT](https://github.com/getBlimp/django-rest-framework-jwt).
+JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. This project was originally inspired by [Flask JWT](https://github.com/mattupstate/flask-jwt) and [Django Rest Framework JWT](https://github.com/getBlimp/django-rest-framework-jwt), but some departing decisions have been made.
+
+1. [Getting Started](https://github.com/ahopkins/sanic-jwt#getting-started)
+1. [Authenticate](https://github.com/ahopkins/sanic-jwt#authenticate)
+    1. [`class_views`](https://github.com/ahopkins/sanic-jwt#class_views)
+    1. [`store_refresh_token`](https://github.com/ahopkins/sanic-jwt#store_refresh_token)
+    1. [`retrieve_refresh_token`](https://github.com/ahopkins/sanic-jwt#retrieve_refresh_token)
+    1. [`retrieve_user`](https://github.com/ahopkins/sanic-jwt#retrieve_user)
+1. [Other initialization parameters](https://github.com/ahopkins/sanic-jwt#other-initialization-parameters)
+1. [Endpoints](https://github.com/ahopkins/sanic-jwt#endpoints)
+    1. [`/auth`](https://github.com/ahopkins/sanic-jwt#auth)
+    1. [`/auth/verify`](https://github.com/ahopkins/sanic-jwt#authverify)
+    1. [`/auth/me`](https://github.com/ahopkins/sanic-jwt#authme)
+    1. [`/auth/refresh`](https://github.com/ahopkins/sanic-jwt#authrefresh)
+1. [Protecting routes](https://github.com/ahopkins/sanic-jwt#protecting-routes)
+1. [Settings](https://github.com/ahopkins/sanic-jwt#settings)
+1. [Coming Soon](https://github.com/ahopkins/sanic-jwt#coming-soon)
 
 ## Getting Started
 
@@ -240,7 +256,7 @@ The response, if the refresh token is valid.
         "access_token": "<JWT>"
     }
 
-_Note: Right now, you are required to send the access token (aka `JWT`) and the refresh token. Why? Well, it seems like a good idea to facilitate the lookup of refresh tokens by knowing against which user you are trying to look up. The alternative is to lookup the user by refresh token alone. But, with this method, we are explicitly sending the user information in the `JWT`. While there is **NO** verification of the `JWT` at this stage, it is used to pass the payload._
+_Note: Right now, you are required to send the access token (aka `JWT`) and the refresh token. Why? Well, it seems like a good idea to facilitate the lookup of refresh tokens by knowing against which user you are trying to look up. The alternative is to lookup the user by refresh token alone. But, with this method, we are explicitly sending the user information in the `JWT`. While there is **NO** verification of the `JWT` at this stage, it is used to pass the payload. This decision may be subject to change in the future._
 
 ## Protecting routes
 

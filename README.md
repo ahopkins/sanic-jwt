@@ -1,5 +1,10 @@
 # Sanic JWT
 
+[![Latest PyPI version](https://img.shields.io/pypi/v/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
+[![Version status](https://img.shields.io/pypi/status/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
+[![Python versions](https://img.shields.io/pypi/pyversions/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9727756ffccd45f7bc5ad6292596e03d)](https://www.codacy.com/app/ahopkins/sanic-jwt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ahopkins/sanic-jwt&amp;utm_campaign=Badge_Grade)
+
 JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. This project was originally inspired by [Flask JWT](https://github.com/mattupstate/flask-jwt) and [Django Rest Framework JWT](https://github.com/getBlimp/django-rest-framework-jwt), but some departing decisions have been made.
 
 1. [Getting Started](https://github.com/ahopkins/sanic-jwt#getting-started)

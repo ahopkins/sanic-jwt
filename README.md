@@ -2,8 +2,6 @@
 
 JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. This project was heavily inspired by [Flask JWT](https://github.com/mattupstate/flask-jwt) and [Django Rest Framework JWT](https://github.com/getBlimp/django-rest-framework-jwt).
 
-_NOTE: This project (as of Sept 2017) is still in active development. Not all features are yet implemented. Getting close though. Then it will be time for some candy and better documentation/examples._
-
 ## Getting Started
 
 Install from pypi using:
@@ -74,7 +72,88 @@ def authenticate(request, *args, **kwargs):
 
 ## Other initialization parameters
 
-TODO
+__`class_views`__
+
+Default: `None`
+
+Purpose: If you would like to add additional views to the authentication module, you can add them here. They must be [class based views](http://sanic.readthedocs.io/en/latest/sanic/class_based_views.html). Side note, your CBV will probably also need to handle preflight requests, so do not forget to add an `options` response.
+
+Example: The below example could be used in creating a "magic" passwordless login authentication.
+
+    class MagicLoginHandler(HTTPMethodView):
+        async def options(self, request):
+            return response.text('', status=204)
+
+        async def post(self, request):
+            # create a magic login token and email it to the user
+
+            response = {
+                'magic-token': token
+            }
+            return json(response)
+
+    initialize(
+        app,
+        class_views=[
+            ('/magic-login', MagicLoginHandler)     # The path will be relative to the url prefix (which defaults to /auth)
+        ]
+    )
+
+__`store_refresh_token`__
+
+Default: `None`
+
+Purpose: **Required** if `SANIC_JWT_REFRESH_TOKEN_ENABLED` is set to `True` in the config. It is a handler to **store** a refresh token. If you do not set it up, and you have enabled refresh tokens, then the application will raise a `RefreshTokenNotImplemented` exception.
+
+Example:
+
+    def store_refresh_token(user_id, refresh_token, *args, **kwargs):
+        key = 'refresh_token_{user_id}'.format(user_id=user_id)
+
+        async def store(key):
+            await aredis.set(key, refresh_token)
+
+        app.add_task(store(key))
+
+__`retrieve_refresh_token`__
+
+Default: `None`
+
+Purpose: **Required** if `SANIC_JWT_REFRESH_TOKEN_ENABLED` is set to `True` in the config. It is a handler to **retrieve** a refresh token. If you do not set it up, and you have enabled refresh tokens, then the application will raise a `RefreshTokenNotImplemented` exception.
+
+Example:
+
+    def retrieve_refresh_token(user_id, *args, **kwargs):
+        key = 'refresh_token_{user_id}'.format(user_id=user_id)
+
+        async def retrieve(key):
+            return await aredis.get(key)
+
+        app.add_task(retrieve(key))
+
+__`retrieve_user`__
+
+Default: `None`
+
+Purpose: Given a `request` and a `payload`, this is a handler to retrieve a user object from your application to be used, for example in the `/me` endpoint. It should return either a `dict` or an instance of an object that either has a `to_dict` method, or `__dict__` method.
+
+Example:
+
+    class User(object):
+        ...
+
+        def to_dict(self):
+            properties = ['user_id', 'username', 'email', 'verified']
+            return {prop: getattr(self, prop, None) for prop in properties}
+
+    def retrieve_user(request, payload, *args, **kwargs):
+        if payload:
+            user_id = payload.get('user_id', None)
+            user = User.get(user_id=user_id)
+            return user
+        else:
+            return None
+
 
 ## Endpoints
 
@@ -121,7 +200,7 @@ Methods: __POST__
 
 Validates the refresh token, and provides back a new access token.
 
-    curl -X POST -H "Authorization: Refresh <REFRESH TOKEN>" http://localhost:8000/auth/refresh
+    curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer <JWT>" -d '{"refresh_token": "<REFRESH TOKEN>"}' http://localhost:8000/auth/refresh
 
 The response, if the refresh token is valid.
 
@@ -129,6 +208,7 @@ The response, if the refresh token is valid.
         "access_token": "<JWT>"
     }
 
+_Note: Right now, you are required to send the access token (aka `JWT`) and the refresh token. Why? Well, it seems like a good idea to facilitate the lookup of refresh tokens by knowing against which user you are trying to look up. The alternative is to lookup the user by refresh token alone. But, with this method, we are explicitly sending the user information in the `JWT`. While there is **NO** verification of the `JWT` at this stage, it is used to pass the payload._
 
 ## Protecting routes
 
@@ -151,32 +231,188 @@ async def protected_route(request):
 
 ## Settings
 
-`SANIC_JWT_ALGORITHM`
-Default `'HS256'`
+__`SANIC_JWT_ACCESS_TOKEN_NAME`__
 
-`SANIC_JWT_AUTHORIZATION_HEADER`
-Default `'authorization'`
+Default: `'access_token'`
 
-`SANIC_JWT_AUTHORIZATION_HEADER_PREFIX`
-Default `'Bearer'`
+Purpose: The key to be used to identify the access token.
 
-`SANIC_JWT_EXPIRATION_DELTA`
-Default `60 * 5 * 6`
+__`SANIC_JWT_ALGORITHM`__
 
-`SANIC_JWT_PAYLOAD_HANDLER`
-Default `'sanic_jwt.handlers.build_payload'`
+Default: `'HS256'`
 
-`SANIC_JWT_SECRET`
-Default `'This is a big secret. Shhhhh'`
+Purpose: The hashing algorithm used to generate the tokens. Your available options are:
 
-`SANIC_JWT_USER_ID`
-Default `'user_id'`
+- __HS256__ - HMAC using SHA-256 hash algorithm (default)
+- __HS384__ - HMAC using SHA-384 hash algorithm
+- __HS512__ - HMAC using SHA-512 hash algorithm
+- __ES256__ - ECDSA signature algorithm using SHA-256 hash algorithm
+- __ES384__ - ECDSA signature algorithm using SHA-384 hash algorithm
+- __ES512__ - ECDSA signature algorithm using SHA-512 hash algorithm
+- __RS256__ - RSASSA-PKCS1-v1_5 signature algorithm using SHA-256 hash algorithm
+- __RS384__ - RSASSA-PKCS1-v1_5 signature algorithm using SHA-384 hash algorithm
+- __RS512__ - RSASSA-PKCS1-v1_5 signature algorithm using SHA-512 hash algorithm
+- __PS256__ - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
+- __PS384__ - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
+- __PS512__ - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512
+
+__`SANIC_JWT_AUTHORIZATION_HEADER`__
+
+Default: `'authorization'`
+
+Purpose: The HTTP request header used to identify the token. See also `SANIC_JWT_AUTHORIZATION_HEADER_PREFIX`.
+
+Example:
+
+    Authorization: Bearer <JWT HERE>
+
+__`SANIC_JWT_AUTHORIZATION_HEADER_PREFIX`__
+
+Default: `'Bearer'`
+
+Purpose: The prefix for the JWT in the HTTP request header used to identify the token. See also `SANIC_JWT_AUTHORIZATION_HEADER`.
+
+Example:
+
+    Authorization: Bearer <JWT HERE>
+
+__`SANIC_JWT_AUTHORIZATION_HEADER_REFRESH_PREFIX`__
+
+Default: `'Refresh'`
+
+Purpose: _Not currently in user._
+
+__`SANIC_JWT_CLAIM_AUD`__
+
+Default: `None`
+
+Purpose: The aud (audience) claim identifies the recipients that the JWT is intended for. Each principal intended to process the JWT MUST identify itself with a value in the audience claim. If the principal processing the claim does not identify itself with a value in the aud claim when this claim is present, then the JWT MUST be rejected. In the general case, the aud value is an array of case-sensitive strings, each commonly containing a string or URI value. In the special case when the JWT has one audience, the aud value MAY be a single case-sensitive string containing a string or URI value. Use of this claim is OPTIONAL. If you assign a `str` value, then the aud claim will be generated for all requests, and will be required to verify a token.
+
+__`SANIC_JWT_CLAIM_IAT`__
+
+Default: `None`, requires a `bool` value
+
+Purpose: The iat (issued at) claim identifies the time at which the JWT was issued. This claim can be used to determine the age of the JWT. Its value will be a numeric timestamp. Use of this claim is OPTIONAL. If you assign a `True` value, then the iat claim will be generated for all requests.
+
+__`SANIC_JWT_CLAIM_ISS`__
+
+Default: `None`, requires a `str` value
+
+Purpose: The iss (issuer) claim identifies the principal that issued the JWT. The iss value is a case-sensitive string usually containing a string or URI value. Use of this claim is OPTIONAL. If you assign a `str` value, then the iss claim will be generated for all requests, and will be required to verify a token.
+
+__`SANIC_JWT_CLAIM_NBF`__
+
+Default: `None`
+
+Purpose: The nbf (not before) claim identifies the time before which the JWT MUST NOT be accepted for processing. The processing of the nbf claim requires that the current date/time MUST be after or equal to the not-before date/time listed in the nbf claim. Implementers MAY provide for some small leeway, usually no more than a few minutes, to account for clock skew. Its value will be a numeric timestamp. Use of this claim is OPTIONAL. If you assign a `True` value, then the nbg claim will be generated for all requests, and will be required to verify a token. If `True`, the nbf claim will be set to the current time of the generation of the token. You can modify this with two additional settings: `SANIC_JWT_CLAIM_NBF_DELTA` (the number of seconds to add to the timestamp) and `SANIC_JWT_LEEWAY` (the number of seconds of leeway you want to allow for).
+
+__`SANIC_JWT_CLAIM_NBF_DELTA`__
+
+Default: `0`
+
+Purpose: The offset in _seconds_ between the moment of token generation and the moment when you would like the token to be valid in the future. See `SANIC_JWT_CLAIM_NBF` for more details.
+
+__`SANIC_JWT_COOKIE_DOMAIN`__
+
+Default: `''`
+
+Purpose: Used when `SANIC_JWT_COOKIE_SET` is set to `True`. When generating the cookie, it will associate it with this domain.
+
+__`SANIC_JWT_COOKIE_HTTPONLY`__
+
+Default: `True`
+
+Purpose: Used when `SANIC_JWT_COOKIE_SET` is set to `True`. It enables HTTP only cookies. **HIGHLY recommended that you do not turn this off, unless you know what you are doing.**
+
+__`SANIC_JWT_COOKIE_SET`__
+
+Default: `False`
+
+Purpose: By default, the application will lookie for access tokens in the HTTP request headers. If you would instead prefer to send them through cookies, enable this to `True`.
+
+
+__`SANIC_JWT_COOKIE_TOKEN_NAME`__
+
+Default: `SANIC_JWT_ACCESS_TOKEN_NAME`, will take whatever value is set there
+
+Purpose: The name of the cookie to be set for storing the access token if using cookie based authentication.
+
+
+__`SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME`__
+
+Default: `SANIC_JWT_REFRESH_TOKEN_NAME`, will take whatever value is set there
+
+Purpose: The name of the cookie to be set for storing the refresh token if using cookie based authentication.
+
+
+__`SANIC_JWT_EXPIRATION_DELTA`__
+
+Default: `60 * 5 * 6`
+
+Purpose: The length of time that the access token should be valid. _Since there is **NO** way to revoke an access token, it is recommended to keep this time period short, and to enable refresh tokens (which can be revoked) to retrieve new access tokens._
+
+__`SANIC_JWT_PAYLOAD_HANDLER`__
+
+Default: `'sanic_jwt.handlers.build_payload'`
+
+Purpose: A handler method used to generate a payload. If you override this method, then you must return a `dict` with a key to the user id. See `SANIC_JWT_USER_ID`. In **MOST** cases, you should not need to override this method. If you would like to add additional information into a payload, the recommended method is to use `SANIC_JWT_HANDLER_PAYLOAD_EXTEND`.
+
+__`SANIC_JWT_HANDLER_PAYLOAD_EXTEND`__
+
+Default: `'sanic_jwt.handlers.extend_payload'`
+
+Purpose: A handler method used to add additional information into a payload. It takes a `payload` as an input, and returns the payload with the additional information. If you have any of the registered claims enabled (see `SANIC_JWT_CLAIM_ISS`, `SANIC_JWT_CLAIM_IAT`, `SANIC_JWT_CLAIM_NBF`, `SANIC_JWT_CLAIM_AUD`), then you must return them with this handler. Therefore, it is recommended to call `sanic_jwt.handlers.extend_payload` inside your custom handler so as to make sure they are assigned properly.
+
+Example:
+
+    from sanic_jwt.handlers import extend_payload
+
+    def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
+        payload = extend_payload(authenticator, payload, *args, **kwargs)
+
+        payload.update({
+            'foo': 'bar'
+        })
+
+        return payload
+
+__`SANIC_JWT_LEEWAY`__
+
+Default: `180`
+
+Purpose: The number of seconds of leeway that the application will use to account for slight changes in system time configurations.
+
+__`SANIC_JWT_REFRESH_TOKEN_ENABLED`__
+
+Default: `False`
+
+Purpose: Whether or not you would like to generate and accept refresh tokens.
+
+__`SANIC_JWT_REFRESH_TOKEN_NAME`__
+
+Default: `'refresh_token'`
+
+Purpose: The key to be used to identify the refresh token.
+
+__`SANIC_JWT_SECRET`__
+
+Default: `'This is a big secret. Shhhhh'`
+
+Purpose: When generating JWT tokens, a secret is used to uniquely identify and authenticate them. This should be a string unique to your application. Keep it safe.
+
+__`SANIC_JWT_URL_PREFIX`__
+
+Default: `'/auth'`
+
+Purpose: The url prefix used for all URL endpoints. Note, the placement of `/`.
+
+
+__`SANIC_JWT_USER_ID`__
+
+Default: `'user_id'`
+
+Purpose: The key or property of your user object that contains a user id.
 
 ## Coming Soon
 
-- `iss` claim
-- `iat` claim
-- `nbf` claim
-- `aud` claim
 - scope
-- refresh tokens

@@ -1,15 +1,21 @@
-import importlib
 import jwt
 
-from datetime import datetime
-from datetime import timedelta
 from sanic_jwt import exceptions, utils
+
+
+claim_label = {
+    'iss': 'issuer',
+    'iat': 'iat',
+    'nbf': 'nbf',
+    'aud': 'audience',
+}
 
 
 class BaseAuthentication(object):
     def __init__(self, app, authenticate):
         self.app = app
         self.authenticate = authenticate
+        self.claims = ['exp']
 
     def store_refresh_token(self, *args, **kwargs):
         raise exceptions.RefreshTokenNotImplemented()
@@ -19,27 +25,43 @@ class BaseAuthentication(object):
 
 
 class SanicJWTAuthentication(BaseAuthentication):
+    def setup_claims(self, *args, **kwargs):
+
+        optional = ['iss', 'iat', 'nbf', 'aud', ]
+
+        # print('claims', self.claims)
+        for option in optional:
+            setting = 'SANIC_JWT_CLAIM_{}'.format(option.upper())
+            # print(setting, getattr(self.app.config, setting, False))
+            if getattr(self.app.config, setting, False):
+                self.claims.append(option)
+        # print(self.claims)
+
     def _decode(self, token, verify=True):
         secret = self._get_secret()
         algorithm = self._get_algorithm()
-        return jwt.decode(token, secret, algorithms=[algorithm], verify=verify)
+        kwargs = {}
+
+        for claim in self.claims:
+            if claim != 'exp':
+                setting = 'SANIC_JWT_CLAIM_{}'.format(claim.upper())
+                value = getattr(self.app.config, setting, False)
+                kwargs.update({claim_label[claim]: value})
+
+        return jwt.decode(token, secret, algorithms=[algorithm], verify=verify, **kwargs)
 
     def _get_algorithm(self):
         return self.app.config.SANIC_JWT_ALGORITHM
 
     def _get_payload(self, user):
-        parts = self.app.config.SANIC_JWT_PAYLOAD_HANDLER.split('.')
-        fn = parts.pop()
-        module = importlib.import_module('.'.join(parts))
-        method = getattr(module, fn)
-        payload = method(self, user)
+        payload = utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD, self, user)
+        # TODO:
+        # - Add verification check to make sure payload is a dict with a `user_id` key
+        payload = utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
 
-        delta = timedelta(seconds=self.app.config.SANIC_JWT_EXPIRATION_DELTA)
-        exp = datetime.utcnow() + delta
-
-        payload.update({
-            'exp': exp
-        })
+        missing = [x for x in self.claims if x not in payload]
+        if missing:
+            raise exceptions.MissingRegisteredClaim(missing=missing)
 
         return payload
 
@@ -120,13 +142,22 @@ class SanicJWTAuthentication(BaseAuthentication):
             is_valid = False
             reason = 'Signature has expired'
             payload = None
+        except (
+            jwt.exceptions.InvalidIssuerError,
+            jwt.exceptions.ImmatureSignatureError,
+            jwt.exceptions.InvalidIssuedAtError,
+            jwt.exceptions.InvalidAudienceError,
+        ) as e:
+            is_valid = False
+            reason = e.args
+            payload = None
 
         if return_payload:
             return payload
 
         status = 200 if is_valid else 400
 
-        print(is_valid, status, reason)
+        # print(is_valid, status, reason)
 
         return is_valid, status, reason
 

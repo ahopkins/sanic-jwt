@@ -22,7 +22,7 @@ def initialize(
             sanic_jwt_auth_bp.add_route(view.as_view(), route)
 
     # Add blueprint
-    app.blueprint(sanic_jwt_auth_bp, url_prefix='/auth')
+    app.blueprint(sanic_jwt_auth_bp, url_prefix=app.config.SANIC_JWT_URL_PREFIX)
 
     # Setup authentication module
     app.auth = SanicJWTAuthentication(app, authenticate)

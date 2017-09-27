@@ -66,6 +66,10 @@ initialize(
     retrieve_user=retrieve_user
 )
 app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
+app.config.SANIC_JWT_CLAIM_ISS = 'foo:bar'
+app.config.SANIC_JWT_CLAIM_IAT = True
+app.config.SANIC_JWT_CLAIM_NBF = True
+app.config.SANIC_JWT_CLAIM_AUD = 'bar:foo'
 
 
 class User(object):

@@ -6,6 +6,11 @@ from . import exceptions
 bp = Blueprint('auth_bp')
 
 
+@bp.listener('before_server_start')
+async def setup_claims(app, *args, **kwargs):
+    app.auth.setup_claims()
+
+
 @bp.route('/', methods=['POST', 'OPTIONS'])
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':

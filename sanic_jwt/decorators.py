@@ -14,7 +14,7 @@ def protected():
                 response = await f(request, *args, **kwargs)
                 return response
             else:
-                # the user is not authorized. 
+                # the user is not authorized.
                 return json({
                     'status': 'not_authorized',
                 }, 403)

@@ -23,9 +23,3 @@ SANIC_JWT_URL_PREFIX = '/auth'
 SANIC_JWT_USER_ID = 'user_id'
 
 SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME = SANIC_JWT_REFRESH_TOKEN_NAME
-
-__``__
-
-Default: ``
-
-Purpose:

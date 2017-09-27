@@ -51,8 +51,8 @@ async def authenticate(request, *args, **kwargs):
 
 @bp.get('/me')
 async def retrieve_user(request, *args, **kwargs):
-    assert hasattr(request.app.auth, 'retrieve_user'),\
-        "/me endpoint has not been setup. Pass retrieve_user if you with to proceeed."
+    if not hasattr(request.app.auth, 'retrieve_user'):
+        raise exceptions.MeEndpointNotSetup()
 
     try:
         payload = request.app.auth.extract_payload(request)

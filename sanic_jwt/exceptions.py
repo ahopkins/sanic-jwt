@@ -39,6 +39,12 @@ class MissingRegisteredClaim(SanicException):
         super().__init__(message)
 
 
+@add_status_code(500)
+class MeEndpointNotSetup(SanicException):
+    def __init__(self, message="/me endpoint has not been setup. Pass retrieve_user if you with to proceeed."):
+        super().__init__(message)
+
+
 class Unauthorized(SanicUnauthorized):
     def __init__(self):
         super().__init__("Auth required.", "Bearer")

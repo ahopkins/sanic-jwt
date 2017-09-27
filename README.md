@@ -72,7 +72,7 @@ def authenticate(request, *args, **kwargs):
 
 ## Other initialization parameters
 
-__`class_views`__
+### __`class_views`__
 
 Default: `None`
 
@@ -99,7 +99,7 @@ Example: The below example could be used in creating a "magic" passwordless logi
         ]
     )
 
-__`store_refresh_token`__
+### __`store_refresh_token`__
 
 Default: `None`
 
@@ -115,7 +115,12 @@ Example:
 
         app.add_task(store(key))
 
-__`retrieve_refresh_token`__
+    initialize(
+        app,
+        store_refresh_token=store_refresh_token
+    )
+
+### __`retrieve_refresh_token`__
 
 Default: `None`
 
@@ -131,7 +136,12 @@ Example:
 
         app.add_task(retrieve(key))
 
-__`retrieve_user`__
+    initialize(
+        app,
+        retrieve_refresh_token=retrieve_refresh_token
+    )
+
+### __`retrieve_user`__
 
 Default: `None`
 
@@ -153,6 +163,11 @@ Example:
             return user
         else:
             return None
+
+    initialize(
+        app,
+        retrieve_user=retrieve_user
+    )
 
 
 ## Endpoints
@@ -193,6 +208,23 @@ If it is not valid, you will also be given a reason.
         "valid": false,
         "reason": "Signature has expired"
     }
+
+### `/auth/me`
+
+Methods: __GET__
+
+Returns information about the currently authenticated user.
+
+    curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/me
+
+Assuming that it is valid, the response:
+
+    200 Response
+    {
+        "user_id": 123456
+    }
+
+As discussed, because the application is agnostic about your user management decisions, you need to have a user object that either is a `dict` or a object instance with a `to_dict` or `__dict__` method. The output of these methods will be used to generate the `/me` response.
 
 ### `/auth/refresh`
 
@@ -280,7 +312,7 @@ __`SANIC_JWT_AUTHORIZATION_HEADER_REFRESH_PREFIX`__
 
 Default: `'Refresh'`
 
-Purpose: _Not currently in user._
+Purpose: _Not currently in use._
 
 __`SANIC_JWT_CLAIM_AUD`__
 

@@ -35,7 +35,7 @@ In order to add __Sanic JWT__, all you need to do is initialize it by passing th
 from sanic_jwt import initialize
 
 def authenticate(request):
-    return True
+    return dict(user_id='some_id')
 
 app = Sanic()
 initialize(app, authenticate)
@@ -45,11 +45,11 @@ initialize(app, authenticate)
 
 Because Sanic (and this package) are agnostic towards whatever user management system you use, you need to tell __Sanic JWT__ how it should authenticate a user.
 
-You __MUST__ define this method. It should take a `request` argument, and return `True` or `False`.
+You __MUST__ define this method. It should take a `request` argument, and return a subscriptable object with `user_id` key or or object with `user_id` attribute (can be customized by __`SANIC_JWT_USER_ID`__, see [Settings](https://github.com/ahopkins/sanic-jwt#settings) for details).
 
 ```python
 def authenticate(request):
-    return True
+    return dict(user_id='some_id')
 ```
 
 A very basic user management system might be as follows, with its corresponding `authenticate` method:

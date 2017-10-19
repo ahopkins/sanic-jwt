@@ -74,7 +74,7 @@ users = [
 username_table = {u.username: u for u in users}
 userid_table = {u.user_id: u for u in users}
 
-def authenticate(request, *args, **kwargs):
+async def authenticate(request, *args, **kwargs):
     username = request.json.get('username', None)
     password = request.json.get('password', None)
 

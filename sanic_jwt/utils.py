@@ -9,10 +9,13 @@ def generate_token(n=24):
 
 
 def execute_handler(handler, *args, **kwargs):
-    parts = handler.split('.')
-    fn = parts.pop()
-    module = importlib.import_module('.'.join(parts))
-    method = getattr(module, fn)
+    if isinstance(handler, str):
+        parts = handler.split('.')
+        fn = parts.pop()
+        module = importlib.import_module('.'.join(parts))
+        method = getattr(module, fn)
+    else:
+        method = handler
     runner = method(*args, **kwargs)
     return runner
 

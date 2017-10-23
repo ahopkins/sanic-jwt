@@ -59,6 +59,12 @@ class SanicJWTAuthentication(BaseAuthentication):
         # - Add verification check to make sure payload is a dict with a `user_id` key
         payload = utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
 
+        if self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES is not None:
+            scopes = utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES, user)
+            if not isinstance(scopes, (tuple, list)):
+                scopes = [scopes]
+            payload[self.app.config.SANIC_JWT_SCOPES_NAME] = scopes
+
         missing = [x for x in self.claims if x not in payload]
         if missing:
             raise exceptions.MissingRegisteredClaim(missing=missing)
@@ -163,6 +169,11 @@ class SanicJWTAuthentication(BaseAuthentication):
 
     def retrieve_refresh_token_from_request(self, request):
         return self._get_refresh_token(request)
+
+    def retrieve_scopes(self, request):
+        payload = self.extract_payload(request)
+        scopes_attribute = request.app.config.SANIC_JWT_SCOPES_NAME
+        return payload.get(scopes_attribute, None)
 
     def extract_payload(self, request, verify=True, *args, **kwargs):
         try:

@@ -20,6 +20,7 @@ JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. T
     1. [`/auth/me`](https://github.com/ahopkins/sanic-jwt#authme)
     1. [`/auth/refresh`](https://github.com/ahopkins/sanic-jwt#authrefresh)
 1. [Protecting routes](https://github.com/ahopkins/sanic-jwt#protecting-routes)
+1. [Scopes](https://github.com/ahopkins/sanic-jwt#scopes)
 1. [Settings](https://github.com/ahopkins/sanic-jwt#settings)
 1. [Coming Soon](https://github.com/ahopkins/sanic-jwt#coming-soon)
 
@@ -282,13 +283,182 @@ async def protected_route(request):
     return json({"protected": True})
 ```
 
+## Scopes
+
+In addition to protecting routes to authenticated users, they can be scoped to require one or more scopes by applying the `@scoped()` decorator.
+
+### Requirements for a scope
+
+A **scope** is a string that consists of two parts: *namespace*, and *action(s)*. For example, it might look like this: `user:read`.
+
+**namespace** - A scope can have either one namespace, or no namespaces.
+**action** - A scope can have either no actions, or many actions.
+
+### Example scopes
+
+    scope:     user
+    namespace: user
+    action:    --
+
+    scope:     user:read
+    namespace: user
+    action:    read
+
+    scope:     user:read:write
+    namespace: user
+    action:    [read, write]
+
+    scope:     :read
+    namespace: --
+    action:    read
+
+### How are scopes accepted?
+
+In defining a scoped route, you define one or more scopes that will be acceptable. A scope is accepted if the payload contains a scope that is equal to or higher than what is required. For sake of clarity in the below explanation, `required_scope` means the scope that is required for access, and `user_scope` is the scope the payload has.
+
+A scope is acceptable ...
+
+- If the `required_scope` namespace and the `user_scope` namespace are equal
+```
+# True
+required_scope = 'user'
+user_scope = 'user'
+```
+- If the `required_scope` has actions, then the `user_scope` must be top level (no defined actions), or also has the same actions
+```
+# True
+required_scope = 'user:read'
+user_scope = 'user'
+
+# True
+required_scope = 'user:read'
+user_scope = 'user:read'
+
+# True
+required_scope = 'user:read'
+user_scope = 'user:read:write'
+
+# True
+required_scope = ':read'
+user_scope = ':read'
+```
+
+### Examples
+
+Here is a list of example scopes and whether they pass or not:
+
+    required scope      user scope(s)                    outcome
+    ==============      =============                    =======
+    'user'              ['something']                    False
+    'user'              ['user']                         True
+    'user:read'         ['user']                         True
+    'user:read'         ['user:read']                    True
+    'user:read'         ['user:write']                   False
+    'user:read'         ['user:read:write']              True
+    'user'              ['user:read']                    False
+    'user:read:write'   ['user:read']                    False
+    'user:read:write'   ['user:read:write']              True
+    'user:read:write'   ['user:write:read']              True
+    'user'              ['something', 'else']            False
+    'user'              ['something', 'else', 'user']    True
+    'user:read'         ['something:else', 'user:read']  True
+    'user:read'         ['user:read', 'something:else']  True
+    ':read'             [':read']                        True
+    ':read'             ['admin']                        True
+
+### Applying `@scoped()`
+
+In order to protect a route from being accessed by tokens without the appropriate scope(s), pass in one or more scopes:
+
+```python
+@app.route("/protected/scoped/1")
+@protected()
+@scoped('user')
+async def protected_route1(request):
+    return json({"protected": True, "scoped": True})
+```
+
+In the above example, only an access token with a payload containing a scope for `user` will be accepted (such as the payload below).
+
+    {
+        "user_id": 1,
+        "scopes: ["user"]
+    }
+
+You can also define multiple scopes:
+
+```python
+@scoped(['user', 'admin'])
+```
+
+In the above example, a payload **MUST** have both the `user` and `admin` scopes defined.
+
+But, what if we only want to require one of the scopes, and not both `user` **AND** `admin`? Easy:
+
+```python
+@scoped(['user', 'admin'], False)
+```
+
+Now, having a scope of either `user` **OR** `admin` will be acceptable.
+
+#### Parameters
+
+The `@scoped()` decorator takes three parameters:
+
+    scoped(scopes, requires_all, require_all_actions)
+
+__`scopes`__
+Either a single `string`, or a `list` of strings that are the defined scopes for the route.
+
+```python
+@scoped('user')
+...
+
+# Or
+
+@scoped(['user', 'admin'])
+...
+```
+
+__`require_all`__
+A `boolean` that determines whether all of the defined scopes, or just one must be satisfied. Defaults to `True`.
+
+```python
+@scoped(['user', 'admin'])
+...
+# A payload MUST have both 'user' and 'admin' scopes
+
+
+@scoped(['user', 'admin'], require_all=False)
+...
+# A payload can have either 'user' or 'admin' scope
+```
+
+__`require_all_actions`__
+A `boolean` that determines whether all of the actions on a defined scope, or just one must be satisfied. Defaults to `True`.
+
+```python
+@scoped(':read:write')
+...
+# A payload MUST have both the `:read` and `:write` actions in scope
+
+
+@scoped(':read:write', require_all_actions=False)
+...
+# A payload can have either the `:read` or `:write` action in scope
+```
+
+### Example
+
+See `example/scopes.py` for a full working example with various scopes and users.
+
 ## Settings
 
 __`SANIC_JWT_ACCESS_TOKEN_NAME`__
 
 Default: `'access_token'`
 
-Purpose: The key to be used to identify the access token.
+Purpose: The key to be used in the payload to identify the access token.
 
 __`SANIC_JWT_ALGORITHM`__
 
@@ -429,6 +599,17 @@ Example:
 
         return payload
 
+__`SANIC_JWT_HANDLER_PAYLOAD_SCOPES`__
+
+Default: `None`
+
+Purpose: A handler method used to add scopes into a payload. It is a convenience method so that you do not need to extend the payload with the more verbose (yet, more flexible) `SANIC_JWT_HANDLER_PAYLOAD_EXTEND`. It should return either a `string` or a `list` of `strings` that meet the scope requirements. See the secion on Scopes for more details. Also, to make it easier for the developer, the `user` instance that is returned by the `authenticate` method is passed in as a parameter as seen below.
+
+Example:
+
+    def my_scope_extender(user, *args, **kwargs):
+        return user.scopes
+
 __`SANIC_JWT_LEEWAY`__
 
 Default: `180`
@@ -445,7 +626,13 @@ __`SANIC_JWT_REFRESH_TOKEN_NAME`__
 
 Default: `'refresh_token'`
 
-Purpose: The key to be used to identify the refresh token.
+Purpose: The key to be used in the payload to identify the refresh token.
+
+__`SANIC_JWT_SCOPES_NAME`__
+
+Default: `'scopes'`
+
+Purpose: The key to be used in the payload to identify the scopes.
 
 __`SANIC_JWT_SECRET`__
 
@@ -465,7 +652,3 @@ __`SANIC_JWT_USER_ID`__
 Default: `'user_id'`
 
 Purpose: The key or property of your user object that contains a user id.
-
-## Coming Soon
-
-- scope

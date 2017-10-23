@@ -1,4 +1,6 @@
-from sanic.exceptions import SanicException, Unauthorized as SanicUnauthorized, add_status_code
+from sanic.exceptions import SanicException
+from sanic.exceptions import Unauthorized as SanicUnauthorized
+from sanic.exceptions import add_status_code
 
 
 @add_status_code(401)

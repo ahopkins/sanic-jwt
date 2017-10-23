@@ -21,7 +21,6 @@ JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. T
     1. [`/auth/refresh`](https://github.com/ahopkins/sanic-jwt#authrefresh)
 1. [Protecting routes](https://github.com/ahopkins/sanic-jwt#protecting-routes)
 1. [Settings](https://github.com/ahopkins/sanic-jwt#settings)
-1. [Coming Soon](https://github.com/ahopkins/sanic-jwt#coming-soon)
 
 ## Getting Started
 

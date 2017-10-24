@@ -55,6 +55,8 @@ async def authenticate(request, *args, **kwargs):
         output.update({
             request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
         })
+    else:
+        refresh_token = None
 
     response = get_token_reponse(request, access_token, output, refresh_token)
 

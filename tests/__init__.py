@@ -1,6 +1,8 @@
 from sanic import Sanic
+from sanic.response import json
 from sanic_jwt import exceptions
 from sanic_jwt import initialize
+from sanic_jwt.decorators import protected
 
 
 class User(object):
@@ -19,7 +21,7 @@ users = [
 ]
 
 username_table = {u.username: u for u in users}
-userid_table = {u.user_id: u for u in users}
+# userid_table = {u.user_id: u for u in users}
 
 
 async def authenticate(request, *args, **kwargs):
@@ -38,7 +40,6 @@ async def authenticate(request, *args, **kwargs):
 
     return user
 
-
 app = Sanic()
 initialize(
     app,
@@ -46,5 +47,12 @@ initialize(
 )
 
 
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8888)
+@app.route("/")
+async def test(request):
+    return json({"hello": "world"})
+
+
+@app.route("/protected")
+@protected()
+async def protected(request):
+    return json({"protected": True})

@@ -1,6 +1,7 @@
 from sanic_jwt.blueprint import bp as sanic_jwt_auth_bp
 from sanic_jwt.authentication import SanicJWTAuthentication
 from sanic_jwt import settings
+from sanic.views import HTTPMethodView
 
 
 def initialize(
@@ -15,11 +16,14 @@ def initialize(
     app.config.from_object(settings)
 
     if class_views is not None:
-        # TODO:
-        # - Run some verifications that class_views is formatted
-        #   ('<SOME ROUTE>', ClassInheritedFromHTTPMethodView)
         for route, view in class_views:
-            sanic_jwt_auth_bp.add_route(view.as_view(), route)
+            try:
+                if issubclass(view, HTTPMethodView) and isinstance(route, str):
+                    sanic_jwt_auth_bp.add_route(view.as_view(), route)
+                else:
+                    raise Exception("class_views should follow this format ('<SOME ROUTE>', ClassInheritedFromHTTPMethodView)")
+            except TypeError:
+                raise Exception("class_views should follow this format ('<SOME ROUTE>', ClassInheritedFromHTTPMethodView)")
 
     # Add blueprint
     app.blueprint(sanic_jwt_auth_bp, url_prefix=app.config.SANIC_JWT_URL_PREFIX)

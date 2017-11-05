@@ -4,6 +4,7 @@ from sanic_jwt.authentication import SanicJWTAuthentication
 from sanic_jwt import settings
 from sanic_jwt import exceptions
 from sanic_jwt import utils
+from sanic.views import HTTPMethodView
 
 
 def initialize(

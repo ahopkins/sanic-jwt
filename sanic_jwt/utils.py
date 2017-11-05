@@ -37,3 +37,10 @@ def build_claim_nbf(attr, config, *args, **kwargs):
 
 def build_claim_aud(attr, *args, **kwargs):
     return attr
+
+
+def load_settings(app, settings):
+    for setting in dir(settings):
+        if setting.isupper() and setting not in app.config:
+            value = getattr(settings, setting)
+            setattr(app.config, setting, value)

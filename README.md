@@ -115,6 +115,7 @@ Example: The below example could be used in creating a "magic" passwordless logi
 
     initialize(
         app,
+        authenticate=lambda: True,
         class_views=[
             ('/magic-login', MagicLoginHandler)     # The path will be relative to the url prefix (which defaults to /auth)
         ]
@@ -138,6 +139,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         store_refresh_token=store_refresh_token
     )
 
@@ -159,6 +161,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         retrieve_refresh_token=retrieve_refresh_token
     )
 
@@ -187,6 +190,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         retrieve_user=retrieve_user
     )
 

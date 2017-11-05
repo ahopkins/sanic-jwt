@@ -593,7 +593,7 @@ Example:
 
     from sanic_jwt.handlers import extend_payload
 
-    def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
+    async def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
         payload = extend_payload(authenticator, payload, *args, **kwargs)
 
         payload.update({
@@ -610,7 +610,7 @@ Purpose: A handler method used to add scopes into a payload. It is a convenience
 
 Example:
 
-    def my_scope_extender(user, *args, **kwargs):
+    async def my_scope_extender(user, *args, **kwargs):
         return user.scopes
 
 __`SANIC_JWT_LEEWAY`__

@@ -44,7 +44,7 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-def my_scope_extender(user, *args, **kwargs):
+async def my_scope_extender(user, *args, **kwargs):
     return user.scopes
 
 

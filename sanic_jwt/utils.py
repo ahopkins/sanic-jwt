@@ -8,7 +8,7 @@ def generate_token(n=24):
     return str(binascii.hexlify(os.urandom(n)), 'utf-8')
 
 
-def execute_handler(handler, *args, **kwargs):
+async def execute_handler(handler, *args, **kwargs):
     if isinstance(handler, str):
         parts = handler.split('.')
         fn = parts.pop()
@@ -16,7 +16,7 @@ def execute_handler(handler, *args, **kwargs):
         method = getattr(module, fn)
     else:
         method = handler
-    runner = method(*args, **kwargs)
+    runner = await method(*args, **kwargs)
     return runner
 
 

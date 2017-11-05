@@ -6,8 +6,8 @@ from . import exceptions
 bp = Blueprint('auth_bp')
 
 
-def get_access_token_output(request, user):
-    access_token = request.app.auth.get_access_token(user)
+async def get_access_token_output(request, user):
+    access_token = await request.app.auth.get_access_token(user)
 
     output = {
         request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token
@@ -48,7 +48,7 @@ async def authenticate(request, *args, **kwargs):
     except Exception as e:
         raise e
 
-    access_token, output = get_access_token_output(request, user)
+    access_token, output = await get_access_token_output(request, user)
 
     if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
         refresh_token = request.app.auth.get_refresh_token(user)

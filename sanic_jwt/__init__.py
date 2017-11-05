@@ -1,8 +1,9 @@
 from sanic_jwt.blueprint import bp as sanic_jwt_auth_bp
 from sanic_jwt.authentication import SanicJWTAuthentication
+
 from sanic_jwt import settings
-from sanic.views import HTTPMethodView
-from sanic_jwt.exceptions import InvalidClassViewsFormat
+from sanic_jwt import exceptions
+from sanic_jwt import utils
 
 
 def initialize(
@@ -14,7 +15,7 @@ def initialize(
     retrieve_user=None,
 ):
     # Add settings
-    app.config.from_object(settings)
+    utils.load_settings(app, settings)
 
     if class_views is not None:
         for route, view in class_views:
@@ -22,9 +23,9 @@ def initialize(
                 if issubclass(view, HTTPMethodView) and isinstance(route, str):
                     sanic_jwt_auth_bp.add_route(view.as_view(), route)
                 else:
-                    raise InvalidClassViewsFormat
+                    raise exceptions.InvalidClassViewsFormat()
             except TypeError:
-                raise InvalidClassViewsFormat
+                raise exceptions.InvalidClassViewsFormat()
 
     # Add blueprint
     app.blueprint(sanic_jwt_auth_bp, url_prefix=app.config.SANIC_JWT_URL_PREFIX)
@@ -37,3 +38,9 @@ def initialize(
         setattr(app.auth, 'retrieve_refresh_token', retrieve_refresh_token)
     if retrieve_user:
         setattr(app.auth, 'retrieve_user', retrieve_user)
+
+    if app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED and (
+        not store_refresh_token or
+        not retrieve_refresh_token
+    ):
+        raise exceptions.RefreshTokenNotImplemented()

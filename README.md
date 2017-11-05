@@ -115,6 +115,7 @@ Example: The below example could be used in creating a "magic" passwordless logi
 
     initialize(
         app,
+        authenticate=lambda: True,
         class_views=[
             ('/magic-login', MagicLoginHandler)     # The path will be relative to the url prefix (which defaults to /auth)
         ]
@@ -138,6 +139,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         store_refresh_token=store_refresh_token
     )
 
@@ -159,6 +161,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         retrieve_refresh_token=retrieve_refresh_token
     )
 
@@ -187,6 +190,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         retrieve_user=retrieve_user
     )
 
@@ -589,7 +593,7 @@ Example:
 
     from sanic_jwt.handlers import extend_payload
 
-    def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
+    async def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
         payload = extend_payload(authenticator, payload, *args, **kwargs)
 
         payload.update({
@@ -606,7 +610,7 @@ Purpose: A handler method used to add scopes into a payload. It is a convenience
 
 Example:
 
-    def my_scope_extender(user, *args, **kwargs):
+    async def my_scope_extender(user, *args, **kwargs):
         return user.scopes
 
 __`SANIC_JWT_LEEWAY`__

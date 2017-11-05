@@ -1,4 +1,4 @@
-import jwt
+import jwt, pytest
 from sanic import Sanic
 from sanic.response import json
 from sanic_jwt import exceptions
@@ -52,17 +52,6 @@ initialize(
 )
 
 
-@app.route("/")
-async def helloworld(request):
-    return json({"hello": "world"})
-
-
-@app.route("/protected")
-@protected()
-async def protected(request):
-    return json({"protected": True})
-
-
 _, response = app.test_client.post('/auth', json={
     'username': 'user1',
     'password': 'abcxyz'
@@ -72,20 +61,21 @@ access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
 payload = jwt.decode(access_token, app.config.SANIC_JWT_SECRET)
 
 
-class TestEndpointsAuth(object):
-    def dispatch(self, path, method):
-        header_token = '{} {}'.format(app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX, access_token)
-        method = getattr(app.test_client, method)
-        request, response = method(path, headers={
-            app.config.SANIC_JWT_AUTHORIZATION_HEADER: header_token
-        })
-        return request, response
+def dispatch(path, method):
+    header_token = '{} {}'.format(app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX, access_token)
+    method = getattr(app.test_client, method)
+    request, response = method(path, headers={
+        app.config.SANIC_JWT_AUTHORIZATION_HEADER: header_token
+    })
+    return request, response
 
-    def get(self, path):
-        return self.dispatch(path, 'get')
 
-    def test_verify_token(self):
-        _, response = self.get('/auth/verify')
+def get(path):
+    return dispatch(path, 'get')
+
+
+def test_me():
+    with pytest.raises(Exception):
+        _, response = get('/auth/me')
 
         assert response.status == 200
-        assert response.json.get('valid') is True

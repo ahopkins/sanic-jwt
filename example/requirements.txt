@@ -3,7 +3,7 @@ AoikLiveReload==0.1.0
 argh==0.26.2
 httptools==0.0.9
 pathtools==0.1.2
-PyJWT==1.5.2
+PyJWT==1.5.3
 PyYAML==3.12
 sanic==0.6.0
 sanic-jwt==0.2.1

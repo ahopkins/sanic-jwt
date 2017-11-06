@@ -8,7 +8,7 @@ httptools==0.0.9
 multidict==3.3.0
 pathtools==0.1.2
 py==1.4.34
-PyJWT==1.5.2
+PyJWT==1.5.3
 pytest==3.2.3
 PyYAML==3.12
 sanic==0.6.0

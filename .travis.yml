@@ -13,7 +13,7 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-  - python -m pytest test/
+  - python -m pytest tests/
 
 env:
   - DEVELOPMENT=false

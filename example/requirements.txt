@@ -5,7 +5,7 @@ argh==0.26.2
 async-timeout==2.0.0
 chardet==3.0.4
 httptools==0.0.9
-multidict==3.3.0
+multidict==3.3.2
 pathtools==0.1.2
 py==1.4.34
 PyJWT==1.5.2

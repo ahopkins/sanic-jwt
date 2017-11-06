@@ -50,3 +50,8 @@ class MeEndpointNotSetup(SanicException):
 class Unauthorized(SanicUnauthorized):
     def __init__(self):
         super().__init__("Auth required.", "Bearer")
+
+
+class InvalidClassViewsFormat(SanicException):
+    def __init__(self, message="class_views should follow this format ('<SOME ROUTE>', ClassInheritedFromHTTPMethodView)"):
+        super().__init__(message)

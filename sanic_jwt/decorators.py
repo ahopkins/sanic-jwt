@@ -7,6 +7,10 @@ def protected():
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
+            if request.method == 'OPTIONS':
+                response = await f(request, *args, **kwargs)
+                return response
+
             is_authorized = request.app.auth.is_authenticated(request, *args, **kwargs)
 
             if is_authorized:

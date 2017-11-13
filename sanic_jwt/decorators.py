@@ -3,7 +3,7 @@ from sanic.response import json
 from .validators import validate_scopes
 
 
-def protected():
+def protected(*args):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
@@ -20,7 +20,10 @@ def protected():
                     'status': 'not_authorized',
                 }, 403)
         return decorated_function
-    return decorator
+    if args:
+        return decorator(*args)
+    else:
+        return decorator
 
 
 def scoped(scopes, require_all=True, require_all_actions=True):

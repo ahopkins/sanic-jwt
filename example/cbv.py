@@ -57,7 +57,7 @@ class PublicView(HTTPMethodView):
 class ProtectedView(HTTPMethodView):
     decorators = [protected]
 
-    def get(self, request):
+    async def get(self, request):
         return json({"protected": True})
 
 

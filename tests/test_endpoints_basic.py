@@ -88,6 +88,11 @@ class TestEndpointsBasic(object):
         assert app.config.SANIC_JWT_USER_ID in payload
         assert 'exp' in payload
 
+        _, response = app.test_client.get('/protected', headers={
+            'Authorization': 'Bearer {}'.format(access_token)
+        })
+        assert response.status == 200
+
     # def test_auth_verify_missing_token(self):
         # with pytest.raises(exceptions.MissingAuthorizationHeader):
         # _, response = app.test_client.get('/auth/verify')

@@ -9,7 +9,7 @@ multidict==3.3.2
 pathtools==0.1.2
 py==1.4.34
 PyJWT==1.5.3
-pytest==3.2.3
+pytest==3.2.5
 PyYAML==3.12
 sanic==0.6.0
 sanic-jwt==0.3.1

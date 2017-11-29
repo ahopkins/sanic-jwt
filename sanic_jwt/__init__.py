@@ -13,7 +13,7 @@ def initialize(
     class_views=None,
     store_refresh_token=None,
     retrieve_refresh_token=None,
-    retrieve_user=None,
+    retrieve_user=None
 ):
     # Add settings
     utils.load_settings(app, settings)
@@ -22,7 +22,11 @@ def initialize(
         for route, view in class_views:
             try:
                 if issubclass(view, HTTPMethodView) and isinstance(route, str):
-                    sanic_jwt_auth_bp.add_route(view.as_view(), route)
+                    sanic_jwt_auth_bp.add_route(
+                                      view.as_view(),
+                                      route,
+                                      strict_slashes=app.config.SANIC_JWT_STRICT_SLASHES
+                                    )
                 else:
                     raise exceptions.InvalidClassViewsFormat()
             except TypeError:

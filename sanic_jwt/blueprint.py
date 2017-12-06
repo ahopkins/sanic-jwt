@@ -92,8 +92,10 @@ async def retrieve_user(request, *args, **kwargs):
     return response
 
 
-@bp.get('/verify')
+@bp.route('/verify', methods=['GET', 'OPTIONS'])
 async def verify(request, *args, **kwargs):
+    if request.method == 'OPTIONS':
+        return text('', status=204)
     is_valid, status, reason = request.app.auth.verify(request, *args, **kwargs)
 
     response = {
@@ -127,7 +129,7 @@ async def refresh(request, *args, **kwargs):
     if refresh_token != purported_token:
         raise exceptions.AuthenticationFailed()
 
-    access_token, output = get_access_token_output(request, user)
+    access_token, output = await get_access_token_output(request, user)
     response = get_token_reponse(request, access_token, output)
 
     return response

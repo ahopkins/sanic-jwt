@@ -39,7 +39,7 @@ async def setup_claims(app, *args, **kwargs):
     app.auth.setup_claims()
 
 
-@bp.route('/', methods=['POST', 'OPTIONS'])
+@bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)

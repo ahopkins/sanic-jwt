@@ -48,7 +48,19 @@ class SanicJWTAuthentication(BaseAuthentication):
                 value = getattr(self.app.config, setting, False)
                 kwargs.update({claim_label[claim]: value})
 
-        return jwt.decode(token, secret, algorithms=[algorithm], verify=verify, **kwargs)
+        # TODO:
+        # - Add leeway=self.app.config.SANIC_JWT_LEEWAY to jwt.decode
+        # verify_exp
+        return jwt.decode(
+            token,
+            secret,
+            algorithms=[algorithm],
+            verify=verify,
+            options={
+                'verify_exp': self.app.config.SANIC_JWT_VERIFY_EXP
+            },
+            **kwargs
+        )
 
     def _get_algorithm(self):
         return self.app.config.SANIC_JWT_ALGORITHM

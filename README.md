@@ -656,3 +656,10 @@ __`SANIC_JWT_USER_ID`__
 Default: `'user_id'`
 
 Purpose: The key or property of your user object that contains a user id.
+
+
+__`SANIC_JWT_VERIFY_EXP`__
+
+Default: `True`
+
+Purpose: Whether or not to check the expiration on an access token. **IMPORTANT: Changing this to `False` means that access tokens will NOT expire. Make sure you know what you are doing before disabling this.**

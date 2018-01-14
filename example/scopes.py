@@ -21,6 +21,7 @@ users = [
     User(1, 'user1', 'abcxyz', ['user']),
     User(2, 'user2', 'abcxyz', ['user', 'admin']),
     User(3, 'user3', 'abcxyz', ['user:read']),
+    User(4, 'user4', 'abcxyz', ['client1']),
 ]
 
 username_table = {u.username: u for u in users}
@@ -94,6 +95,28 @@ async def protected_route3(request):
 @protected()
 @scoped(['user', 'admin'], False)
 async def protected_route4(request):
+    return json({"protected": True, "scoped": True})
+
+
+@app.route("/protected/scoped/5")
+@scoped('user')
+async def protected_route5(request):
+    return json({"protected": True, "scoped": True})
+
+
+@app.route("/protected/scoped/6/<id>")
+@scoped(lambda *args, **kwargs: 'user')
+async def protected_route6(request, id):
+    return json({"protected": True, "scoped": True})
+
+
+def client_id_scope(request, *args, **kwargs):
+    return 'client' + kwargs.get('id')
+
+
+@app.route("/protected/scoped/7/<id>")
+@scoped(client_id_scope)
+async def protected_route7(request, id):
     return json({"protected": True, "scoped": True})
 
 

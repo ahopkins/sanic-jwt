@@ -34,7 +34,12 @@ def validate_single_scope(required, user_scopes, require_all_actions=True):
     return is_valid
 
 
-def validate_scopes(request, scopes, user_scopes, require_all=True, require_all_actions=True):
+async def validate_scopes(request, scopes, user_scopes, require_all=True, require_all_actions=True, *args, **kwargs):
+    if callable(scopes):
+        scopes = scopes(request, *args, **kwargs)
+
+    print(scopes, user_scopes)
+
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]
 

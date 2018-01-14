@@ -12,7 +12,7 @@ PyJWT==1.5.3
 pytest==3.2.5
 PyYAML==3.12
 sanic==0.6.0
-sanic-jwt==0.3.1
+sanic-jwt
 ujson==1.35
 uvloop==0.8.1
 watchdog==0.8.3

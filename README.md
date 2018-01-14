@@ -291,6 +291,8 @@ async def protected_route(request):
 
 In addition to protecting routes to authenticated users, they can be scoped to require one or more scopes by applying the `@scoped()` decorator.
 
+_NOTE: If you are using the `@scoped` decorator, you do NOT also need the `@protected` decorator. It is assumed that if you are scoping the endpoint, that it is also meant to be protected._
+
 ### Requirements for a scope
 
 A **scope** is a string that consists of two parts: *namespace*, and *action(s)*. For example, it might look like this: `user:read`.

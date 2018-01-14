@@ -38,8 +38,6 @@ async def validate_scopes(request, scopes, user_scopes, require_all=True, requir
     if callable(scopes):
         scopes = scopes(request, *args, **kwargs)
 
-    print(scopes, user_scopes)
-
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]
 

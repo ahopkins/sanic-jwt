@@ -13,7 +13,7 @@ initialize(
 
 
 @app.route("/scoped_empty")
-@scoped()
+@scoped('something')
 async def scoped(request):
     return json({"scoped": True})
 

@@ -51,7 +51,7 @@ async def authenticate(request, *args, **kwargs):
     access_token, output = await get_access_token_output(request, user)
 
     if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-        refresh_token = await request.app.auth.get_refresh_token(user)
+        refresh_token = await request.app.auth.get_refresh_token(user, request)
         output.update({
             request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
         })
@@ -117,7 +117,7 @@ async def refresh(request, *args, **kwargs):
     payload = request.app.auth.extract_payload(request, verify=False)
     user = request.app.auth.retrieve_user(request, payload=payload)
     user_id = request.app.auth._get_user_id(user)
-    refresh_token = request.app.auth.retrieve_refresh_token(request=request, user_id=user_id)
+    refresh_token = await request.app.auth.retrieve_refresh_token(request=request, user_id=user_id)
     if isinstance(refresh_token, bytes):
         refresh_token = refresh_token.decode('utf-8')
     refresh_token = str(refresh_token)

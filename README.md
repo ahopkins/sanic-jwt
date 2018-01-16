@@ -3,6 +3,7 @@
 [![Latest PyPI version](https://img.shields.io/pypi/v/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
 [![Version status](https://img.shields.io/pypi/status/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
 [![Python versions](https://img.shields.io/pypi/pyversions/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
+[![Build Status](https://travis-ci.org/ahopkins/sanic-jwt.svg?branch=master)](https://travis-ci.org/ahopkins/sanic-jwt)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9727756ffccd45f7bc5ad6292596e03d)](https://www.codacy.com/app/ahopkins/sanic-jwt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ahopkins/sanic-jwt&amp;utm_campaign=Badge_Grade)
 
 JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. This project was originally inspired by [Flask JWT](https://github.com/mattupstate/flask-jwt) and [Django Rest Framework JWT](https://github.com/getBlimp/django-rest-framework-jwt), but some departing decisions have been made.
@@ -20,8 +21,8 @@ JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. T
     1. [`/auth/me`](https://github.com/ahopkins/sanic-jwt#authme)
     1. [`/auth/refresh`](https://github.com/ahopkins/sanic-jwt#authrefresh)
 1. [Protecting routes](https://github.com/ahopkins/sanic-jwt#protecting-routes)
+1. [Scopes](https://github.com/ahopkins/sanic-jwt#scopes)
 1. [Settings](https://github.com/ahopkins/sanic-jwt#settings)
-1. [Coming Soon](https://github.com/ahopkins/sanic-jwt#coming-soon)
 
 ## Getting Started
 
@@ -34,8 +35,8 @@ In order to add __Sanic JWT__, all you need to do is initialize it by passing th
 ```python
 from sanic_jwt import initialize
 
-def authenticate(request):
-    return True
+async def authenticate(request):
+    return dict(user_id='some_id')
 
 app = Sanic()
 initialize(app, authenticate)
@@ -45,11 +46,11 @@ initialize(app, authenticate)
 
 Because Sanic (and this package) are agnostic towards whatever user management system you use, you need to tell __Sanic JWT__ how it should authenticate a user.
 
-You __MUST__ define this method. It should take a `request` argument, and return `True` or `False`.
+You __MUST__ define this method. It should take a `request` argument, and return a subscriptable object with `user_id` key or or object with `user_id` attribute (can be customized by __`SANIC_JWT_USER_ID`__, see [Settings](https://github.com/ahopkins/sanic-jwt#settings) for details).
 
 ```python
-def authenticate(request):
-    return True
+async def authenticate(request):
+    return dict(user_id='some_id')
 ```
 
 A very basic user management system might be as follows, with its corresponding `authenticate` method:
@@ -74,7 +75,7 @@ users = [
 username_table = {u.username: u for u in users}
 userid_table = {u.user_id: u for u in users}
 
-def authenticate(request, *args, **kwargs):
+async def authenticate(request, *args, **kwargs):
     username = request.json.get('username', None)
     password = request.json.get('password', None)
 
@@ -115,6 +116,7 @@ Example: The below example could be used in creating a "magic" passwordless logi
 
     initialize(
         app,
+        authenticate=lambda: True,
         class_views=[
             ('/magic-login', MagicLoginHandler)     # The path will be relative to the url prefix (which defaults to /auth)
         ]
@@ -138,6 +140,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         store_refresh_token=store_refresh_token
     )
 
@@ -159,6 +162,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         retrieve_refresh_token=retrieve_refresh_token
     )
 
@@ -187,6 +191,7 @@ Example:
 
     initialize(
         app,
+        authenticate=lambda: True,
         retrieve_user=retrieve_user
     )
 
@@ -282,13 +287,184 @@ async def protected_route(request):
     return json({"protected": True})
 ```
 
+## Scopes
+
+In addition to protecting routes to authenticated users, they can be scoped to require one or more scopes by applying the `@scoped()` decorator.
+
+_NOTE: If you are using the `@scoped` decorator, you do NOT also need the `@protected` decorator. It is assumed that if you are scoping the endpoint, that it is also meant to be protected._
+
+### Requirements for a scope
+
+A **scope** is a string that consists of two parts: *namespace*, and *action(s)*. For example, it might look like this: `user:read`.
+
+**namespace** - A scope can have either one namespace, or no namespaces.
+**action** - A scope can have either no actions, or many actions.
+
+### Example scopes
+
+    scope:     user
+    namespace: user
+    action:    --
+
+    scope:     user:read
+    namespace: user
+    action:    read
+
+    scope:     user:read:write
+    namespace: user
+    action:    [read, write]
+
+    scope:     :read
+    namespace: --
+    action:    read
+
+### How are scopes accepted?
+
+In defining a scoped route, you define one or more scopes that will be acceptable. A scope is accepted if the payload contains a scope that is equal to or higher than what is required. For sake of clarity in the below explanation, `required_scope` means the scope that is required for access, and `user_scope` is the scope the payload has.
+
+A scope is acceptable ...
+
+- If the `required_scope` namespace and the `user_scope` namespace are equal
+```
+# True
+required_scope = 'user'
+user_scope = 'user'
+```
+- If the `required_scope` has actions, then the `user_scope` must be top level (no defined actions), or also has the same actions
+```
+# True
+required_scope = 'user:read'
+user_scope = 'user'
+
+# True
+required_scope = 'user:read'
+user_scope = 'user:read'
+
+# True
+required_scope = 'user:read'
+user_scope = 'user:read:write'
+
+# True
+required_scope = ':read'
+user_scope = ':read'
+```
+
+### Examples
+
+Here is a list of example scopes and whether they pass or not:
+
+    required scope      user scope(s)                    outcome
+    ==============      =============                    =======
+    'user'              ['something']                    False
+    'user'              ['user']                         True
+    'user:read'         ['user']                         True
+    'user:read'         ['user:read']                    True
+    'user:read'         ['user:write']                   False
+    'user:read'         ['user:read:write']              True
+    'user'              ['user:read']                    False
+    'user:read:write'   ['user:read']                    False
+    'user:read:write'   ['user:read:write']              True
+    'user:read:write'   ['user:write:read']              True
+    'user'              ['something', 'else']            False
+    'user'              ['something', 'else', 'user']    True
+    'user:read'         ['something:else', 'user:read']  True
+    'user:read'         ['user:read', 'something:else']  True
+    ':read'             [':read']                        True
+    ':read'             ['admin']                        True
+
+### Applying `@scoped()`
+
+In order to protect a route from being accessed by tokens without the appropriate scope(s), pass in one or more scopes:
+
+```python
+@app.route("/protected/scoped/1")
+@protected()
+@scoped('user')
+async def protected_route1(request):
+    return json({"protected": True, "scoped": True})
+```
+
+In the above example, only an access token with a payload containing a scope for `user` will be accepted (such as the payload below).
+
+    {
+        "user_id": 1,
+        "scopes: ["user"]
+    }
+
+You can also define multiple scopes:
+
+```python
+@scoped(['user', 'admin'])
+```
+
+In the above example, a payload **MUST** have both the `user` and `admin` scopes defined.
+
+But, what if we only want to require one of the scopes, and not both `user` **AND** `admin`? Easy:
+
+```python
+@scoped(['user', 'admin'], False)
+```
+
+Now, having a scope of either `user` **OR** `admin` will be acceptable.
+
+#### Parameters
+
+The `@scoped()` decorator takes three parameters:
+
+    scoped(scopes, requires_all, require_all_actions)
+
+__`scopes`__
+Either a single `string`, or a `list` of strings that are the defined scopes for the route.
+
+```python
+@scoped('user')
+...
+
+# Or
+
+@scoped(['user', 'admin'])
+...
+```
+
+__`require_all`__
+A `boolean` that determines whether all of the defined scopes, or just one must be satisfied. Defaults to `True`.
+
+```python
+@scoped(['user', 'admin'])
+...
+# A payload MUST have both 'user' and 'admin' scopes
+
+
+@scoped(['user', 'admin'], require_all=False)
+...
+# A payload can have either 'user' or 'admin' scope
+```
+
+__`require_all_actions`__
+A `boolean` that determines whether all of the actions on a defined scope, or just one must be satisfied. Defaults to `True`.
+
+```python
+@scoped(':read:write')
+...
+# A payload MUST have both the `:read` and `:write` actions in scope
+
+
+@scoped(':read:write', require_all_actions=False)
+...
+# A payload can have either the `:read` or `:write` action in scope
+```
+
+### Example
+
+See `example/scopes.py` for a full working example with various scopes and users.
+
 ## Settings
 
 __`SANIC_JWT_ACCESS_TOKEN_NAME`__
 
 Default: `'access_token'`
 
-Purpose: The key to be used to identify the access token.
+Purpose: The key to be used in the payload to identify the access token.
 
 __`SANIC_JWT_ALGORITHM`__
 
@@ -420,7 +596,7 @@ Example:
 
     from sanic_jwt.handlers import extend_payload
 
-    def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
+    async def my_foo_bar_payload_extender(authenticator, payload, *args, **kwargs):
         payload = extend_payload(authenticator, payload, *args, **kwargs)
 
         payload.update({
@@ -428,6 +604,17 @@ Example:
         })
 
         return payload
+
+__`SANIC_JWT_HANDLER_PAYLOAD_SCOPES`__
+
+Default: `None`
+
+Purpose: A handler method used to add scopes into a payload. It is a convenience method so that you do not need to extend the payload with the more verbose (yet, more flexible) `SANIC_JWT_HANDLER_PAYLOAD_EXTEND`. It should return either a `string` or a `list` of `strings` that meet the scope requirements. See the secion on Scopes for more details. Also, to make it easier for the developer, the `user` instance that is returned by the `authenticate` method is passed in as a parameter as seen below.
+
+Example:
+
+    async def my_scope_extender(user, *args, **kwargs):
+        return user.scopes
 
 __`SANIC_JWT_LEEWAY`__
 
@@ -445,7 +632,13 @@ __`SANIC_JWT_REFRESH_TOKEN_NAME`__
 
 Default: `'refresh_token'`
 
-Purpose: The key to be used to identify the refresh token.
+Purpose: The key to be used in the payload to identify the refresh token.
+
+__`SANIC_JWT_SCOPES_NAME`__
+
+Default: `'scopes'`
+
+Purpose: The key to be used in the payload to identify the scopes.
 
 __`SANIC_JWT_SECRET`__
 
@@ -466,6 +659,9 @@ Default: `'user_id'`
 
 Purpose: The key or property of your user object that contains a user id.
 
-## Coming Soon
 
-- scope
+__`SANIC_JWT_VERIFY_EXP`__
+
+Default: `True`
+
+Purpose: Whether or not to check the expiration on an access token. **IMPORTANT: Changing this to `False` means that access tokens will NOT expire. Make sure you know what you are doing before disabling this.**

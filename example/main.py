@@ -63,7 +63,7 @@ initialize(
     authenticate=authenticate,
     store_refresh_token=store_refresh_token,
     retrieve_refresh_token=retrieve_refresh_token,
-    retrieve_user=retrieve_user
+    retrieve_user=retrieve_user,
 )
 app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 app.config.SANIC_JWT_CLAIM_ISS = 'foo:bar'
@@ -118,7 +118,7 @@ def save_users():
             writer.writerow(user.serialized())
 
 
-@app.route("/")
+@app.route("/hello")
 async def test(request):
     return json({"hello": "world"})
 
@@ -129,4 +129,4 @@ async def protected(request):
     return json({"protected": True})
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8000)
+    app.run(host="127.0.0.1", port=8888)

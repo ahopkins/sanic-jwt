@@ -3,7 +3,7 @@ from datetime import timedelta
 from sanic_jwt import utils
 
 
-def build_payload(authenticator, user, *args, **kwargs):
+async def build_payload(authenticator, user, *args, **kwargs):
     if isinstance(user, dict):
         user_id = user.get(authenticator.app.config.SANIC_JWT_USER_ID)
     else:
@@ -14,7 +14,7 @@ def build_payload(authenticator, user, *args, **kwargs):
     }
 
 
-def extend_payload(authenticator, payload, *args, **kwargs):
+async def extend_payload(authenticator, payload, *args, **kwargs):
     delta = timedelta(seconds=authenticator.app.config.SANIC_JWT_EXPIRATION_DELTA)
     exp = datetime.utcnow() + delta
     additional = {

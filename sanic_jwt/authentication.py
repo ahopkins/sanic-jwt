@@ -48,16 +48,34 @@ class SanicJWTAuthentication(BaseAuthentication):
                 value = getattr(self.app.config, setting, False)
                 kwargs.update({claim_label[claim]: value})
 
-        return jwt.decode(token, secret, algorithms=[algorithm], verify=verify, **kwargs)
+        # TODO:
+        # - Add leeway=self.app.config.SANIC_JWT_LEEWAY to jwt.decode
+        # verify_exp
+        return jwt.decode(
+            token,
+            secret,
+            algorithms=[algorithm],
+            verify=verify,
+            options={
+                'verify_exp': self.app.config.SANIC_JWT_VERIFY_EXP
+            },
+            **kwargs
+        )
 
     def _get_algorithm(self):
         return self.app.config.SANIC_JWT_ALGORITHM
 
-    def _get_payload(self, user):
-        payload = utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD, self, user)
+    async def _get_payload(self, user):
+        payload = await utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD, self, user)
         # TODO:
         # - Add verification check to make sure payload is a dict with a `user_id` key
-        payload = utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
+        payload = await utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
+
+        if self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES is not None:
+            scopes = await utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES, user)
+            if not isinstance(scopes, (tuple, list)):
+                scopes = [scopes]
+            payload[self.app.config.SANIC_JWT_SCOPES_NAME] = scopes
 
         missing = [x for x in self.claims if x not in payload]
         if missing:
@@ -110,14 +128,14 @@ class SanicJWTAuthentication(BaseAuthentication):
             user_id = getattr(user, self.app.config.SANIC_JWT_USER_ID)
         return user_id
 
-    def get_access_token(self, user):
-        payload = self._get_payload(user)
+    async def get_access_token(self, user):
+        payload = await self._get_payload(user)
         secret = self._get_secret()
         algorithm = self._get_algorithm()
 
         return jwt.encode(payload, secret, algorithm=algorithm)
 
-    def get_refresh_token(self, user):
+    async def get_refresh_token(self, user):
         refresh_token = utils.generate_token()
         user_id = self._get_user_id(user)
         self.store_refresh_token(user_id=user_id, refresh_token=refresh_token)
@@ -163,6 +181,11 @@ class SanicJWTAuthentication(BaseAuthentication):
 
     def retrieve_refresh_token_from_request(self, request):
         return self._get_refresh_token(request)
+
+    def retrieve_scopes(self, request):
+        payload = self.extract_payload(request)
+        scopes_attribute = request.app.config.SANIC_JWT_SCOPES_NAME
+        return payload.get(scopes_attribute, None)
 
     def extract_payload(self, request, verify=True, *args, **kwargs):
         try:

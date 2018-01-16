@@ -6,32 +6,17 @@ from . import exceptions
 bp = Blueprint('auth_bp')
 
 
-@bp.listener('before_server_start')
-async def setup_claims(app, *args, **kwargs):
-    app.auth.setup_claims()
-
-
-@bp.route('/', methods=['POST', 'OPTIONS'])
-async def authenticate(request, *args, **kwargs):
-    if request.method == 'OPTIONS':
-        return text('', status=204)
-    try:
-        user = await request.app.auth.authenticate(request, *args, **kwargs)
-    except Exception as e:
-        raise e
-
-    access_token = request.app.auth.get_access_token(user)
+async def get_access_token_output(request, user):
+    access_token = await request.app.auth.get_access_token(user)
 
     output = {
         request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token
     }
 
-    if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-        refresh_token = request.app.auth.get_refresh_token(user)
-        output.update({
-            request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
-        })
+    return access_token, output
 
+
+def get_token_reponse(request, access_token, output, refresh_token=None):
     response = json(output)
 
     if request.app.config.SANIC_JWT_COOKIE_SET:
@@ -40,11 +25,40 @@ async def authenticate(request, *args, **kwargs):
         response.cookies[key]['domain'] = request.app.config.SANIC_JWT_COOKIE_DOMAIN
         response.cookies[key]['httponly'] = request.app.config.SANIC_JWT_COOKIE_HTTPONLY
 
-        if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
+        if refresh_token and request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
             key = request.app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME
             response.cookies[key] = refresh_token
             response.cookies[key]['domain'] = request.app.config.SANIC_JWT_COOKIE_DOMAIN
             response.cookies[key]['httponly'] = request.app.config.SANIC_JWT_COOKIE_HTTPONLY
+
+    return response
+
+
+@bp.listener('before_server_start')
+async def setup_claims(app, *args, **kwargs):
+    app.auth.setup_claims()
+
+
+@bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)
+async def authenticate(request, *args, **kwargs):
+    if request.method == 'OPTIONS':
+        return text('', status=204)
+    try:
+        user = await request.app.auth.authenticate(request, *args, **kwargs)
+    except Exception as e:
+        raise e
+
+    access_token, output = await get_access_token_output(request, user)
+
+    if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
+        refresh_token = await request.app.auth.get_refresh_token(user)
+        output.update({
+            request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
+        })
+    else:
+        refresh_token = None
+
+    response = get_token_reponse(request, access_token, output, refresh_token)
 
     return response
 
@@ -78,8 +92,10 @@ async def retrieve_user(request, *args, **kwargs):
     return response
 
 
-@bp.get('/verify')
+@bp.route('/verify', methods=['GET', 'OPTIONS'])
 async def verify(request, *args, **kwargs):
+    if request.method == 'OPTIONS':
+        return text('', status=204)
     is_valid, status, reason = request.app.auth.verify(request, *args, **kwargs)
 
     response = {
@@ -113,18 +129,7 @@ async def refresh(request, *args, **kwargs):
     if refresh_token != purported_token:
         raise exceptions.AuthenticationFailed()
 
-    access_token = request.app.auth.get_access_token(user)
-
-    output = {
-        request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token
-    }
-
-    response = json(output)
-
-    if request.app.config.SANIC_JWT_COOKIE_SET:
-        key = request.app.config.SANIC_JWT_COOKIE_TOKEN_NAME
-        response.cookies[key] = str(access_token, 'utf-8')
-        response.cookies[key]['domain'] = request.app.config.SANIC_JWT_COOKIE_DOMAIN
-        response.cookies[key]['httponly'] = request.app.config.SANIC_JWT_COOKIE_HTTPONLY
+    access_token, output = await get_access_token_output(request, user)
+    response = get_token_reponse(request, access_token, output)
 
     return response

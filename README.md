@@ -29,6 +29,8 @@ JSON Web Tokens for [Sanic](https://github.com/channelcat/sanic) applications. T
 Install from pypi using:
 
     pip install sanic-jwt
+    
+_NOTE: This package is still in active development. It is recommended to build from GitHub for the latest version since there probably will not be another release to pypi until the package moves out of Beta._
 
 In order to add __Sanic JWT__, all you need to do is initialize it by passing the `sanic_jwt.initialize` method the `Sanic()` instance, and an authentication function.
 

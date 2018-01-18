@@ -121,10 +121,10 @@ async def refresh(request, *args, **kwargs):
     if isinstance(refresh_token, bytes):
         refresh_token = refresh_token.decode('utf-8')
     refresh_token = str(refresh_token)
-    print('user_id: ', user_id)
-    print('Retrieved token: ', refresh_token)
-    purported_token = request.app.auth.retrieve_refresh_token_from_request(request)
-    print('Purported token: ', purported_token)
+    # print('user_id: ', user_id)
+    # print('Retrieved token: ', refresh_token)
+    purported_token = await request.app.auth.retrieve_refresh_token_from_request(request)
+    # print('Purported token: ', purported_token)
 
     if refresh_token != purported_token:
         raise exceptions.AuthenticationFailed()

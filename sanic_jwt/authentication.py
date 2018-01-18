@@ -135,7 +135,7 @@ class SanicJWTAuthentication(BaseAuthentication):
 
         return jwt.encode(payload, secret, algorithm=algorithm)
 
-    async def get_refresh_token(self, user, request):
+    async def get_refresh_token(self, request, user):
         refresh_token = utils.generate_token()
         user_id = self._get_user_id(user)
         await self.store_refresh_token(user_id=user_id, refresh_token=refresh_token, request=request)

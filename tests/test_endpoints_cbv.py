@@ -1,4 +1,5 @@
-import jwt, pytest
+import jwt
+# import pytest
 
 from sanic import Sanic
 from sanic.response import json

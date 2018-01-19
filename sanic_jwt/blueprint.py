@@ -43,10 +43,10 @@ async def setup_claims(app, *args, **kwargs):
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
-    try:
-        user = await request.app.auth.authenticate(request, *args, **kwargs)
-    except Exception as e:
-        raise e
+    # try:
+    user = await request.app.auth.authenticate(request, *args, **kwargs)
+    # except Exception as e:
+    #     raise e
 
     access_token, output = await get_access_token_output(request, user)
 
@@ -70,7 +70,7 @@ async def retrieve_user(request, *args, **kwargs):
 
     try:
         payload = request.app.auth.extract_payload(request)
-        user = request.app.auth.retrieve_user(request, payload)
+        user = await request.app.auth.retrieve_user(request, payload)
     except exceptions.MissingAuthorizationCookie:
         user = None
         payload = None
@@ -115,7 +115,7 @@ async def refresh(request, *args, **kwargs):
     # TODO:
     # - Add exceptions
     payload = request.app.auth.extract_payload(request, verify=False)
-    user = request.app.auth.retrieve_user(request, payload=payload)
+    user = await request.app.auth.retrieve_user(request, payload=payload)
     user_id = request.app.auth._get_user_id(user)
     refresh_token = await request.app.auth.retrieve_refresh_token(request=request, user_id=user_id)
     if isinstance(refresh_token, bytes):

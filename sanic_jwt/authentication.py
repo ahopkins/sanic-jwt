@@ -18,10 +18,10 @@ class BaseAuthentication(object):
         self.claims = ['exp']
 
     async def store_refresh_token(self, *args, **kwargs):
-        raise exceptions.RefreshTokenNotImplemented()
+        raise exceptions.RefreshTokenNotImplemented()  # noqa
 
     async def retrieve_refresh_token(self, *args, **kwargs):
-        raise exceptions.RefreshTokenNotImplemented()
+        raise exceptions.RefreshTokenNotImplemented()  # noqa
 
 
 class SanicJWTAuthentication(BaseAuthentication):
@@ -97,28 +97,30 @@ class SanicJWTAuthentication(BaseAuthentication):
 
         if self.app.config.SANIC_JWT_COOKIE_SET:
             token = request.cookies.get(cookie_token_name, None)
-            if token is None:
-                raise exceptions.MissingAuthorizationCookie()
-            return token
-        else:
-            header = request.headers.get(self.app.config.SANIC_JWT_AUTHORIZATION_HEADER, None)
-            if header:
-                try:
-                    prefix, token = header.split(' ')
-                    # if prefix != self.app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX:
-                    if prefix != header_prefix:
-                        raise Exception
-                except Exception:
-                    raise exceptions.InvalidAuthorizationHeader()
-
-                if refresh_token:
-                    token = request.json.get(self.app.config.SANIC_JWT_REFRESH_TOKEN_NAME)
-
+            if token:
                 return token
+            else:
+                if self.app.config.SANIC_JWT_COOKIE_STRICT:
+                    raise exceptions.MissingAuthorizationCookie()
 
-            raise exceptions.MissingAuthorizationHeader()
+        header = request.headers.get(self.app.config.SANIC_JWT_AUTHORIZATION_HEADER, None)
+        if header:
+            try:
+                prefix, token = header.split(' ')
+                # if prefix != self.app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX:
+                if prefix != header_prefix:
+                    raise Exception
+            except Exception:
+                raise exceptions.InvalidAuthorizationHeader()
 
-    def _get_refresh_token(self, request):
+            if refresh_token:
+                token = request.json.get(self.app.config.SANIC_JWT_REFRESH_TOKEN_NAME)
+
+            return token
+
+        raise exceptions.MissingAuthorizationHeader()
+
+    async def _get_refresh_token(self, request):
         return self._get_token(request, refresh_token=True)
 
     def _get_user_id(self, user):

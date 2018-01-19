@@ -1,9 +1,11 @@
-import jwt, pytest
+import jwt
+import pytest
+
 from sanic import Sanic
-from sanic.response import json
+# from sanic.response import json
 from sanic_jwt import exceptions
 from sanic_jwt import initialize
-from sanic_jwt.decorators import protected
+# from sanic_jwt.decorators import protected
 
 
 class User(object):

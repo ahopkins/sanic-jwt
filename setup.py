@@ -24,6 +24,9 @@ tests_require = [
     'pytest-pep8',
     'pytest-sanic',
     'pytest',
+    'sanic',
+    'pyjwt',
+    # 'uvloop',  # XXX setup crashes by not being 'able to create executables'
 ]
 
 extras_require = {

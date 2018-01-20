@@ -66,13 +66,17 @@ class SanicJWTAuthentication(BaseAuthentication):
         return self.app.config.SANIC_JWT_ALGORITHM
 
     async def _get_payload(self, user):
-        payload = await utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD, self, user)
+        payload = await utils.execute_handler(
+            self.app.config.SANIC_JWT_HANDLER_PAYLOAD, self, user)
         # TODO:
-        # - Add verification check to make sure payload is a dict with a `user_id` key
-        payload = await utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
+        # - Add verification check to make sure payload is a dict
+        #   with a `user_id` key
+        payload = await utils.execute_handler(
+            self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
 
         if self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES is not None:
-            scopes = await utils.execute_handler(self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES, user)
+            scopes = await utils.execute_handler(
+                self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES, user)
             if not isinstance(scopes, (tuple, list)):
                 scopes = [scopes]
             payload[self.app.config.SANIC_JWT_SCOPES_NAME] = scopes
@@ -89,9 +93,10 @@ class SanicJWTAuthentication(BaseAuthentication):
         return self.app.config.SANIC_JWT_SECRET
 
     def _get_token(self, request, refresh_token=False):
-        cookie_token_name_key = 'SANIC_JWT_COOKIE_TOKEN_NAME' if refresh_token is False else 'SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME'
+        cookie_token_name_key = 'SANIC_JWT_COOKIE_TOKEN_NAME' \
+            if refresh_token is False else \
+            'SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME'
         cookie_token_name = getattr(self.app.config, cookie_token_name_key)
-        # header_prefix_key = 'SANIC_JWT_AUTHORIZATION_HEADER_PREFIX' if refresh_token is False else 'SANIC_JWT_AUTHORIZATION_HEADER_REFRESH_PREFIX'
         header_prefix_key = 'SANIC_JWT_AUTHORIZATION_HEADER_PREFIX'
         header_prefix = getattr(self.app.config, header_prefix_key)
 
@@ -103,18 +108,19 @@ class SanicJWTAuthentication(BaseAuthentication):
                 if self.app.config.SANIC_JWT_COOKIE_STRICT:
                     raise exceptions.MissingAuthorizationCookie()
 
-        header = request.headers.get(self.app.config.SANIC_JWT_AUTHORIZATION_HEADER, None)
+        header = request.headers.get(
+            self.app.config.SANIC_JWT_AUTHORIZATION_HEADER, None)
         if header:
             try:
                 prefix, token = header.split(' ')
-                # if prefix != self.app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX:
                 if prefix != header_prefix:
                     raise Exception
             except Exception:
                 raise exceptions.InvalidAuthorizationHeader()
 
             if refresh_token:
-                token = request.json.get(self.app.config.SANIC_JWT_REFRESH_TOKEN_NAME)
+                token = request.json.get(
+                    self.app.config.SANIC_JWT_REFRESH_TOKEN_NAME)
 
             return token
 
@@ -140,7 +146,8 @@ class SanicJWTAuthentication(BaseAuthentication):
     async def get_refresh_token(self, user):
         refresh_token = utils.generate_token()
         user_id = self._get_user_id(user)
-        await self.store_refresh_token(user_id=user_id, refresh_token=refresh_token)
+        await self.store_refresh_token(user_id=user_id,
+                                       refresh_token=refresh_token)
         return refresh_token
 
     def is_authenticated(self, request, *args, **kwargs):
@@ -151,7 +158,8 @@ class SanicJWTAuthentication(BaseAuthentication):
 
         return is_valid
 
-    def verify(self, request, return_payload=False, verify=True, *args, **kwargs):
+    def verify(self, request, return_payload=False, verify=True, *args,
+               **kwargs):
         token = self._get_token(request)
         is_valid = True
         reason = None
@@ -191,7 +199,8 @@ class SanicJWTAuthentication(BaseAuthentication):
 
     def extract_payload(self, request, verify=True, *args, **kwargs):
         try:
-            payload = self.verify(request, return_payload=True, verify=verify, *args, **kwargs)
+            payload = self.verify(request, return_payload=True, verify=verify,
+                                  *args, **kwargs)
         except Exception as e:
             raise e
             # raise exceptions.Unauthorized()

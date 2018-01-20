@@ -22,14 +22,19 @@ def get_token_reponse(request, access_token, output, refresh_token=None):
     if request.app.config.SANIC_JWT_COOKIE_SET:
         key = request.app.config.SANIC_JWT_COOKIE_TOKEN_NAME
         response.cookies[key] = str(access_token, 'utf-8')
-        response.cookies[key]['domain'] = request.app.config.SANIC_JWT_COOKIE_DOMAIN
-        response.cookies[key]['httponly'] = request.app.config.SANIC_JWT_COOKIE_HTTPONLY
+        response.cookies[key]['domain'] = \
+            request.app.config.SANIC_JWT_COOKIE_DOMAIN
+        response.cookies[key]['httponly'] = \
+            request.app.config.SANIC_JWT_COOKIE_HTTPONLY
 
-        if refresh_token and request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
+        if refresh_token and \
+                request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
             key = request.app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME
             response.cookies[key] = refresh_token
-            response.cookies[key]['domain'] = request.app.config.SANIC_JWT_COOKIE_DOMAIN
-            response.cookies[key]['httponly'] = request.app.config.SANIC_JWT_COOKIE_HTTPONLY
+            response.cookies[key]['domain'] = \
+                request.app.config.SANIC_JWT_COOKIE_DOMAIN
+            response.cookies[key]['httponly'] = \
+                request.app.config.SANIC_JWT_COOKIE_HTTPONLY
 
     return response
 
@@ -96,7 +101,8 @@ async def retrieve_user(request, *args, **kwargs):
 async def verify(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
-    is_valid, status, reason = request.app.auth.verify(request, *args, **kwargs)
+    is_valid, status, reason = request.app.auth.verify(
+        request, *args, **kwargs)
 
     response = {
         'valid': is_valid
@@ -117,13 +123,15 @@ async def refresh(request, *args, **kwargs):
     payload = request.app.auth.extract_payload(request, verify=False)
     user = await request.app.auth.retrieve_user(request, payload=payload)
     user_id = request.app.auth._get_user_id(user)
-    refresh_token = await request.app.auth.retrieve_refresh_token(request=request, user_id=user_id)
+    refresh_token = await request.app.auth.retrieve_refresh_token(
+        request=request, user_id=user_id)
     if isinstance(refresh_token, bytes):
         refresh_token = refresh_token.decode('utf-8')
     refresh_token = str(refresh_token)
     # print('user_id: ', user_id)
     # print('Retrieved token: ', refresh_token)
-    purported_token = await request.app.auth.retrieve_refresh_token_from_request(request)
+    purported_token = await request.app.auth\
+        .retrieve_refresh_token_from_request(request)
     # print('Purported token: ', purported_token)
 
     if refresh_token != purported_token:

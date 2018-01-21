@@ -2,16 +2,13 @@ from sanic.response import json, text
 from sanic import Blueprint
 from . import exceptions
 
-
 bp = Blueprint('auth_bp')
 
 
 async def get_access_token_output(request, user):
     access_token = await request.app.auth.get_access_token(user)
 
-    output = {
-        request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token
-    }
+    output = {request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token}
 
     return access_token, output
 
@@ -56,7 +53,7 @@ async def authenticate(request, *args, **kwargs):
     access_token, output = await get_access_token_output(request, user)
 
     if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-        refresh_token = await request.app.auth.get_refresh_token(user, request)
+        refresh_token = await request.app.auth.get_refresh_token(request, user)
         output.update({
             request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
         })

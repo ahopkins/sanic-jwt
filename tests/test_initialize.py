@@ -1,7 +1,7 @@
-import pytest
 from sanic import Sanic
-from sanic_jwt import initialize
-from sanic_jwt import exceptions
+
+import pytest
+from sanic_jwt import exceptions, initialize
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_ommitted():
@@ -51,3 +51,14 @@ def test_store_refresh_token_and_retrieve_refresh_token_drfined():
     )
 
     assert True
+
+
+def test_invalid_classview():
+    app = Sanic()
+
+    class NotAView(object):
+        pass
+
+    with pytest.raises(exceptions.InvalidClassViewsFormat):
+        initialize(
+            app, authenticate=lambda: True, class_views=[(object, NotAView)])

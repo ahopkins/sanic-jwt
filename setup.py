@@ -1,4 +1,3 @@
-
 """A setuptools based setup module.
 See:
 https://packaging.python.org/en/latest/distributing.html
@@ -17,6 +16,39 @@ here = path.abspath(path.dirname(__file__))
 # with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 #     long_description = f.read()
 
+tests_require = [
+    'coverage',
+    # 'pytest-cache',
+    'pytest-cov',
+    'pytest-flakes',
+    'pytest-pep8',
+    'pytest-sanic',
+    'pytest',
+    'sanic',
+    'pyjwt',
+    # 'uvloop',  # XXX setup crashes by not being 'able to create executables'
+]
+
+extras_require = {
+    'docs': [
+        # 'sphinx_rtd_theme',
+        'Sphinx',
+    ],
+    'tests': tests_require,
+}
+
+extras_require['all'] = []
+for reqs in extras_require.values():
+    extras_require['all'].extend(reqs)
+
+setup_requires = [
+    'pytest-runner',
+]
+
+install_requires = [
+    'pyjwt',
+]
+
 setup(
     name='sanic-jwt',
 
@@ -24,7 +56,6 @@ setup(
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
     version='0.4.1',
-
     description='JWT oauth flow for Sanic',
 
     # The project's main homepage.
@@ -47,7 +78,6 @@ setup(
         'Development Status :: 4 - Beta',
 
         # Indicate who your project is intended for
-
         'Intended Audience :: Developers',
         # 'Topic :: Software Development :: Build Tools',
 
@@ -76,16 +106,16 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pyjwt'],
+    install_requires=install_requires,
 
     # List additional groups of dependencies here (e.g. development
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    extras_require={
-        # 'dev': ['check-manifest'],
-        # 'test': ['coverage'],
-    },
+    extras_require=extras_require,
+    setup_requires=setup_requires,
+    tests_require=tests_require,
+
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these

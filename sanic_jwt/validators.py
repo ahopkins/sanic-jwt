@@ -58,27 +58,5 @@ async def validate_scopes(request, scopes, user_scopes, require_all=True, requir
     )
 
 
-# print(1, 'False', validate_single_scope('user', ['something']))
-# print(2, 'True', validate_single_scope('user', ['user']))
-# print(3, 'True', validate_single_scope('user:read', ['user']))
-# print(4, 'True', validate_single_scope('user:read', ['user:read']))
-# print(5, 'False', validate_single_scope('user:read', ['user:write']))
-# print(6, 'True', validate_single_scope('user:read', ['user:read:write']))
-# print(7, 'False', validate_single_scope('user', ['user:read']))
-# print(8, 'False', validate_single_scope('user:read:write', ['user:read']))
-# print(9, 'True', validate_single_scope('user:read:write', ['user:read:write']))
-# print(10, 'True', validate_single_scope('user:read:write', ['user:write:read']))
-# print(11, 'True', validate_single_scope('user:read:write', ['user:read'], False))
-
-
-# print(12, 'False', validate_single_scope('user', ['something', 'else']))
-# print(13, 'True', validate_single_scope('user', ['something', 'else', 'user']))
-# print(14, 'True', validate_single_scope('user:read', ['something:else', 'user:read']))
-# print(15, 'True', validate_single_scope('user:read', ['user:read', 'something:else']))
-
-# print(16, 'True', validate_single_scope(':read', [':read']))
-# print(17, 'True', validate_single_scope(':read', ['admin']))
-
-
 # entity:matrixadmin:node<34> [':matrixadmin']
 # print('True', validate_single_scope('entity:matrixadmin:node<34>', [':matrixadmin'], require_all_actions=False))

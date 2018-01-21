@@ -1,3 +1,6 @@
+import logging
+logging.getLogger(__name__).addHandler(logging.NullHandler())
+
 from sanic.response import text
 
 from sanic_jwt.blueprint import bp as sanic_jwt_auth_bp
@@ -22,20 +25,16 @@ def initialize(
 
     if class_views is not None:
         for route, view in class_views:
-            try:
-                if issubclass(view, HTTPMethodView) and isinstance(route, str):
-                    sanic_jwt_auth_bp.add_route(
-                                      view.as_view(),
-                                      route,
-                                      strict_slashes=app.config.SANIC_JWT_STRICT_SLASHES
-                                    )
-                else:
-                    raise exceptions.InvalidClassViewsFormat()
-            except TypeError:
+            if issubclass(view, HTTPMethodView) and isinstance(route, str):
+                sanic_jwt_auth_bp.add_route(
+                    view.as_view(),
+                    route,
+                    strict_slashes=app.config.SANIC_JWT_STRICT_SLASHES
+                )
+            else:
                 raise exceptions.InvalidClassViewsFormat()
 
     # Add blueprint
-    # sanic_jwt_auth_bp.strict_slashes = app.strict_slashes
     app.blueprint(sanic_jwt_auth_bp, url_prefix=app.config.SANIC_JWT_URL_PREFIX)
 
     # Setup authentication module

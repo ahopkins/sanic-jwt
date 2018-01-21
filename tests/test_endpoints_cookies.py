@@ -66,12 +66,6 @@ def app_with_refresh_token(users, authenticate):
 
 class TestEndpointsCookies(object):
 
-    # authenticate, read cookies
-    # refresh token, cookies set, status 200
-    # refresh token, cookies not set, error
-    # refresh token, cookies not set, headers set, error
-    # strict mode disabled, refresh token, cookies not set, headers set, status 200
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_refresh_token):
         _, response = app_with_refresh_token.test_client.post(
@@ -82,11 +76,12 @@ class TestEndpointsCookies(object):
         assert response.status == 200
         yield response
 
-    def test_authenticate_and_read_response_cookie(self, app_with_refresh_token,
-                                                   authenticated_response):
+    def test_authenticate_and_read_response_cookie(
+            self, app_with_refresh_token, authenticated_response):
 
         key = app_with_refresh_token.config.SANIC_JWT_COOKIE_TOKEN_NAME
-        access_token_from_cookie = authenticated_response.cookies.get(key, None)
+        access_token_from_cookie = authenticated_response.cookies.get(key,
+                                                                      None)
 
         # for sanity sakes
         assert access_token_from_cookie is not None
@@ -104,20 +99,24 @@ class TestEndpointsCookies(object):
         assert access_token_from_json is not None
         assert isinstance(payload_json, dict)
         assert isinstance(payload_cookie, dict)
-        assert app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_json
-        assert app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
+        assert \
+            app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_json
+        assert \
+            app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
 
     def test_using_token_as_cookie(self, app_with_refresh_token,
                                    authenticated_response):
 
         key = app_with_refresh_token.config.SANIC_JWT_COOKIE_TOKEN_NAME
-        access_token_from_cookie = authenticated_response.cookies.get(key).value
+        access_token_from_cookie = \
+            authenticated_response.cookies.get(key).value
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             app_with_refresh_token.config.SANIC_JWT_SECRET)
 
         assert isinstance(payload_cookie, dict)
-        assert app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
+        assert \
+            app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
 
         _, response = app_with_refresh_token.test_client.get(
             '/auth/me',
@@ -129,19 +128,22 @@ class TestEndpointsCookies(object):
         assert response.status == 200
         assert response.json.get('me').get(
             app_with_refresh_token.config.SANIC_JWT_USER_ID
-        ) == payload_cookie.get(app_with_refresh_token.config.SANIC_JWT_USER_ID)
+        ) == payload_cookie.get(
+            app_with_refresh_token.config.SANIC_JWT_USER_ID)
 
     def test_using_token_as_header_strict(self, app_with_refresh_token,
                                           authenticated_response):
 
         key = app_with_refresh_token.config.SANIC_JWT_COOKIE_TOKEN_NAME
-        access_token_from_cookie = authenticated_response.cookies.get(key).value
+        access_token_from_cookie = \
+            authenticated_response.cookies.get(key).value
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             app_with_refresh_token.config.SANIC_JWT_SECRET)
 
         assert isinstance(payload_cookie, dict)
-        assert app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
+        assert \
+            app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
 
         _, response = app_with_refresh_token.test_client.get(
             '/auth/me',
@@ -182,13 +184,15 @@ class TestEndpointsCookies(object):
         app_with_refresh_token.config.SANIC_JWT_COOKIE_STRICT = False
 
         key = app_with_refresh_token.config.SANIC_JWT_COOKIE_TOKEN_NAME
-        access_token_from_cookie = authenticated_response.cookies.get(key).value
+        access_token_from_cookie = \
+            authenticated_response.cookies.get(key).value
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             app_with_refresh_token.config.SANIC_JWT_SECRET)
 
         assert isinstance(payload_cookie, dict)
-        assert app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
+        assert \
+            app_with_refresh_token.config.SANIC_JWT_USER_ID in payload_cookie
 
         _, response = app_with_refresh_token.test_client.get(
             '/auth/me',
@@ -199,7 +203,8 @@ class TestEndpointsCookies(object):
         assert response.status == 200
         assert response.json.get('me').get(
             app_with_refresh_token.config.SANIC_JWT_USER_ID
-        ) == payload_cookie.get(app_with_refresh_token.config.SANIC_JWT_USER_ID)
+        ) == payload_cookie.get(
+            app_with_refresh_token.config.SANIC_JWT_USER_ID)
 
         _, response = app_with_refresh_token.test_client.get(
             '/protected',
@@ -270,8 +275,8 @@ class TestEndpointsCookies(object):
 
         assert response.status == 400
 
-    def test_refresh_token_with_cookies_not_strict(self, app_with_refresh_token,
-                                                   authenticated_response):
+    def test_refresh_token_with_cookies_not_strict(
+            self, app_with_refresh_token, authenticated_response):
 
         app_with_refresh_token.config.SANIC_JWT_COOKIE_STRICT = False
 

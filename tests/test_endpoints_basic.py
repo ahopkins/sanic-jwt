@@ -20,7 +20,8 @@ class TestEndpointsBasic(object):
             'password': 'abcxyz'
         })
 
-        access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+        access_token = response.json.get(
+            app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
         payload = jwt.decode(access_token, app.config.SANIC_JWT_SECRET)
 
         assert response.status == 200

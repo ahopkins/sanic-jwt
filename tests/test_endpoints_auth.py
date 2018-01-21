@@ -19,7 +19,8 @@ def payload(app, access_token):
 class TestEndpointsAuth(object):
 
     def dispatch(self, path, method, app, access_token):
-        header_token = '{} {}'.format(app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX, access_token)
+        header_token = '{} {}'.format(
+            app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX, access_token)
         method = getattr(app.test_client, method)
         request, response = method(
             path,

@@ -20,6 +20,7 @@ Pick your favorite user management system, run :doc:`a single function to initia
    pages/handlers
    pages/protected
    pages/scoped
+   pages/refreshtokens
    pages/exceptions
    pages/settings
    pages/contributing

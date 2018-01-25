@@ -180,7 +180,7 @@ That looks better. We can head over to `jwt.io <https://jwt.io>`_ and enter the 
       "alg": "HS256"
     }
 
-**PAYLOAD** ::
+**Payload** ::
 
     {
       "user_id": 1,

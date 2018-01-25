@@ -4,6 +4,8 @@ from sanic_jwt import utils
 
 
 async def build_payload(authenticator, user, *args, **kwargs):
+    # TODO:
+    # - Should handle case when user is None either returning empty payload or raising exception
     if isinstance(user, dict):
         user_id = user.get(authenticator.app.config.SANIC_JWT_USER_ID)
     else:

@@ -15,11 +15,15 @@ Sanic JWT operates under the hood by creating a `Blueprint <http://sanic.readthe
     app = Sanic()
     initialize(app, authenticate)
 
+------------
+
 +++++++
 Concept
 +++++++
 
 Sanic JWT is meant to add a user authentication system without requiring the developer to settle on any single user management system. This part is left up to the developer. Therefore, you (as the developer) are left with the responsibility of telling Sanic JWT how to tie into your user management system.
+
+------------
 
 +++++++++++++++++++++++++
 The ``initialize`` method
@@ -199,5 +203,16 @@ If your user should **not** be authenticated, then you should `raise an exceptio
         authenticate=lambda: True,
         retrieve_user=retrieve_user
     )
+
+You should now have an endpoint at ``/auth/me`` that will return a serialized form of your currently authenticated user. ::
+
+    {
+        "me": {
+            "user_id": "4",
+            "username": "joe",
+            "email": "joe@joemail.com",
+            "verified": true
+        }
+    }
 
 .. warning:: \* This parameter is *not* required. However, if you decide to enable refresh tokens (by setting ``SANIC_JWT_REFRESH_TOKEN_ENABLED=True``) then the application will raise a ``RefreshTokenNotImplemented`` exception if you forget to implement this.

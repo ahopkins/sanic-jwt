@@ -32,6 +32,12 @@ class InvalidAuthorizationHeader(SanicJWTException):
 
 
 @add_status_code(500)
+class AuthenticateNotImplemented(SanicJWTException):
+    def __init__(self, message="Sanic JWT initialized without providing an authenticate method."):
+        super().__init__(message)
+
+
+@add_status_code(500)
 class RefreshTokenNotImplemented(SanicJWTException):
     def __init__(self, message="Refresh tokens have not been enabled."):
         super().__init__(message)
@@ -51,6 +57,12 @@ class MeEndpointNotSetup(SanicJWTException):
         super().__init__(message)
 
 
+@add_status_code(500)
+class InitializationFailure(SanicJWTException):
+    def __init__(self, message="Sanic JWT was not initialized properly. It must be instantiated on a sanic.Sanic or sanic.Blueprint instance."):
+        super().__init__(message)
+
+
 class Unauthorized(SanicJWTException, SanicUnauthorized):
     def __init__(self):
         super().__init__("Auth required.", scheme="Bearer")
@@ -58,4 +70,10 @@ class Unauthorized(SanicJWTException, SanicUnauthorized):
 
 class InvalidClassViewsFormat(SanicJWTException):
     def __init__(self, message="class_views should follow this format ('<SOME ROUTE>', ClassInheritedFromHTTPMethodView)"):
+        super().__init__(message)
+
+
+class InvalidConfiguration(SanicJWTException):
+    def __init__(self, message=""):
+        message = "An invalid setting was passed to the Sanic JWT configuration: " + str(message)
         super().__init__(message)

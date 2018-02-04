@@ -23,8 +23,11 @@ class BaseAuthentication(object):
     async def retrieve_refresh_token(self, *args, **kwargs):
         raise exceptions.RefreshTokenNotImplemented()  # noqa
 
+    async def authenticate(self, *args, **kwargs):
+        raise exceptions.AuthenticateNotImplemented()  # noqa
 
-class SanicJWTAuthentication(BaseAuthentication):
+
+class Authentication(BaseAuthentication):
     def setup_claims(self, *args, **kwargs):
 
         optional = ['iss', 'iat', 'nbf', 'aud', ]

@@ -99,3 +99,15 @@ def test_initialize_class_on_blueprint():
     Initialize(bp, app=app, authenticate=lambda: True)
 
     assert True
+
+
+def test_initialize_class_on_non_app_or_bp():
+    app = Sanic()
+
+    class NotAnAppOrBP(object):
+        pass
+
+    bp = NotAnAppOrBP()
+
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(bp, app=app, authenticate=lambda: True)

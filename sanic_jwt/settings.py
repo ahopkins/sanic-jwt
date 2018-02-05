@@ -1,3 +1,5 @@
+# This settings file to be depracated
+
 SANIC_JWT_ACCESS_TOKEN_NAME = 'access_token'
 SANIC_JWT_ALGORITHM = 'HS256'
 SANIC_JWT_AUTHORIZATION_HEADER = 'authorization'

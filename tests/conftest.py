@@ -14,7 +14,7 @@ class User(object):
         self.password = password
 
     def __str__(self):
-        return "User(id='%s')" % self.id
+        return "User(id='%s')" % self.user_id
 
     def to_dict(self):
         properties = [

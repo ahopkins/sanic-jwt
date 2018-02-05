@@ -1,4 +1,4 @@
-import asyncio
+import inspect
 
 
 def validate_single_scope(required, user_scopes, require_all_actions=True):
@@ -37,11 +37,18 @@ def validate_single_scope(required, user_scopes, require_all_actions=True):
     return is_valid
 
 
-async def validate_scopes(request, scopes, user_scopes, require_all=True, require_all_actions=True, *args, **kwargs):
-    if asyncio.iscoroutinefunction(scopes):
-        scopes = await scopes(request, *args, **kwargs)
-    elif callable(scopes):
-        scopes = scopes(request, *args, **kwargs)
+async def validate_scopes(
+    request,
+    scopes,
+    user_scopes,
+    require_all=True,
+    require_all_actions=True,
+    *args,
+    **kwargs
+):
+    scopes = scopes(request, *args, **kwargs)
+    if inspect.isawaitable(scopes):
+        scopes = await scopes
 
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]

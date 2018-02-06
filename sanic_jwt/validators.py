@@ -1,4 +1,4 @@
-import inspect
+from sanic_jwt import utils
 
 
 def validate_single_scope(required, user_scopes, require_all_actions=True):
@@ -46,9 +46,7 @@ async def validate_scopes(
     *args,
     **kwargs
 ):
-    scopes = scopes(request, *args, **kwargs)
-    if inspect.isawaitable(scopes):
-        scopes = await scopes
+    scopes = await utils.call_maybe_coro(scopes, request, *args, **kwargs)
 
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]

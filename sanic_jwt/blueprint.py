@@ -1,8 +1,6 @@
-import inspect
-
 from sanic.response import json, text
 from sanic import Blueprint
-from . import exceptions
+from . import exceptions, utils
 
 bp = Blueprint('auth_bp')
 
@@ -47,20 +45,16 @@ async def setup_claims(app, *args, **kwargs):
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
-    # try:
-    user = request.app.auth.authenticate(request, *args, **kwargs)
-    if inspect.isawaitable(user):
-        user = await user
+    user = await utils.call_maybe_coro(
+        request.app.auth.authenticate, request, *args, **kwargs)
     # except Exception as e:
     #     raise e
 
     access_token, output = await get_access_token_output(request, user)
 
     if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-        refresh_token = await request.app.auth.get_refresh_token(request, user)
-        # refresh_token = request.app.auth.get_refresh_token(request, user)
-        # if inspect.isawaitable(refresh_token):
-        #     refresh_token = await refresh_token
+        refresh_token = await utils.call_maybe_coro(
+            request.app.auth.get_refresh_token, request, user)
         output.update({
             request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
         })
@@ -79,19 +73,17 @@ async def retrieve_user(request, *args, **kwargs):
 
     try:
         payload = request.app.auth.extract_payload(request)
-        user = request.app.auth.retrieve_user(request, payload)
-        if inspect.isawaitable(user):
-            user = await user
+        user = await utils.call_maybe_coro(
+            request.app.auth.retrieve_user, request, payload)
     except exceptions.MissingAuthorizationCookie:
         user = None
         payload = None
+
     if not user:
         me = None
     else:
         if hasattr(user, 'to_dict'):
-            me = user.to_dict()
-            if inspect.isawaitable(me):
-                me = await me
+            me = await utils.call_maybe_coro(user.to_dict)
         else:
             me = dict(user)
 
@@ -132,14 +124,13 @@ async def refresh(request, *args, **kwargs):
     # TODO:
     # - Add exceptions
     payload = request.app.auth.extract_payload(request, verify=False)
-    user = request.app.auth.retrieve_user(request, payload=payload)
-    if inspect.isawaitable(user):
-        user = await user
+    user = await utils.call_maybe_coro(
+        request.app.auth.retrieve_user, request, payload=payload)
     user_id = await request.app.auth._get_user_id(user)
-    refresh_token = request.app.auth.retrieve_refresh_token(
-        request=request, user_id=user_id)
-    if inspect.isawaitable(refresh_token):
-        refresh_token = await refresh_token
+    refresh_token = await utils.call_maybe_coro(
+        request.app.auth.retrieve_refresh_token,
+        request=request,
+        user_id=user_id)
     if isinstance(refresh_token, bytes):
         refresh_token = refresh_token.decode('utf-8')
     refresh_token = str(refresh_token)

@@ -17,9 +17,6 @@ class User(object):
         self.username = username
         self.password = password
 
-    def __str__(self):
-        return "User(id='%s')" % self.id
-
     async def to_dict(self):
         return {
             'user_id': hex(self.id),
@@ -156,8 +153,8 @@ class TestEndpointsSync(object):
         assert response.status == 200
         assert response.json.get('me').get('user_id') == '0x1'
 
-    def test_refresh_token_sunc(self, app_with_async_methods,
-                                authenticated_response):
+    def test_refresh_token_async(self, app_with_async_methods,
+                                 authenticated_response):
 
         access_token = authenticated_response.json.get(
             app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)

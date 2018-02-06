@@ -1,5 +1,3 @@
-import inspect
-
 import jwt
 from sanic_jwt import exceptions, utils
 
@@ -127,9 +125,7 @@ class SanicJWTAuthentication(BaseAuthentication):
         if isinstance(user, dict):
             user_id = user.get(self.app.config.SANIC_JWT_USER_ID)
         elif hasattr(user, 'to_dict'):
-            _to_dict = user.to_dict()
-            if inspect.isawaitable(_to_dict):
-                _to_dict = await _to_dict
+            _to_dict = await utils.call_maybe_coro(user.to_dict)
             user_id = _to_dict.get(self.app.config.SANIC_JWT_USER_ID)
         else:
             raise exceptions.InvalidRetrieveUserObject()
@@ -145,12 +141,11 @@ class SanicJWTAuthentication(BaseAuthentication):
     async def get_refresh_token(self, request, user):
         refresh_token = utils.generate_token()
         user_id = await self._get_user_id(user)
-        if inspect.iscoroutinefunction(self.store_refresh_token):
-            await self.store_refresh_token(
-                user_id=user_id, refresh_token=refresh_token, request=request)
-        else:
-            self.store_refresh_token(
-                user_id=user_id, refresh_token=refresh_token, request=request)
+        await utils.call_maybe_coro(
+            self.store_refresh_token,
+            user_id=user_id,
+            refresh_token=refresh_token,
+            request=request)
         return refresh_token
 
     def is_authenticated(self, request, *args, **kwargs):

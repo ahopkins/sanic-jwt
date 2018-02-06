@@ -1,6 +1,6 @@
 from sanic.response import json, text
 from sanic import Blueprint
-from . import exceptions
+from . import exceptions, utils
 
 bp = Blueprint('auth_bp')
 
@@ -45,15 +45,16 @@ async def setup_claims(app, *args, **kwargs):
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
-    # try:
-    user = await request.app.auth.authenticate(request, *args, **kwargs)
+    user = await utils.call_maybe_coro(
+        request.app.auth.authenticate, request, *args, **kwargs)
     # except Exception as e:
     #     raise e
 
     access_token, output = await get_access_token_output(request, user)
 
-    if request.app.config.refresh_token_enabled:
-        refresh_token = await request.app.auth.get_refresh_token(request, user)
+    if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
+        refresh_token = await utils.call_maybe_coro(
+            request.app.auth.get_refresh_token, request, user)
         output.update({
             request.app.config.refresh_token_name: refresh_token
         })
@@ -72,14 +73,19 @@ async def retrieve_user(request, *args, **kwargs):
 
     try:
         payload = request.app.auth.extract_payload(request)
-        user = await request.app.auth.retrieve_user(request, payload)
+        user = await utils.call_maybe_coro(
+            request.app.auth.retrieve_user, request, payload)
     except exceptions.MissingAuthorizationCookie:
         user = None
         payload = None
+
     if not user:
         me = None
     else:
-        me = user.to_dict() if hasattr(user, 'to_dict') else dict(user)
+        if hasattr(user, 'to_dict'):
+            me = await utils.call_maybe_coro(user.to_dict)
+        else:
+            me = dict(user)
 
     output = {
         'me': me
@@ -118,18 +124,18 @@ async def refresh(request, *args, **kwargs):
     # TODO:
     # - Add exceptions
     payload = request.app.auth.extract_payload(request, verify=False)
-    user = await request.app.auth.retrieve_user(request, payload=payload)
-    user_id = request.app.auth._get_user_id(user)
-    refresh_token = await request.app.auth.retrieve_refresh_token(
-        request=request, user_id=user_id)
+    user = await utils.call_maybe_coro(
+        request.app.auth.retrieve_user, request, payload=payload)
+    user_id = await request.app.auth._get_user_id(user)
+    refresh_token = await utils.call_maybe_coro(
+        request.app.auth.retrieve_refresh_token,
+        request=request,
+        user_id=user_id)
     if isinstance(refresh_token, bytes):
         refresh_token = refresh_token.decode('utf-8')
     refresh_token = str(refresh_token)
-    # print('user_id: ', user_id)
-    # print('Retrieved token: ', refresh_token)
     purported_token = await request.app.auth\
         .retrieve_refresh_token_from_request(request)
-    # print('Purported token: ', purported_token)
 
     if refresh_token != purported_token:
         raise exceptions.AuthenticationFailed()

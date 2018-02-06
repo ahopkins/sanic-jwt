@@ -1,13 +1,16 @@
-from datetime import datetime
-from datetime import timedelta
-from sanic_jwt import utils
+from datetime import datetime, timedelta
+
+from sanic_jwt import exceptions, utils
 
 
 async def build_payload(authenticator, user, *args, **kwargs):
     if isinstance(user, dict):
-        user_id = user.get(authenticator.config.user_id)
+        user_id = user.get(authenticator.app.config.SANIC_JWT_USER_ID)
+    elif hasattr(user, 'to_dict'):
+        _to_dict = await utils.call_maybe_coro(user.to_dict)
+        user_id = _to_dict.get(authenticator.app.config.SANIC_JWT_USER_ID)
     else:
-        user_id = getattr(user, authenticator.config.user_id)
+        raise exceptions.InvalidRetrieveUserObject()
 
     return {
         'user_id': user_id,

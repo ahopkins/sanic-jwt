@@ -2,6 +2,7 @@ import importlib
 import binascii
 import os
 import datetime
+import inspect
 
 
 def generate_token(n=24):
@@ -45,3 +46,11 @@ def load_settings(app, settings):
         if setting.isupper() and setting not in app.config:
             value = getattr(settings, setting)
             setattr(app.config, setting, value)
+
+
+async def call_maybe_coro(fn, *args, **kwargs):
+    if inspect.iscoroutinefunction(fn):
+        fn = await fn(*args, **kwargs)
+    elif callable(fn):
+        fn = fn(*args, **kwargs)
+    return fn

@@ -40,6 +40,7 @@ def build_claim_aud(attr, *args, **kwargs):
     return attr
 
 
+# To be depracated
 def load_settings(app, settings):
     for setting in dir(settings):
         if setting.isupper() and setting not in app.config:

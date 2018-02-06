@@ -41,6 +41,8 @@ def test_protected_blueprint():
     access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME,
                                      None)
 
+    assert access_token is not None
+
     _, response = app.test_client.get(
         '/test/',
         headers={

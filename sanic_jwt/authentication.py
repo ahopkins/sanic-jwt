@@ -10,22 +10,32 @@ claim_label = {
 
 
 class BaseAuthentication(object):
-    def __init__(self, app, authenticate):
+    def __init__(self, app, config):
         self.app = app
-        self.authenticate = authenticate
+        self.config = config
+        # self.authenticate = authenticate
         self.claims = ['exp']
 
+    # async def store_refresh_token(self, *args, **kwargs):
+    #     raise exceptions.RefreshTokenNotImplemented()  # noqa
 
-class SanicJWTAuthentication(BaseAuthentication):
+    # async def retrieve_refresh_token(self, *args, **kwargs):
+    #     raise exceptions.RefreshTokenNotImplemented()  # noqa
+
+    # async def authenticate(self, *args, **kwargs):
+    #     raise exceptions.AuthenticateNotImplemented()  # noqa
+
+
+class Authentication(BaseAuthentication):
     def setup_claims(self, *args, **kwargs):
 
         optional = ['iss', 'iat', 'nbf', 'aud', ]
 
         # print('claims', self.claims)
         for option in optional:
-            setting = 'SANIC_JWT_CLAIM_{}'.format(option.upper())
+            setting = 'claim_{}'.format(option.upper())
             # print(setting, getattr(self.app.config, setting, False))
-            if getattr(self.app.config, setting, False):
+            if getattr(self.config, setting, False):
                 self.claims.append(option)
         # print(self.claims)
 
@@ -36,12 +46,12 @@ class SanicJWTAuthentication(BaseAuthentication):
 
         for claim in self.claims:
             if claim != 'exp':
-                setting = 'SANIC_JWT_CLAIM_{}'.format(claim.upper())
-                value = getattr(self.app.config, setting, False)
+                setting = 'claim_{}'.format(claim.upper())
+                value = getattr(self.config, setting, False)
                 kwargs.update({claim_label[claim]: value})
 
         # TODO:
-        # - Add leeway=self.app.config.SANIC_JWT_LEEWAY to jwt.decode
+        # - Add leeway=self.config.leeway to jwt.decode
         # verify_exp
         return jwt.decode(
             token,
@@ -49,29 +59,29 @@ class SanicJWTAuthentication(BaseAuthentication):
             algorithms=[algorithm],
             verify=verify,
             options={
-                'verify_exp': self.app.config.SANIC_JWT_VERIFY_EXP
+                'verify_exp': self.config.verify_exp
             },
             **kwargs
         )
 
     def _get_algorithm(self):
-        return self.app.config.SANIC_JWT_ALGORITHM
+        return self.config.algorithm
 
     async def _get_payload(self, user):
         payload = await utils.execute_handler(
-            self.app.config.SANIC_JWT_HANDLER_PAYLOAD, self, user)
+            self.config.handler_payload, self, user)
         # TODO:
         # - Add verification check to make sure payload is a dict
         #   with a `user_id` key
         payload = await utils.execute_handler(
-            self.app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND, self, payload)
+            self.config.handler_payload_extend, self, payload)
 
-        if self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES is not None:
+        if self.config.handler_payload_scopes is not None:
             scopes = await utils.execute_handler(
-                self.app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES, user)
+                self.config.handler_payload_scopes, user)
             if not isinstance(scopes, (tuple, list)):
                 scopes = [scopes]
-            payload[self.app.config.SANIC_JWT_SCOPES_NAME] = scopes
+            payload[self.config.scopes_name] = scopes
 
         missing = [x for x in self.claims if x not in payload]
         if missing:
@@ -82,26 +92,26 @@ class SanicJWTAuthentication(BaseAuthentication):
     def _get_secret(self):
         # TODO:
         # - Ability to have per user secrets
-        return self.app.config.SANIC_JWT_SECRET
+        return self.config.secret
 
     def _get_token(self, request, refresh_token=False):
-        cookie_token_name_key = 'SANIC_JWT_COOKIE_TOKEN_NAME' \
+        cookie_token_name_key = 'cookie_access_token_name' \
             if refresh_token is False else \
-            'SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME'
-        cookie_token_name = getattr(self.app.config, cookie_token_name_key)
-        header_prefix_key = 'SANIC_JWT_AUTHORIZATION_HEADER_PREFIX'
-        header_prefix = getattr(self.app.config, header_prefix_key)
+            'cookie_refresh_token_name'
+        cookie_token_name = getattr(self.config, cookie_token_name_key)
+        header_prefix_key = 'authorization_header_prefix'
+        header_prefix = getattr(self.config, header_prefix_key)
 
-        if self.app.config.SANIC_JWT_COOKIE_SET:
+        if self.config.cookie_set:
             token = request.cookies.get(cookie_token_name, None)
             if token:
                 return token
             else:
-                if self.app.config.SANIC_JWT_COOKIE_STRICT:
+                if self.config.cookie_strict:
                     raise exceptions.MissingAuthorizationCookie()
 
         header = request.headers.get(
-            self.app.config.SANIC_JWT_AUTHORIZATION_HEADER, None)
+            self.config.authorization_header, None)
         if header:
             try:
                 prefix, token = header.split(' ')
@@ -112,7 +122,7 @@ class SanicJWTAuthentication(BaseAuthentication):
 
             if refresh_token:
                 token = request.json.get(
-                    self.app.config.SANIC_JWT_REFRESH_TOKEN_NAME)
+                    self.config.refresh_token_name)
 
             return token
 

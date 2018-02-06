@@ -8,7 +8,7 @@ bp = Blueprint('auth_bp')
 async def get_access_token_output(request, user):
     access_token = await request.app.auth.get_access_token(user)
 
-    output = {request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token}
+    output = {request.app.config.access_token_name: access_token}
 
     return access_token, output
 
@@ -16,22 +16,22 @@ async def get_access_token_output(request, user):
 def get_token_reponse(request, access_token, output, refresh_token=None):
     response = json(output)
 
-    if request.app.config.SANIC_JWT_COOKIE_SET:
-        key = request.app.config.SANIC_JWT_COOKIE_TOKEN_NAME
+    if request.app.config.cookie_set:
+        key = request.app.config.cookie_token_name
         response.cookies[key] = str(access_token, 'utf-8')
         response.cookies[key]['domain'] = \
-            request.app.config.SANIC_JWT_COOKIE_DOMAIN
+            request.app.config.cookie_domain
         response.cookies[key]['httponly'] = \
-            request.app.config.SANIC_JWT_COOKIE_HTTPONLY
+            request.app.config.cookie_httponly
 
         if refresh_token and \
-                request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-            key = request.app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME
+                request.app.config.refresh_token_enabled:
+            key = request.app.config.cookie_refresh_token_name
             response.cookies[key] = refresh_token
             response.cookies[key]['domain'] = \
-                request.app.config.SANIC_JWT_COOKIE_DOMAIN
+                request.app.config.cookie_domain
             response.cookies[key]['httponly'] = \
-                request.app.config.SANIC_JWT_COOKIE_HTTPONLY
+                request.app.config.cookie_httponly
 
     return response
 
@@ -56,7 +56,7 @@ async def authenticate(request, *args, **kwargs):
         refresh_token = await utils.call_maybe_coro(
             request.app.auth.get_refresh_token, request, user)
         output.update({
-            request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
+            request.app.config.refresh_token_name: refresh_token
         })
     else:
         refresh_token = None
@@ -93,8 +93,8 @@ async def retrieve_user(request, *args, **kwargs):
 
     response = json(output)
 
-    if payload is None and request.app.config.SANIC_JWT_COOKIE_SET:
-        key = request.app.config.SANIC_JWT_COOKIE_TOKEN_NAME
+    if payload is None and request.app.config.cookie_set:
+        key = request.app.config.cookie_token_name
         del response.cookies[key]
 
     return response

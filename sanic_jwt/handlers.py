@@ -18,8 +18,7 @@ async def build_payload(authenticator, user, *args, **kwargs):
 
 
 async def extend_payload(authenticator, payload, *args, **kwargs):
-    delta = timedelta(
-        seconds=authenticator.app.config.SANIC_JWT_EXPIRATION_DELTA)
+    delta = timedelta(seconds=authenticator.config.expiration_delta)
     exp = datetime.utcnow() + delta
     additional = {
         'exp': exp

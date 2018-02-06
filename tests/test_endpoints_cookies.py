@@ -47,8 +47,10 @@ def app_with_refresh_token(users, authenticate):
     sanic_app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
     sanic_app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'jwt_access_token'
     sanic_app.config.SANIC_JWT_REFRESH_TOKEN_NAME = 'jwt_refresh_token'
-    sanic_app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME = sanic_app.config.SANIC_JWT_REFRESH_TOKEN_NAME
-    sanic_app.config.SANIC_JWT_COOKIE_TOKEN_NAME = sanic_app.config.SANIC_JWT_ACCESS_TOKEN_NAME
+    sanic_app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME = \
+        sanic_app.config.SANIC_JWT_REFRESH_TOKEN_NAME
+    sanic_app.config.SANIC_JWT_COOKIE_TOKEN_NAME = \
+        sanic_app.config.SANIC_JWT_ACCESS_TOKEN_NAME
     sanic_app.config.SANIC_JWT_SECRET = str(
         binascii.hexlify(os.urandom(32)), 'utf-8')
 

@@ -11,12 +11,16 @@ from sanic.views import HTTPMethodView
 
 class User(object):
     def __init__(self, id, username, password):
-        self.user_id = id
+        self.id = id
         self.username = username
         self.password = password
 
-    def __str__(self):
-        return "User(id='%s')" % self.id
+    def to_dict(self):
+        properties = [
+            'user_id',
+            'username',
+        ]
+        return {prop: getattr(self, prop, None) for prop in properties}
 
 
 users = [
@@ -86,7 +90,8 @@ class TestEndpointsCBV(object):
             'password': 'abcxyz'
         })
 
-        access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+        access_token = response.json.get(
+            app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
         payload = jwt.decode(access_token, app.config.SANIC_JWT_SECRET)
 
         assert response.status == 200
@@ -101,9 +106,9 @@ class TestEndpointsCBV(object):
         assert response.status == 200
 
     # def test_auth_verify_missing_token(self):
-        # with pytest.raises(exceptions.MissingAuthorizationHeader):
-        # _, response = app.test_client.get('/auth/verify')
-        # assert response.status == 200
+    # with pytest.raises(exceptions.MissingAuthorizationHeader):
+    # _, response = app.test_client.get('/auth/verify')
+    # assert response.status == 200
 
     # def test_auth_refresh_not_enabled(self):
     #     with pytest.raises(exceptions.MissingAuthorizationHeader):

@@ -50,6 +50,9 @@ class Configuration(object):
         if not hasattr(self, key) or key in self.kwargs:
             setattr(self, key, value)
 
+    def __iter__(self):
+        return ((x, getattr(self, x)) for x in defaults.keys())
+
     @staticmethod
     def extract_presets(app_config):
         """

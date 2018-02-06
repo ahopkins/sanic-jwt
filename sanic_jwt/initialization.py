@@ -64,6 +64,7 @@ class Initialize(object):
     def __init__(self, instance, app=None, **kwargs):
         app = self.__get_app(instance, app=app)
 
+        # Initialize instance of the Authentication class
         try:
             authenticate = kwargs.pop('authenticate')
             instance.auth = self.authentication_class(app, authenticate)
@@ -73,14 +74,49 @@ class Initialize(object):
         self.app = app
         self.instance = instance
         self.__load_configuration(kwargs)
+        self.__check_initialization(kwargs)
+        self.__add_class_views(kwargs)
+        self.__add_blueprint(kwargs)
+        self.__setup_methods(kwargs)
+
+    def __add_blueprint(self, kwargs):
+        """
+        Initialize the Sanic JWT Blueprint and add to the instance initialized
+        """
+        pass
+
+    def __add_class_views(self, kwargs):
+        """
+        Include any custom class views on the Sanic JWT Blueprint
+        """
+        pass
+
+    def __check_initialization(self, kwargs):
+        """
+        Confirm that required parameters were initialized and report back exceptions
+        """
+        pass
 
     def __load_configuration(self, kwargs):
+        """
+        Configure settings for the instance in the following order:
+
+        1. Sanic JWT's defaults
+        2. Custom Configuration class
+        3. Key word arguments passed to Initialize
+        """
         self.config = self.configuration_class(self.app.config, **kwargs)
         for setting in dir(self.config):
             if not setting.startswith('__'):
                 value = getattr(self.config, setting)
                 key = '_'.join(['sanic', 'jwt', setting]).upper()
                 setattr(self.app.config, key, value)
+
+    def __setup_methods(self, kwargs):
+        """
+        Take any predefined methods/handlers and insert them into Sanic JWT
+        """
+        pass
 
     @staticmethod
     def __get_app(instance, app=None):

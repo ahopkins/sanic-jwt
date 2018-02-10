@@ -66,7 +66,6 @@ class MeEndpointNotSetup(SanicJWTException):
 
 @add_status_code(500)
 class InvalidRetrieveUserObject(SanicJWTException):
-
     def __init__(
         self,
         message="The retrieve_user method should return either a dict or an object with a to_dict method."

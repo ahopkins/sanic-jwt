@@ -48,7 +48,7 @@ def load_settings(app, settings):
             setattr(app.config, setting, value)
 
 
-async def call_maybe_coro(fn, *args, **kwargs):
+async def call(fn, *args, **kwargs):
     if inspect.iscoroutinefunction(fn):
         fn = await fn(*args, **kwargs)
     elif callable(fn):

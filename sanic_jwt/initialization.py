@@ -5,11 +5,13 @@ from sanic.response import text
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.blueprint import bp as sanic_jwt_auth_bp
 from sanic_jwt.configuration import Configuration
+from sanic_jwt.configuration import get_config
+from sanic_jwt.configuration import make_config
 
 from sanic.views import HTTPMethodView
 from sanic_jwt import exceptions
-from sanic_jwt import settings
-from sanic_jwt import utils
+# from sanic_jwt import settings
+# from sanic_jwt import utils
 
 
 # def initialize(
@@ -88,12 +90,14 @@ class Initialize(object):
         """
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
-        self.instance.blueprint(sanic_jwt_auth_bp, url_prefix=self.config.url_prefix)
+        config = get_config()
+        self.instance.blueprint(sanic_jwt_auth_bp, url_prefix=config.url_prefix)
 
     def __add_class_views(self):
         """
         Include any custom class views on the Sanic JWT Blueprint
         """
+        config = get_config()
         if 'class_views' in self.kwargs:
             class_views = self.kwargs.pop('class_views')
 
@@ -102,7 +106,7 @@ class Initialize(object):
                     sanic_jwt_auth_bp.add_route(
                         view.as_view(),
                         route,
-                        strict_slashes=self.config.strict_slashes
+                        strict_slashes=config.strict_slashes
                     )
                 else:
                     raise exceptions.InvalidClassViewsFormat()
@@ -111,7 +115,8 @@ class Initialize(object):
         """
         Confirm that required parameters were initialized and report back exceptions
         """
-        if self.config.refresh_token_enabled and (
+        config = get_config()
+        if config.refresh_token_enabled and (
             'store_refresh_token' not in self.kwargs or
             'retrieve_refresh_token' not in self.kwargs
         ):
@@ -125,7 +130,7 @@ class Initialize(object):
         Take any predefined methods/handlers and insert them into Sanic JWT
         """
         # Initialize instance of the Authentication class
-        self.instance.auth = self.authentication_class(self.app, self.config)
+        self.instance.auth = self.authentication_class(self.app)
 
         if 'authenticate' not in self.kwargs:
             raise exceptions.AuthenticateNotImplemented
@@ -149,11 +154,11 @@ class Initialize(object):
         2. Custom Configuration class
         3. Key word arguments passed to Initialize
         """
-        self.config = self.configuration_class(self.app.config, **self.kwargs)
-        print(dict(self.config))
-        for setting in dir(self.config):
+        config = self.configuration_class(self.app.config, **self.kwargs)
+        make_config(config)
+        for setting in dir(config):
             if not setting.startswith('__'):
-                value = getattr(self.config, setting)
+                value = getattr(config, setting)
                 key = '_'.join(['sanic', 'jwt', setting]).upper()
                 # TODO:
                 # - Need to localize this config to self.instance

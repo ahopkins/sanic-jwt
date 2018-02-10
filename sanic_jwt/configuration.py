@@ -1,4 +1,4 @@
-# from .exceptions import InvalidConfiguration
+import importlib
 
 
 defaults = {
@@ -18,6 +18,7 @@ defaults = {
     'cookie_set': False,
     'cookie_strict': True,
     'cookie_access_token_name': 'access_token',
+    'debug': False,
     'expiration_delta': 60 * 5 * 6,
     'handler_payload': 'sanic_jwt.handlers.build_payload',
     'handler_payload_extend': 'sanic_jwt.handlers.extend_payload',
@@ -34,6 +35,9 @@ defaults = {
 }
 
 
+config = None
+
+
 class Configuration(object):
     def __init__(self, app_config, **kwargs):
         presets = self.extract_presets(app_config)
@@ -44,6 +48,8 @@ class Configuration(object):
         # TODO:
         # - limit to enumerated settings, and raise InvalidConfiguration(e)
         list(map(self.__map_config, defaults.items()))
+
+        config = self
 
     def __map_config(self, config_item):
         key, value = config_item
@@ -62,3 +68,19 @@ class Configuration(object):
             x.lower()[10:]: app_config.get(x)
             for x in filter(lambda x: x.startswith('SANIC_JWT'), app_config)
         }
+
+
+
+
+def make_config(c):
+    # TODO:
+    # - Find a better solution to assigning to the module's config attribute
+    module = importlib.import_module('sanic_jwt.configuration')
+    if module.config is None:
+        setattr(module, 'config', c)
+    # else:
+    #     raise AttributeError('Cannot make_config on an existing config instance.')
+
+
+def get_config():
+    return config

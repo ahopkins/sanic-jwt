@@ -13,6 +13,15 @@ class User(object):
         self.password = password
         self.scopes = scopes
 
+    def __repr__(self):
+        return "User(id='{}')".format(self.user_id)
+
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'username': self.username,
+        }
+
 
 users = [
     User(1, 'user1', 'abcxyz', ['user']),
@@ -22,7 +31,7 @@ users = [
 ]
 
 username_table = {u.username: u for u in users}
-userid_table = {u.id: u for u in users}
+userid_table = {u.user_id: u for u in users}
 
 
 async def authenticate(request, *args, **kwargs):

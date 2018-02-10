@@ -8,7 +8,7 @@ bp = Blueprint('auth_bp')
 async def get_access_token_output(request, user):
     access_token = await request.app.auth.get_access_token(user)
 
-    output = {request.app.config.access_token_name: access_token}
+    output = {request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token}
 
     return access_token, output
 
@@ -16,22 +16,22 @@ async def get_access_token_output(request, user):
 def get_token_reponse(request, access_token, output, refresh_token=None):
     response = json(output)
 
-    if request.app.config.cookie_set:
-        key = request.app.config.cookie_token_name
+    if request.app.config.SANIC_JWT_COOKIE_SET:
+        key = request.app.config.SANIC_JWT_COOKIE_ACCESS_TOKEN_NAME
         response.cookies[key] = str(access_token, 'utf-8')
         response.cookies[key]['domain'] = \
-            request.app.config.cookie_domain
+            request.app.config.SANIC_JWT_COOKIE_DOMAIN
         response.cookies[key]['httponly'] = \
-            request.app.config.cookie_httponly
+            request.app.config.SANIC_JWT_COOKIE_HTTPONLY
 
         if refresh_token and \
-                request.app.config.refresh_token_enabled:
-            key = request.app.config.cookie_refresh_token_name
+                request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
+            key = request.app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME
             response.cookies[key] = refresh_token
             response.cookies[key]['domain'] = \
-                request.app.config.cookie_domain
+                request.app.config.SANIC_JWT_COOKIE_DOMAIN
             response.cookies[key]['httponly'] = \
-                request.app.config.cookie_httponly
+                request.app.config.SANIC_JWT_COOKIE_HTTPONLY
 
     return response
 
@@ -45,7 +45,7 @@ async def setup_claims(app, *args, **kwargs):
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
-    user = await utils.call_maybe_coro(
+    user = await utils.call(
         request.app.auth.authenticate, request, *args, **kwargs)
     # except Exception as e:
     #     raise e
@@ -53,10 +53,10 @@ async def authenticate(request, *args, **kwargs):
     access_token, output = await get_access_token_output(request, user)
 
     if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-        refresh_token = await utils.call_maybe_coro(
+        refresh_token = await utils.call(
             request.app.auth.get_refresh_token, request, user)
         output.update({
-            request.app.config.refresh_token_name: refresh_token
+            request.app.config.SANIC_JWT_REFRESH_TOKEN_NAME: refresh_token
         })
     else:
         refresh_token = None
@@ -73,7 +73,7 @@ async def retrieve_user(request, *args, **kwargs):
 
     try:
         payload = request.app.auth.extract_payload(request)
-        user = await utils.call_maybe_coro(
+        user = await utils.call(
             request.app.auth.retrieve_user, request, payload)
     except exceptions.MissingAuthorizationCookie:
         user = None
@@ -83,7 +83,7 @@ async def retrieve_user(request, *args, **kwargs):
         me = None
     else:
         if hasattr(user, 'to_dict'):
-            me = await utils.call_maybe_coro(user.to_dict)
+            me = await utils.call(user.to_dict)
         else:
             me = dict(user)
 
@@ -93,8 +93,8 @@ async def retrieve_user(request, *args, **kwargs):
 
     response = json(output)
 
-    if payload is None and request.app.config.cookie_set:
-        key = request.app.config.cookie_token_name
+    if payload is None and request.app.config.SANIC_JWT_COOKIE_SET:
+        key = request.app.config.SANIC_JWT_COOKIE_ACCESS_TOKEN_NAME
         del response.cookies[key]
 
     return response
@@ -124,10 +124,10 @@ async def refresh(request, *args, **kwargs):
     # TODO:
     # - Add exceptions
     payload = request.app.auth.extract_payload(request, verify=False)
-    user = await utils.call_maybe_coro(
+    user = await utils.call(
         request.app.auth.retrieve_user, request, payload=payload)
     user_id = await request.app.auth._get_user_id(user)
-    refresh_token = await utils.call_maybe_coro(
+    refresh_token = await utils.call(
         request.app.auth.retrieve_refresh_token,
         request=request,
         user_id=user_id)

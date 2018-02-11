@@ -1,7 +1,7 @@
+import pytest
 from sanic import Sanic
 from sanic.response import json
 
-import pytest
 from sanic_jwt import exceptions, initialize
 from sanic_jwt.decorators import protected
 
@@ -12,9 +12,6 @@ class User(object):
         self.user_id = id
         self.username = username
         self.password = password
-
-    def __str__(self):
-        return "User(id='%s')" % self.id
 
     def to_dict(self):
         properties = [

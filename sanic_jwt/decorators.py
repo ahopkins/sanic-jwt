@@ -1,9 +1,7 @@
+from .validators import validate_scopes
 from functools import wraps
 from inspect import isawaitable
-
 from sanic.response import json
-
-from .validators import validate_scopes
 
 
 def protected(*args):

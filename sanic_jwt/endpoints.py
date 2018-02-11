@@ -1,47 +1,17 @@
-from sanic.response import json, text
-from sanic import Blueprint
-from . import exceptions, utils
-
-bp = Blueprint('auth_bp')
-
-
-async def get_access_token_output(request, user):
-    access_token = await request.app.auth.get_access_token(user)
-
-    output = {request.app.config.SANIC_JWT_ACCESS_TOKEN_NAME: access_token}
-
-    return access_token, output
+from . import exceptions
+from . import utils
+from .response import get_access_token_output
+from .response import get_token_reponse
+from sanic.response import json
+from sanic.response import text
 
 
-def get_token_reponse(request, access_token, output, refresh_token=None):
-    response = json(output)
-
-    if request.app.config.SANIC_JWT_COOKIE_SET:
-        key = request.app.config.SANIC_JWT_COOKIE_ACCESS_TOKEN_NAME
-        response.cookies[key] = str(access_token, 'utf-8')
-        response.cookies[key]['domain'] = \
-            request.app.config.SANIC_JWT_COOKIE_DOMAIN
-        response.cookies[key]['httponly'] = \
-            request.app.config.SANIC_JWT_COOKIE_HTTPONLY
-
-        if refresh_token and \
-                request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
-            key = request.app.config.SANIC_JWT_COOKIE_REFRESH_TOKEN_NAME
-            response.cookies[key] = refresh_token
-            response.cookies[key]['domain'] = \
-                request.app.config.SANIC_JWT_COOKIE_DOMAIN
-            response.cookies[key]['httponly'] = \
-                request.app.config.SANIC_JWT_COOKIE_HTTPONLY
-
-    return response
-
-
-@bp.listener('before_server_start')
+# @bp.listener('before_server_start')
 async def setup_claims(app, *args, **kwargs):
     app.auth.setup_claims()
 
 
-@bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)
+# @bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
@@ -66,7 +36,7 @@ async def authenticate(request, *args, **kwargs):
     return response
 
 
-@bp.get('/me')
+# @bp.get('/me')
 async def retrieve_user(request, *args, **kwargs):
     if not hasattr(request.app.auth, 'retrieve_user'):
         raise exceptions.MeEndpointNotSetup()
@@ -100,7 +70,7 @@ async def retrieve_user(request, *args, **kwargs):
     return response
 
 
-@bp.route('/verify', methods=['GET', 'OPTIONS'])
+# @bp.route('/verify', methods=['GET', 'OPTIONS'])
 async def verify(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
@@ -117,7 +87,7 @@ async def verify(request, *args, **kwargs):
     return json(response, status=status)
 
 
-@bp.route('/refresh', methods=['POST', 'OPTIONS'])
+# @bp.route('/refresh', methods=['POST', 'OPTIONS'])
 async def refresh(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)

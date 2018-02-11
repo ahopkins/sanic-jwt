@@ -1,63 +1,15 @@
 from sanic import Blueprint
 from sanic import Sanic
 from sanic.response import text
-
+from sanic.views import HTTPMethodView
+from sanic_jwt import endpoints
+from sanic_jwt import exceptions
 from sanic_jwt.authentication import Authentication
-from sanic_jwt.blueprint import bp as sanic_jwt_auth_bp
 from sanic_jwt.configuration import Configuration
+from sanic_jwt.configuration import defaults
 from sanic_jwt.configuration import get_config
 from sanic_jwt.configuration import make_config
-from sanic_jwt.configuration import defaults
 
-from sanic.views import HTTPMethodView
-from sanic_jwt import exceptions
-# from sanic_jwt import settings
-# from sanic_jwt import utils
-
-
-# def initialize(
-#     app,
-#     authenticate,
-#     class_views=None,
-#     store_refresh_token=None,
-#     retrieve_refresh_token=None,
-#     retrieve_user=None
-# ):
-#     # Add settings
-#     utils.load_settings(app, settings)
-
-#     if class_views is not None:
-#         for route, view in class_views:
-#             if issubclass(view, HTTPMethodView) and isinstance(route, str):
-#                 sanic_jwt_auth_bp.add_route(
-#                     view.as_view(),
-#                     route,
-#                     strict_slashes=app.config.SANIC_JWT_STRICT_SLASHES
-#                 )
-#             else:
-#                 raise exceptions.InvalidClassViewsFormat()
-
-#     # Add blueprint
-#     app.blueprint(sanic_jwt_auth_bp, url_prefix=app.config.SANIC_JWT_URL_PREFIX)
-
-#     # Setup authentication module
-#     app.auth = Authentication(app, authenticate)
-#     if store_refresh_token:
-#         setattr(app.auth, 'store_refresh_token', store_refresh_token)
-#     if retrieve_refresh_token:
-#         setattr(app.auth, 'retrieve_refresh_token', retrieve_refresh_token)
-#     if retrieve_user:
-#         setattr(app.auth, 'retrieve_user', retrieve_user)
-
-#     if app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED and (
-#         not store_refresh_token or
-#         not retrieve_refresh_token
-#     ):
-#         raise exceptions.RefreshTokenNotImplemented()
-
-#     @app.exception(exceptions.SanicJWTException)
-#     def exception_response(request, exception):
-#         return text(str(exception), status=exception.status_code)
 
 def initialize(*args, **kwargs):
     if len(args) > 1:
@@ -80,23 +32,31 @@ class Initialize(object):
 
     def __init__(self, instance, app=None, **kwargs):
         app = self.__get_app(instance, app=app)
+        bp = self.__get_bp(instance)
         self.app = app
+        self.bp = bp
         self.kwargs = kwargs
 
         self.instance = instance
         self.__load_configuration()
         self.__check_initialization()
         self.__add_class_views()
-        self.__add_blueprint()
+        self.__add_endpoints()
         self.__initialize_instance()
 
-    def __add_blueprint(self):
+    def __add_endpoints(self):
         """
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
+        self.bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)(endpoints.authenticate)
+        self.bp.get('/me')(endpoints.retrieve_user)
+        self.bp.route('/verify', methods=['GET', 'OPTIONS'])(endpoints.verify)
+        self.bp.route('/refresh', methods=['POST', 'OPTIONS'])(endpoints.refresh)
+
         config = get_config()
-        self.instance.blueprint(
-            sanic_jwt_auth_bp, url_prefix=config.url_prefix)
+        if not self.instance_is_blueprint:
+            self.instance.blueprint(
+                self.bp, url_prefix=config.url_prefix)
 
     def __add_class_views(self):
         """
@@ -108,7 +68,7 @@ class Initialize(object):
 
             for route, view in class_views:
                 if issubclass(view, HTTPMethodView) and isinstance(route, str):
-                    sanic_jwt_auth_bp.add_route(
+                    self.bp.add_route(
                         view.as_view(),
                         route,
                         strict_slashes=config.strict_slashes
@@ -120,10 +80,13 @@ class Initialize(object):
         """
         Confirm that required parameters were initialized and report back exceptions
         """
-        config = get_config()
-        if config.refresh_token_enabled and (
-            'store_refresh_token' not in self.kwargs or
-            'retrieve_refresh_token' not in self.kwargs
+        config = self.app.config
+        if hasattr(config, 'SANIC_JWT_REFRESH_TOKEN_ENABLED') and \
+            getattr(config, 'SANIC_JWT_REFRESH_TOKEN_ENABLED') and (
+            not self.kwargs.get('store_refresh_token') or
+            not self.kwargs.get('retrieve_refresh_token')
+            # 'store_refresh_token' not in self.kwargs or
+            # 'retrieve_refresh_token' not in self.kwargs
         ):
             raise exceptions.RefreshTokenNotImplemented
 
@@ -164,7 +127,8 @@ class Initialize(object):
         for config_item in config_to_enable:
             if config_item[0] in self.kwargs:
                 list(map(lambda x: self.kwargs.update(
-                    {config_item[0]: True}), config_item[1]))
+                    {x: True, config_item[0]: self.kwargs.get(config_item[0])}),
+                    config_item[1]))
 
         config = self.configuration_class(self.app.config, **self.kwargs)
         make_config(config)
@@ -184,3 +148,14 @@ class Initialize(object):
             if app is not None:
                 return app
         raise exceptions.InitializationFailure
+
+    def __get_bp(self, instance):
+        if isinstance(instance, Sanic):
+            return Blueprint('auth_bp')
+        elif isinstance(instance, Blueprint):
+            return instance
+        raise exceptions.InitializationFailure
+
+    @property
+    def instance_is_blueprint(self):
+        return isinstance(self.instance, Blueprint)

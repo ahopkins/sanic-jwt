@@ -1,5 +1,5 @@
-import importlib
 import copy
+import importlib
 
 
 defaults = {
@@ -21,9 +21,6 @@ defaults = {
     'cookie_access_token_name': 'access_token',
     'debug': False,
     'expiration_delta': 60 * 5 * 6,
-    # 'handler_payload': 'sanic_jwt.handlers.build_payload',
-    # 'handler_payload_extend': 'sanic_jwt.handlers.extend_payload',
-    # 'handler_payload_scopes': None,
     'leeway': 60 * 3,
     'refresh_token_enabled': False,
     'refresh_token_name': 'refresh_token',
@@ -50,7 +47,7 @@ class Configuration(object):
 
         list(map(self.__map_config, self.defaults.items()))
 
-        config = self
+        config = self  # noqa
 
     def __map_config(self, config_item):
         key, value = config_item
@@ -59,6 +56,9 @@ class Configuration(object):
 
     def __iter__(self):
         return ((x, getattr(self, x)) for x in self.defaults.keys())
+
+    def __repr__(self):
+        return str(dict(iter(self)))
 
     @staticmethod
     def extract_presets(app_config):
@@ -71,16 +71,12 @@ class Configuration(object):
         }
 
 
-
-
 def make_config(c):
     # TODO:
     # - Find a better solution to assigning to the module's config attribute
     module = importlib.import_module('sanic_jwt.configuration')
     if module.config is None:
         setattr(module, 'config', c)
-    # else:
-    #     raise AttributeError('Cannot make_config on an existing config instance.')
 
 
 def get_config():

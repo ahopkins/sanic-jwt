@@ -126,7 +126,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 200
 
-    def test_refresh_token_sunc(self, app_with_sync_methods,
+    def test_refresh_token_sync(self, app_with_sync_methods,
                                 authenticated_response):
 
         access_token = authenticated_response.json.get(

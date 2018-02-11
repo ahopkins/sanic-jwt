@@ -5,7 +5,7 @@ from sanic import Sanic
 from sanic.response import json
 
 import pytest
-from sanic_jwt import initialize
+from sanic_jwt import Initialize
 from sanic_jwt import exceptions
 from sanic_jwt.decorators import protected
 
@@ -65,10 +65,13 @@ def app_with_async_methods():
         assert user_id == '0x1'
         key = 'refresh_token_{user_id}'.format(user_id=user_id)
         cache[key] = refresh_token
+        print('key', key)
+        print('refresh_token (stored):', refresh_token)
 
     async def retrieve_refresh_token(user_id, *args, **kwargs):
         assert user_id == '0x1'
         key = 'refresh_token_{user_id}'.format(user_id=user_id)
+        print('key', key)
         return cache.get(key, None)
 
     async def retrieve_user(request, payload, *args, **kwargs):
@@ -83,13 +86,14 @@ def app_with_async_methods():
             return None
 
     sanic_app = Sanic()
-    initialize(
+    Initialize(
         sanic_app,
         authenticate=authenticate,
         store_refresh_token=store_refresh_token,
         retrieve_refresh_token=retrieve_refresh_token,
         retrieve_user=retrieve_user)
 
+    sanic_app.config.SANIC_JWT_DEBUG = True
     sanic_app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
     sanic_app.config.SANIC_JWT_SECRET = str(
         binascii.hexlify(os.urandom(32)), 'utf-8')
@@ -106,7 +110,7 @@ def app_with_async_methods():
     yield sanic_app
 
 
-class TestEndpointsSync(object):
+class TestEndpointsAsync(object):
 
     @pytest.yield_fixture
     def authenticated_response(self, app_with_async_methods):
@@ -161,6 +165,9 @@ class TestEndpointsSync(object):
         refresh_token = authenticated_response.json.get(
             app_with_async_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME, None)
 
+        print(access_token)
+        print(app_with_async_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME, refresh_token)
+
         _, response = app_with_async_methods.test_client.post(
             '/auth/refresh',
             headers={'Authorization': 'Bearer {}'.format(access_token)},
@@ -169,6 +176,12 @@ class TestEndpointsSync(object):
                 SANIC_JWT_REFRESH_TOKEN_NAME:
                     refresh_token
             })
+
+        print(response.body)
+
+        assert response.json is not None
+        assert app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME \
+            in response.json
 
         new_access_token = response.json.get(
             app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)

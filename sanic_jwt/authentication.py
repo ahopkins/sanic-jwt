@@ -111,8 +111,7 @@ class Authentication(BaseAuthentication):
         #   with a `user_id` key
         payload = await utils.call(
             self.extend_payload, payload)
-        import pprint
-        pprint.pprint(self.app.config)
+
         if self.app.config.SANIC_JWT_SCOPES_ENABLED:
             scopes = await utils.call(
                 self.add_scopes_to_payload, user)

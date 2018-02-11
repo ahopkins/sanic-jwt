@@ -44,6 +44,12 @@ class RefreshTokenNotImplemented(SanicJWTException):
 
 
 @add_status_code(500)
+class ScopesNotImplemented(SanicJWTException):
+    def __init__(self, message="Scopes have not been enabled. Initialize with add_scopes_to_payload to provide scoping."):
+        super().__init__(message)
+
+
+@add_status_code(500)
 class MissingRegisteredClaim(SanicJWTException):
     def __init__(
         self,

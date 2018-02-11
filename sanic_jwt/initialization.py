@@ -7,6 +7,7 @@ from sanic_jwt.blueprint import bp as sanic_jwt_auth_bp
 from sanic_jwt.configuration import Configuration
 from sanic_jwt.configuration import get_config
 from sanic_jwt.configuration import make_config
+from sanic_jwt.configuration import defaults
 
 from sanic.views import HTTPMethodView
 from sanic_jwt import exceptions
@@ -64,15 +65,18 @@ def initialize(*args, **kwargs):
     Initialize(args[0], **kwargs)
 
 
+handlers = (
+    ('authenticate', (),),
+    ('store_refresh_token', ('refresh_token_enabled', ),),
+    ('retrieve_refresh_token', ('refresh_token_enabled', ),),
+    ('retrieve_user', (),),
+    ('add_scopes_to_payload', ('scopes_enabled', ),),
+)
+
+
 class Initialize(object):
     configuration_class = Configuration
     authentication_class = Authentication
-    handlers = (
-        'authenticate',
-        'store_refresh_token',
-        'retrieve_refresh_token',
-        'retrieve_user',
-    )
 
     def __init__(self, instance, app=None, **kwargs):
         app = self.__get_app(instance, app=app)
@@ -91,7 +95,8 @@ class Initialize(object):
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
         config = get_config()
-        self.instance.blueprint(sanic_jwt_auth_bp, url_prefix=config.url_prefix)
+        self.instance.blueprint(
+            sanic_jwt_auth_bp, url_prefix=config.url_prefix)
 
     def __add_class_views(self):
         """
@@ -135,10 +140,11 @@ class Initialize(object):
         if 'authenticate' not in self.kwargs:
             raise exceptions.AuthenticateNotImplemented
 
-        for handler in self.handlers:
-            if handler in self.kwargs:
-                method = self.kwargs.pop(handler)
-                setattr(self.instance.auth, handler, method)
+        for handler in handlers:
+            handler_name, config_enable = handler
+            if handler_name in self.kwargs:
+                method = self.kwargs.pop(handler_name)
+                setattr(self.instance.auth, handler_name, method)
 
         # TODO:
         # - Make this response into a handler
@@ -154,10 +160,16 @@ class Initialize(object):
         2. Custom Configuration class
         3. Key word arguments passed to Initialize
         """
+        config_to_enable = [x for x in handlers if x[1]]
+        for config_item in config_to_enable:
+            if config_item[0] in self.kwargs:
+                list(map(lambda x: self.kwargs.update(
+                    {config_item[0]: True}), config_item[1]))
+
         config = self.configuration_class(self.app.config, **self.kwargs)
         make_config(config)
         for setting in dir(config):
-            if not setting.startswith('__'):
+            if setting in defaults:
                 value = getattr(config, setting)
                 key = '_'.join(['sanic', 'jwt', setting]).upper()
                 # TODO:

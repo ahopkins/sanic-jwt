@@ -38,6 +38,8 @@ def test_protected_blueprint():
             'password': 'abcxyz'
         })
 
+    assert response.status == 200
+
     access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME,
                                      None)
 

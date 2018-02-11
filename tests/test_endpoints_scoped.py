@@ -2,7 +2,7 @@ from sanic import Sanic
 from sanic.response import json
 
 import pytest
-from sanic_jwt import initialize
+from sanic_jwt import Initialize
 from sanic_jwt import exceptions
 from sanic_jwt.decorators import protected
 from sanic_jwt.decorators import scoped
@@ -69,10 +69,11 @@ def app_with_scopes():
         return user.scopes
 
     sanic_app = Sanic()
-    initialize(
-        sanic_app, authenticate=authenticate, retrieve_user=retrieve_user)
-
-    sanic_app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = my_scope_extender
+    Initialize(
+        sanic_app,
+        authenticate=authenticate,
+        retrieve_user=retrieve_user,
+        add_scopes_to_payload=my_scope_extender)
 
     @sanic_app.route('/')
     async def test(request):

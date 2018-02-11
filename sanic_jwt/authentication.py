@@ -53,28 +53,27 @@ class BaseAuthentication(object):
 
         return payload
 
-    # async def store_refresh_token(self, *args, **kwargs):
-    #     raise exceptions.RefreshTokenNotImplemented()  # noqa
+    async def store_refresh_token(self, *args, **kwargs):
+        raise exceptions.RefreshTokenNotImplemented()  # noqa
 
-    # async def retrieve_refresh_token(self, *args, **kwargs):
-    #     raise exceptions.RefreshTokenNotImplemented()  # noqa
+    async def retrieve_refresh_token(self, *args, **kwargs):
+        raise exceptions.RefreshTokenNotImplemented()  # noqa
 
-    # async def authenticate(self, *args, **kwargs):
-    #     raise exceptions.AuthenticateNotImplemented()  # noqa
+    async def authenticate(self, *args, **kwargs):
+        raise exceptions.AuthenticateNotImplemented()  # noqa
+
+    async def add_scopes_to_payload(self, *args, **kwargs):
+        raise exceptions.ScopesNotImplemented()  # noqa
 
 
 class Authentication(BaseAuthentication):
     def setup_claims(self, *args, **kwargs):
-
         optional = ['iss', 'iat', 'nbf', 'aud', ]
 
-        # print('claims', self.claims)
         for option in optional:
-            setting = 'claim_{}'.format(option.upper())
-            # print(setting, getattr(self.app.config, SANIC_JWT_SETTING, False))
+            setting = 'SANIC_JWT_CLAIM_{}'.format(option.upper())
             if getattr(self.app.config, setting, False):
                 self.claims.append(option)
-        # print(self.claims)
 
     def _decode(self, token, verify=True):
         secret = self._get_secret()
@@ -83,7 +82,7 @@ class Authentication(BaseAuthentication):
 
         for claim in self.claims:
             if claim != 'exp':
-                setting = 'claim_{}'.format(claim.upper())
+                setting = 'SANIC_JWT_CLAIM_{}'.format(claim.upper())
                 value = getattr(self.app.config, setting, False)
                 kwargs.update({claim_label[claim]: value})
 
@@ -112,8 +111,9 @@ class Authentication(BaseAuthentication):
         #   with a `user_id` key
         payload = await utils.call(
             self.extend_payload, payload)
-
-        if self.add_scopes_to_payload is not None:
+        import pprint
+        pprint.pprint(self.app.config)
+        if self.app.config.SANIC_JWT_SCOPES_ENABLED:
             scopes = await utils.call(
                 self.add_scopes_to_payload, user)
             if not isinstance(scopes, (tuple, list)):

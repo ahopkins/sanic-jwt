@@ -31,7 +31,7 @@ class BaseAuthentication(object):
             raise exceptions.InvalidRetrieveUserObject()
 
         return {
-            'user_id': user_id,
+            self.app.config.SANIC_JWT_USER_ID: user_id,
         }
 
     async def extend_payload(self, payload, *args, **kwargs):

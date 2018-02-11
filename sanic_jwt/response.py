@@ -34,6 +34,30 @@ class Response(object):
 
         return response
 
+    @staticmethod
+    def extend_authenticate(request,
+                            user=None,
+                            access_token=None,
+                            refresh_token=None):
+        return {}
+
+    @staticmethod
+    def extend_retrieve_user(request, user=None, payload=None):
+        return {}
+
+    @staticmethod
+    def extend_verify(request, user=None, payload=None):
+        return {}
+
+    @staticmethod
+    def extend_refresh(request,
+                       user=None,
+                       access_token=None,
+                       refresh_token=None,
+                       purported_token=None,
+                       payload=None):
+        return {}
+
 
 def make_response(r):
     # TODO:

@@ -10,18 +10,15 @@ response = None
 
 
 # @bp.listener('before_server_start')
-async def setup_claims(app, *args, **kwargs):
-    app.auth.setup_claims()
+# async def setup_claims(app, *args, **kwargs):
+#     app.auth.setup_claims()
 
 
-# @bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)
 async def authenticate(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
     user = await utils.call(
         request.app.auth.authenticate, request, *args, **kwargs)
-    # except Exception as e:
-    #     raise e
 
     access_token, output = await response.get_access_token_output(request, user)
 
@@ -34,12 +31,16 @@ async def authenticate(request, *args, **kwargs):
     else:
         refresh_token = None
 
+    output.update(response.extend_authenticate(request,
+                                               user=user,
+                                               access_token=access_token,
+                                               refresh_token=refresh_token))
+
     resp = response.get_token_reponse(request, access_token, output, refresh_token)
 
     return resp
 
 
-# @bp.get('/me')
 async def retrieve_user(request, *args, **kwargs):
     if not hasattr(request.app.auth, 'retrieve_user'):
         raise exceptions.MeEndpointNotSetup()
@@ -64,38 +65,44 @@ async def retrieve_user(request, *args, **kwargs):
         'me': me
     }
 
-    response = json(output)
+    output.update(response.extend_retrieve_user(request,
+                                                user=user,
+                                                payload=payload,))
+
+    resp = json(output)
 
     if payload is None and request.app.config.SANIC_JWT_COOKIE_SET:
         key = request.app.config.SANIC_JWT_COOKIE_ACCESS_TOKEN_NAME
-        del response.cookies[key]
+        del resp.cookies[key]
 
-    return response
+    return resp
 
 
-# @bp.route('/verify', methods=['GET', 'OPTIONS'])
 async def verify(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
     is_valid, status, reason = request.app.auth.verify(
         request, *args, **kwargs)
 
-    response = {
+    output = {
         'valid': is_valid
     }
 
     if reason:
-        response.update({'reason': reason})
+        output.update({'reason': reason})
 
-    return json(response, status=status)
+    output.update(response.extend_verify(request,))
+
+    resp = json(output, status=status)
+
+    return resp
 
 
-# @bp.route('/refresh', methods=['POST', 'OPTIONS'])
 async def refresh(request, *args, **kwargs):
     if request.method == 'OPTIONS':
         return text('', status=204)
     # TODO:
-    # - Add exceptions
+    # - Add more exceptions
     payload = request.app.auth.extract_payload(request, verify=False)
     user = await utils.call(
         request.app.auth.retrieve_user, request, payload=payload)
@@ -114,6 +121,14 @@ async def refresh(request, *args, **kwargs):
         raise exceptions.AuthenticationFailed()
 
     access_token, output = await response.get_access_token_output(request, user)
+
+    output.update(response.extend_refresh(request,
+                                          user=user,
+                                          access_token=access_token,
+                                          refresh_token=refresh_token,
+                                          purported_token=purported_token,
+                                          payload=payload,))
+
     resp = response.get_token_reponse(request, access_token, output)
 
     return resp

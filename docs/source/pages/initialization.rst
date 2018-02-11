@@ -50,7 +50,7 @@ Parameters
 
 *This is a coroutine. Do not forget to add* ``async`` *before your* ``def``.
 
-**Purpose**: Just like Django's ``authenticate`` `method <https://docs.djangoproject.com/en/2.0/ref/contrib/auth/#django.contrib.auth.backends.ModelBackend.authenticate>`_, this is responsible for taking a given ``request`` and deciding whether or not there is a valid user to be authenticated. If yes, it **should** return:
+**Purpose**: Just like Django's ``authenticate`` `method <https://docs.djangoproject.com/en/2.0/ref/contrib/auth/#django.contrib.auth.backends.ModelBackend.authenticate>`_, this is responsible for taking a given ``request`` and deciding whether or not there is a valid user to be authenticated. If yes, it **MUST** return:
 
 - a ``dict`` with a ``user_id`` key, **or**
 - an instance with a ``user_id`` property.

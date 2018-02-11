@@ -1,9 +1,12 @@
 from . import exceptions
 from . import utils
-from .response import get_access_token_output
-from .response import get_token_reponse
+# from .response import get_access_token_output
+# from .response import get_token_reponse
 from sanic.response import json
 from sanic.response import text
+
+
+response = None
 
 
 # @bp.listener('before_server_start')
@@ -20,7 +23,7 @@ async def authenticate(request, *args, **kwargs):
     # except Exception as e:
     #     raise e
 
-    access_token, output = await get_access_token_output(request, user)
+    access_token, output = await response.get_access_token_output(request, user)
 
     if request.app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED:
         refresh_token = await utils.call(
@@ -31,9 +34,9 @@ async def authenticate(request, *args, **kwargs):
     else:
         refresh_token = None
 
-    response = get_token_reponse(request, access_token, output, refresh_token)
+    resp = response.get_token_reponse(request, access_token, output, refresh_token)
 
-    return response
+    return resp
 
 
 # @bp.get('/me')
@@ -110,7 +113,7 @@ async def refresh(request, *args, **kwargs):
     if refresh_token != purported_token:
         raise exceptions.AuthenticationFailed()
 
-    access_token, output = await get_access_token_output(request, user)
-    response = get_token_reponse(request, access_token, output)
+    access_token, output = await response.get_access_token_output(request, user)
+    resp = response.get_token_reponse(request, access_token, output)
 
-    return response
+    return resp

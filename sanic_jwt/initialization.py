@@ -9,6 +9,8 @@ from sanic_jwt.configuration import Configuration
 from sanic_jwt.configuration import defaults
 from sanic_jwt.configuration import get_config
 from sanic_jwt.configuration import make_config
+from sanic_jwt.response import Response
+from sanic_jwt.response import make_response
 
 
 def initialize(*args, **kwargs):
@@ -36,16 +38,19 @@ class Initialize(object):
     """
     configuration_class = Configuration
     authentication_class = Authentication
+    response_class = Response
 
     def __init__(self, instance, app=None, **kwargs):
         app = self.__get_app(instance, app=app)
         bp = self.__get_bp(instance)
+
         self.app = app
         self.bp = bp
         self.kwargs = kwargs
-
         self.instance = instance
+
         self.__load_configuration()
+        self.__load_response()
         self.__check_initialization()
         self.__add_class_views()
         self.__add_endpoints()
@@ -146,6 +151,10 @@ class Initialize(object):
                 # TODO:
                 # - Need to localize this config to self.instance
                 setattr(self.app.config, key, value)
+
+    def __load_response(self):
+        response = self.response_class()
+        make_response(response)
 
     @staticmethod
     def __get_app(instance, app=None):

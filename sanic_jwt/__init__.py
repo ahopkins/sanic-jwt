@@ -1,6 +1,6 @@
 import logging
 
-from .authenticate import Authentication
+from .authentication import Authentication
 from .initialization import Initialize
 from .initialization import initialize
 from .configuration import Configuration

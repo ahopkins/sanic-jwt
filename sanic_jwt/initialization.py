@@ -27,6 +27,13 @@ handlers = (
 
 
 class Initialize(object):
+    """Class used to initialize Sanic JWT
+
+    Must be initialized with a keyword argument: `authenticate` that is a
+    method that MUST return a user object that when iterated upon returns a
+    dictionary, or has a `to_dict` method. The resulting dictionary MUST
+    have a key/value for a unique user id.
+    """
     configuration_class = Configuration
     authentication_class = Authentication
 

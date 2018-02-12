@@ -38,21 +38,23 @@ class Response:
 
         return response
 
-    def extend_authenticate(self,
-                            request,
+    @staticmethod
+    def extend_authenticate(request,
                             user=None,
                             access_token=None,
                             refresh_token=None):
         return {}
 
-    def extend_retrieve_user(self, request, user=None, payload=None):
+    @staticmethod
+    def extend_retrieve_user(request, user=None, payload=None):
         return {}
 
-    def extend_verify(self, request, user=None, payload=None):
+    @staticmethod
+    def extend_verify(request, user=None, payload=None):
         return {}
 
-    def extend_refresh(self,
-                       request,
+    @staticmethod
+    def extend_refresh(request,
                        user=None,
                        access_token=None,
                        refresh_token=None,

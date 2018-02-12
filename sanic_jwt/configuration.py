@@ -47,8 +47,6 @@ class Configuration:
 
         list(map(self.__map_config, self.defaults.items()))
 
-        config = self  # noqa
-
     def __map_config(self, config_item):
         key, value = config_item
         if (not hasattr(self, key) or key in self.kwargs):

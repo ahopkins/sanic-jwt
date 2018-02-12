@@ -121,7 +121,7 @@ class Initialize:
         # TODO:
         # - Make this response into a handler
         @self.app.exception(exceptions.SanicJWTException)
-        def exception_response(request, exception):
+        def exception_response(request, exception):  # NOQA
             return text(str(exception), status=exception.status_code)
 
     def __load_configuration(self):

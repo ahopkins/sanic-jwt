@@ -1,5 +1,4 @@
 import copy
-import importlib
 
 
 defaults = {
@@ -71,15 +70,3 @@ class Configuration:
             x.lower()[10:]: app_config.get(x)
             for x in filter(lambda x: x.startswith('SANIC_JWT'), app_config)
         }
-
-
-def make_config(c):
-    # TODO:
-    # - Find a better solution to assigning to the module's config attribute
-    module = importlib.import_module('sanic_jwt.configuration')
-    if module.config is None:
-        setattr(module, 'config', c)
-
-
-def get_config():
-    return config

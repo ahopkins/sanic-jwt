@@ -62,6 +62,12 @@ class Response:
                        payload=None):
         return {}
 
+    @staticmethod
+    def exception_response(request, exception):
+        return json({
+            'exception': str(exception)
+        }, status=exception.status_code)
+
 
 def make_response(r):
     # TODO:

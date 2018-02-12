@@ -1,6 +1,5 @@
 from sanic import Blueprint
 from sanic import Sanic
-from sanic.response import text
 from sanic.views import HTTPMethodView
 from sanic_jwt import exceptions
 from sanic_jwt import endpoints
@@ -69,6 +68,9 @@ class Initialize:
         for endpoint in endpoint_mappings:
             self.__add_single_endpoint(*endpoint)
 
+        self.bp.exception(exceptions.SanicJWTException)(
+            self.response.exception_response)
+
         if not self.instance_is_blueprint:
             self.instance.blueprint(
                 self.bp, url_prefix=config.url_prefix)
@@ -123,12 +125,6 @@ class Initialize:
                 method = self.kwargs.pop(handler_name)
                 setattr(self.instance.auth, handler_name, method)
 
-        # TODO:
-        # - Make this response into a handler
-        @self.app.exception(exceptions.SanicJWTException)
-        def exception_response(request, exception):  # NOQA
-            return text(str(exception), status=exception.status_code)
-
     def __load_configuration(self):
         """
         Configure settings for the instance in the following order:
@@ -149,6 +145,7 @@ class Initialize:
     def __load_response(self):
         response = self.response_class()
         make_response(response)
+        self.response = response
 
     def __add_single_endpoint(self, class_name, path_name):
         view = getattr(endpoints, class_name)

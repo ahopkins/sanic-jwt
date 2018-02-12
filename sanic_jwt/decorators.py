@@ -5,9 +5,7 @@ from sanic.response import json
 
 
 def protected(*args):
-
     def decorator(f):
-
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             if request.method == 'OPTIONS':

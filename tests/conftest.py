@@ -2,7 +2,7 @@ import pytest
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import exceptions, initialize
+from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 
@@ -60,7 +60,7 @@ def authenticate(username_table):
 def app(username_table, authenticate):
 
     sanic_app = Sanic()
-    initialize(
+    sanic_jwt = Initialize(
         sanic_app,
         authenticate=authenticate,
     )
@@ -74,4 +74,4 @@ def app(username_table, authenticate):
     async def protected_request(request):
         return json({"protected": True})
 
-    yield sanic_app
+    yield (sanic_app, sanic_jwt)

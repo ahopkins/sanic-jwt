@@ -85,18 +85,16 @@ def app_with_async_methods():
         else:
             return None
 
-    sanic_app = Sanic()
-    Initialize(
-        sanic_app,
-        authenticate=authenticate,
-        store_refresh_token=store_refresh_token,
-        retrieve_refresh_token=retrieve_refresh_token,
-        retrieve_user=retrieve_user)
+    secret = str(binascii.hexlify(os.urandom(32)), 'utf-8')
 
-    sanic_app.config.SANIC_JWT_DEBUG = True
-    sanic_app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
-    sanic_app.config.SANIC_JWT_SECRET = str(
-        binascii.hexlify(os.urandom(32)), 'utf-8')
+    sanic_app = Sanic()
+    sanicjwt = Initialize(sanic_app,
+                          authenticate=authenticate,
+                          store_refresh_token=store_refresh_token,
+                          retrieve_refresh_token=retrieve_refresh_token,
+                          retrieve_user=retrieve_user,
+                          refresh_token_enabled=True,
+                          secret=secret)
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -107,14 +105,15 @@ def app_with_async_methods():
     async def protected_request(request):
         return json({"protected": True})
 
-    yield sanic_app
+    yield (sanic_app, sanicjwt)
 
 
 class TestEndpointsAsync(object):
 
     @pytest.yield_fixture
     def authenticated_response(self, app_with_async_methods):
-        _, response = app_with_async_methods.test_client.post(
+        app, sanicjwt = app_with_async_methods
+        _, response = app.test_client.post(
             '/auth', json={
                 'username': 'user1',
                 'password': 'abcxyz'
@@ -123,17 +122,18 @@ class TestEndpointsAsync(object):
         yield response
 
     def test_root_endpoint(self, app_with_async_methods):
-        _, response = app_with_async_methods.test_client.get('/')
+        app, _ = app_with_async_methods
+        _, response = app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
     def test_protected_endpoint(self, app_with_async_methods,
                                 authenticated_response):
-
+        app, sanicjwt = app_with_async_methods
         access_token = authenticated_response.json.get(
-            app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_async_methods.test_client.get(
+        _, response = app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -144,11 +144,11 @@ class TestEndpointsAsync(object):
 
     def test_me_endpoint(self, app_with_async_methods,
                          authenticated_response):
-
+        app, sanicjwt = app_with_async_methods
         access_token = authenticated_response.json.get(
-            app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_async_methods.test_client.get(
+        _, response = app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -159,38 +159,31 @@ class TestEndpointsAsync(object):
 
     def test_refresh_token_async(self, app_with_async_methods,
                                  authenticated_response):
-
+        app, sanicjwt = app_with_async_methods
         access_token = authenticated_response.json.get(
-            app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
         refresh_token = authenticated_response.json.get(
-            app_with_async_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME, None)
+            sanicjwt.config.refresh_token_name, None)
 
-        print(access_token)
-        print(app_with_async_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME, refresh_token)
-
-        _, response = app_with_async_methods.test_client.post(
+        _, response = app.test_client.post(
             '/auth/refresh',
             headers={'Authorization': 'Bearer {}'.format(access_token)},
             json={
-                app_with_async_methods.config.
-                SANIC_JWT_REFRESH_TOKEN_NAME:
-                    refresh_token
+                sanicjwt.config.refresh_token_name: refresh_token
             })
 
-        print(response.body)
-
         assert response.json is not None
-        assert app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME \
+        assert sanicjwt.config.access_token_name \
             in response.json
 
         new_access_token = response.json.get(
-            app_with_async_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
         assert response.status == 200
         assert new_access_token is not None
         assert response.json.get(
-            app_with_async_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME,
+            sanicjwt.config.refresh_token_name,
             None) is None  # there is no new refresh token
         assert \
-            app_with_async_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME \
+            sanicjwt.config.refresh_token_name \
             not in response.json

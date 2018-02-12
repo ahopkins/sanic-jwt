@@ -37,7 +37,7 @@ defaults = {
 config = None
 
 
-class Configuration(object):
+class Configuration:
     def __init__(self, app_config, **kwargs):
         presets = self.extract_presets(app_config)
         self.kwargs = kwargs

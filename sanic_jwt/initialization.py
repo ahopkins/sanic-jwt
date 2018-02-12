@@ -2,13 +2,10 @@ from sanic import Blueprint
 from sanic import Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
-from sanic_jwt import endpoints
 from sanic_jwt import exceptions
+from sanic_jwt import endpoints
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
-from sanic_jwt.configuration import defaults
-from sanic_jwt.configuration import get_config
-from sanic_jwt.configuration import make_config
 from sanic_jwt.response import Response
 from sanic_jwt.response import make_response
 
@@ -28,7 +25,7 @@ handlers = (
 )
 
 
-class Initialize(object):
+class Initialize:
     """Class used to initialize Sanic JWT
 
     Must be initialized with a keyword argument: `authenticate` that is a
@@ -60,12 +57,13 @@ class Initialize(object):
         """
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
-        self.bp.route('/', methods=['POST', 'OPTIONS'], strict_slashes=False)(endpoints.authenticate)
-        self.bp.get('/me')(endpoints.retrieve_user)
-        self.bp.route('/verify', methods=['GET', 'OPTIONS'])(endpoints.verify)
-        self.bp.route('/refresh', methods=['POST', 'OPTIONS'])(endpoints.refresh)
+        config = self.config
 
-        config = get_config()
+        self.bp.add_route(endpoints.AuthenticateEndpoint.as_view(config=config), '/')
+        self.bp.add_route(endpoints.RetrieveUserEndpoint.as_view(config=config), '/me')
+        self.bp.add_route(endpoints.VerifyEndpoint.as_view(config=config), '/verify')
+        self.bp.add_route(endpoints.RefreshEndpoint.as_view(config=config), '/refresh')
+
         if not self.instance_is_blueprint:
             self.instance.blueprint(
                 self.bp, url_prefix=config.url_prefix)
@@ -74,7 +72,7 @@ class Initialize(object):
         """
         Include any custom class views on the Sanic JWT Blueprint
         """
-        config = get_config()
+        config = self.config
         if 'class_views' in self.kwargs:
             class_views = self.kwargs.pop('class_views')
 
@@ -92,13 +90,11 @@ class Initialize(object):
         """
         Confirm that required parameters were initialized and report back exceptions
         """
-        config = self.app.config
-        if hasattr(config, 'SANIC_JWT_REFRESH_TOKEN_ENABLED') and \
-            getattr(config, 'SANIC_JWT_REFRESH_TOKEN_ENABLED') and (
+        config = self.config
+        if hasattr(config, 'refresh_token_enabled') and \
+            getattr(config, 'refresh_token_enabled') and (
             not self.kwargs.get('store_refresh_token') or
             not self.kwargs.get('retrieve_refresh_token')
-            # 'store_refresh_token' not in self.kwargs or
-            # 'retrieve_refresh_token' not in self.kwargs
         ):
             raise exceptions.RefreshTokenNotImplemented
 
@@ -110,13 +106,14 @@ class Initialize(object):
         Take any predefined methods/handlers and insert them into Sanic JWT
         """
         # Initialize instance of the Authentication class
-        self.instance.auth = self.authentication_class(self.app)
+        config = self.config
+        self.instance.auth = self.authentication_class(self.app, config=config)
 
         if 'authenticate' not in self.kwargs:
             raise exceptions.AuthenticateNotImplemented
 
         for handler in handlers:
-            handler_name, config_enable = handler
+            handler_name, _ = handler
             if handler_name in self.kwargs:
                 method = self.kwargs.pop(handler_name)
                 setattr(self.instance.auth, handler_name, method)
@@ -142,15 +139,7 @@ class Initialize(object):
                     {x: True, config_item[0]: self.kwargs.get(config_item[0])}),
                     config_item[1]))
 
-        config = self.configuration_class(self.app.config, **self.kwargs)
-        make_config(config)
-        for setting in dir(config):
-            if setting in defaults:
-                value = getattr(config, setting)
-                key = '_'.join(['sanic', 'jwt', setting]).upper()
-                # TODO:
-                # - Need to localize this config to self.instance
-                setattr(self.app.config, key, value)
+        self.config = self.configuration_class(self.app.config, **self.kwargs)
 
     def __load_response(self):
         response = self.response_class()
@@ -165,7 +154,8 @@ class Initialize(object):
                 return app
         raise exceptions.InitializationFailure
 
-    def __get_bp(self, instance):
+    @staticmethod
+    def __get_bp(instance):
         if isinstance(instance, Sanic):
             return Blueprint('auth_bp')
         elif isinstance(instance, Blueprint):

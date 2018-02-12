@@ -30,7 +30,7 @@ def build_claim_iat(attr, *args, **kwargs):
 
 
 def build_claim_nbf(attr, config, *args, **kwargs):
-    seconds = config.SANIC_JWT_LEEWAY + config.SANIC_JWT_CLAIM_NBF_DELTA
+    seconds = config.leeway + config.claim_nbf_delta
     return datetime.datetime.utcnow() + datetime.timedelta(
         seconds=seconds
     ) if attr else None

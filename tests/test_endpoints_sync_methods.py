@@ -5,7 +5,7 @@ from sanic import Sanic
 from sanic.response import json
 
 import pytest
-from sanic_jwt import initialize
+from sanic_jwt import Initialize
 from sanic_jwt import exceptions
 from sanic_jwt.decorators import protected
 
@@ -57,12 +57,11 @@ def app_with_sync_methods(users):
             return None
 
     sanic_app = Sanic()
-    initialize(
-        sanic_app,
-        authenticate=authenticate,
-        store_refresh_token=store_refresh_token,
-        retrieve_refresh_token=retrieve_refresh_token,
-        retrieve_user=retrieve_user)
+    sanicjwt = Initialize(sanic_app,
+                          authenticate=authenticate,
+                          store_refresh_token=store_refresh_token,
+                          retrieve_refresh_token=retrieve_refresh_token,
+                          retrieve_user=retrieve_user)
 
     sanic_app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
     sanic_app.config.SANIC_JWT_SECRET = str(
@@ -77,14 +76,14 @@ def app_with_sync_methods(users):
     async def protected_request(request):
         return json({"protected": True})
 
-    yield sanic_app
+    yield (sanic_app, sanicjwt)
 
 
 class TestEndpointsSync(object):
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_sync_methods):
-        _, response = app_with_sync_methods.test_client.post(
+        sanic_app, _ = app_with_sync_methods
+        _, response = sanic_app.test_client.post(
             '/auth', json={
                 'username': 'user1',
                 'password': 'abcxyz'
@@ -93,17 +92,18 @@ class TestEndpointsSync(object):
         yield response
 
     def test_root_endpoint(self, app_with_sync_methods):
-        _, response = app_with_sync_methods.test_client.get('/')
+        sanic_app, sanicjwt = app_with_sync_methods
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
     def test_protected_endpoint(self, app_with_sync_methods,
                                 authenticated_response):
-
+        sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
-            app_with_sync_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_sync_methods.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -114,11 +114,11 @@ class TestEndpointsSync(object):
 
     def test_me_endpoint(self, app_with_sync_methods,
                          authenticated_response):
-
+        sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
-            app_with_sync_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_sync_methods.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -128,29 +128,28 @@ class TestEndpointsSync(object):
 
     def test_refresh_token_sync(self, app_with_sync_methods,
                                 authenticated_response):
-
+        sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
-            app_with_sync_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
         refresh_token = authenticated_response.json.get(
-            app_with_sync_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME, None)
+            sanicjwt.config.refresh_token_name, None)
 
-        _, response = app_with_sync_methods.test_client.post(
+        _, response = sanic_app.test_client.post(
             '/auth/refresh',
             headers={'Authorization': 'Bearer {}'.format(access_token)},
             json={
-                app_with_sync_methods.config.
-                SANIC_JWT_REFRESH_TOKEN_NAME:
+                sanicjwt.config.refresh_token_name:
                     refresh_token
             })
 
         new_access_token = response.json.get(
-            app_with_sync_methods.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
         assert response.status == 200
         assert new_access_token is not None
         assert response.json.get(
-            app_with_sync_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME,
+            sanicjwt.config.refresh_token_name,
             None) is None  # there is no new refresh token
         assert \
-            app_with_sync_methods.config.SANIC_JWT_REFRESH_TOKEN_NAME \
+            sanicjwt.config.refresh_token_name \
             not in response.json

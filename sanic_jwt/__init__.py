@@ -5,6 +5,8 @@ from .initialization import Initialize
 from .initialization import initialize
 from .configuration import Configuration
 from .response import Response
+from .decorators import protected
+from .decorators import scoped
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -12,8 +14,10 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __all__ = [
     'Authentication',
-    'initialize',
     'Initialize',
     'Configuration',
     'Response',
+    'initialize',
+    'protected',
+    'scoped',
 ]

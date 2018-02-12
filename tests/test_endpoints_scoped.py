@@ -69,11 +69,10 @@ def app_with_scopes():
         return user.scopes
 
     sanic_app = Sanic()
-    Initialize(
-        sanic_app,
-        authenticate=authenticate,
-        retrieve_user=retrieve_user,
-        add_scopes_to_payload=my_scope_extender)
+    sanicjwt = Initialize(sanic_app,
+                          authenticate=authenticate,
+                          retrieve_user=retrieve_user,
+                          add_scopes_to_payload=my_scope_extender)
 
     @sanic_app.route('/')
     async def test(request):
@@ -140,14 +139,15 @@ def app_with_scopes():
     async def protected_route9(request, id):
         return json({'protected': True, 'scoped': True, 'id': id})
 
-    yield sanic_app
+    yield (sanic_app, sanicjwt)
 
 
 class TestEndpointsSync(object):
 
     @pytest.yield_fixture
     def user1(self, app_with_scopes):
-        _, response = app_with_scopes.test_client.post(
+        sanic_app, _ = app_with_scopes
+        _, response = sanic_app.test_client.post(
             '/auth', json={
                 'username': 'user1',
                 'password': 'abcxyz'
@@ -157,7 +157,8 @@ class TestEndpointsSync(object):
 
     @pytest.yield_fixture
     def user2(self, app_with_scopes):
-        _, response = app_with_scopes.test_client.post(
+        sanic_app, _ = app_with_scopes
+        _, response = sanic_app.test_client.post(
             '/auth', json={
                 'username': 'user2',
                 'password': 'abcxyz'
@@ -167,7 +168,8 @@ class TestEndpointsSync(object):
 
     @pytest.yield_fixture
     def user3(self, app_with_scopes):
-        _, response = app_with_scopes.test_client.post(
+        sanic_app, _ = app_with_scopes
+        _, response = sanic_app.test_client.post(
             '/auth', json={
                 'username': 'user3',
                 'password': 'abcxyz'
@@ -177,7 +179,8 @@ class TestEndpointsSync(object):
 
     @pytest.yield_fixture
     def user4(self, app_with_scopes):
-        _, response = app_with_scopes.test_client.post(
+        sanic_app, _ = app_with_scopes
+        _, response = sanic_app.test_client.post(
             '/auth', json={
                 'username': 'user4',
                 'password': 'abcxyz'
@@ -187,7 +190,8 @@ class TestEndpointsSync(object):
 
     @pytest.yield_fixture
     def user5(self, app_with_scopes):
-        _, response = app_with_scopes.test_client.post(
+        sanic_app, _ = app_with_scopes
+        _, response = sanic_app.test_client.post(
             '/auth', json={
                 'username': 'user5',
                 'password': 'abcxyz'
@@ -196,64 +200,66 @@ class TestEndpointsSync(object):
         yield response
 
     def test_scopes_anonymous_user(self, app_with_scopes):
-        _, response = app_with_scopes.test_client.get('/')
+        sanic_app, _ = app_with_scopes
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
-        _, response = app_with_scopes.test_client.get('/auth/me')
+        _, response = sanic_app.test_client.get('/auth/me')
         assert response.status == 400
 
-        _, response = app_with_scopes.test_client.get('/protected')
+        _, response = sanic_app.test_client.get('/protected')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/1')
+        _, response = sanic_app.test_client.get('/protected/scoped/1')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/2')
+        _, response = sanic_app.test_client.get('/protected/scoped/2')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/3')
+        _, response = sanic_app.test_client.get('/protected/scoped/3')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/4')
+        _, response = sanic_app.test_client.get('/protected/scoped/4')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/5')
+        _, response = sanic_app.test_client.get('/protected/scoped/5')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/6/1')
+        _, response = sanic_app.test_client.get('/protected/scoped/6/1')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/foo')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/7/1')
+        _, response = sanic_app.test_client.get('/protected/scoped/7/1')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/foo')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/8')
+        _, response = sanic_app.test_client.get('/protected/scoped/8')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get('/protected/scoped/9/1')
+        _, response = sanic_app.test_client.get('/protected/scoped/9/1')
         assert response.status == 401
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/foo')
         assert response.status == 401
 
     def test_scopes_user1(self, app_with_scopes, user1):
+        sanic_app, sanicjwt = app_with_scopes
         access_token = user1.json.get(
-            app_with_scopes.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_scopes.test_client.get('/')
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -264,7 +270,7 @@ class TestEndpointsSync(object):
         assert response.json.get('me').get('username') == 'user1'
         assert response.json.get('me').get('scopes') == ['user']
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -274,7 +280,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is False
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -284,7 +290,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/2',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -294,7 +300,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/3',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -302,7 +308,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/4',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -312,7 +318,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/5',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -322,7 +328,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -333,7 +339,7 @@ class TestEndpointsSync(object):
         assert response.json.get('scoped') is True
         assert response.json.get('id') == '1'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -344,7 +350,7 @@ class TestEndpointsSync(object):
         assert response.json.get('scoped') is True
         assert response.json.get('id') == 'foo'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -352,7 +358,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/8',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -362,7 +368,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -371,14 +377,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
 
     def test_scopes_user2(self, app_with_scopes, user2):
+        sanic_app, sanicjwt = app_with_scopes
         access_token = user2.json.get(
-            app_with_scopes.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_scopes.test_client.get('/')
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -389,7 +396,7 @@ class TestEndpointsSync(object):
         assert response.json.get('me').get('username') == 'user2'
         assert response.json.get('me').get('scopes') == ['user', 'admin']
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -399,7 +406,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is False
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -409,7 +416,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/2',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -419,7 +426,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/3',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -429,7 +436,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/4',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -439,7 +446,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/5',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -449,7 +456,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -460,7 +467,7 @@ class TestEndpointsSync(object):
         assert response.json.get('scoped') is True
         assert response.json.get('id') == '1'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -471,7 +478,7 @@ class TestEndpointsSync(object):
         assert response.json.get('scoped') is True
         assert response.json.get('id') == 'foo'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -479,7 +486,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/8',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -489,7 +496,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -498,14 +505,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
 
     def test_scopes_user3(self, app_with_scopes, user3):
+        sanic_app, sanicjwt = app_with_scopes
         access_token = user3.json.get(
-            app_with_scopes.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_scopes.test_client.get('/')
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -516,7 +524,7 @@ class TestEndpointsSync(object):
         assert response.json.get('me').get('username') == 'user3'
         assert response.json.get('me').get('scopes') == ['user:read']
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -526,7 +534,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is False
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -534,7 +542,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/2',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -544,7 +552,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/3',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -552,7 +560,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/4',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -560,7 +568,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/5',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -568,7 +576,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -576,7 +584,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -584,7 +592,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -592,7 +600,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/8',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -602,7 +610,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -611,14 +619,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
 
     def test_scopes_user4(self, app_with_scopes, user4):
+        sanic_app, sanicjwt = app_with_scopes
         access_token = user4.json.get(
-            app_with_scopes.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_scopes.test_client.get('/')
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -629,7 +638,7 @@ class TestEndpointsSync(object):
         assert response.json.get('me').get('username') == 'user4'
         assert response.json.get('me').get('scopes') == ['client1']
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -639,7 +648,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is False
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -647,7 +656,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/2',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -655,7 +664,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/3',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -663,7 +672,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/4',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -671,7 +680,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/5',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -679,7 +688,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -687,7 +696,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -695,7 +704,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -706,7 +715,7 @@ class TestEndpointsSync(object):
         assert response.json.get('scoped') is True
         assert response.json.get('id') == '1'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -714,7 +723,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/8',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -722,7 +731,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -733,7 +742,7 @@ class TestEndpointsSync(object):
         assert response.json.get('scoped') is True
         assert response.json.get('id') == '1'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -742,14 +751,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
 
     def test_scopes_user5(self, app_with_scopes, user5):
+        sanic_app, sanicjwt = app_with_scopes
         access_token = user5.json.get(
-            app_with_scopes.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+            sanicjwt.config.access_token_name, None)
 
-        _, response = app_with_scopes.test_client.get('/')
+        _, response = sanic_app.test_client.get('/')
         assert response.status == 200
         assert response.json.get('hello') == 'world'
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -760,7 +770,7 @@ class TestEndpointsSync(object):
         assert response.json.get('me').get('username') == 'user5'
         assert response.json.get('me').get('scopes') == ['admin']
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -770,7 +780,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is False
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -778,7 +788,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/2',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -786,7 +796,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/3',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -794,7 +804,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/4',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -804,7 +814,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/5',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -812,7 +822,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -820,7 +830,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/6/foo',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -828,7 +838,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/7/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -836,7 +846,7 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/8',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)
@@ -846,7 +856,7 @@ class TestEndpointsSync(object):
         assert response.json.get('protected') is True
         assert response.json.get('scoped') is True
 
-        _, response = app_with_scopes.test_client.get(
+        _, response = sanic_app.test_client.get(
             '/protected/scoped/9/1',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)

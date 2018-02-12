@@ -59,10 +59,15 @@ class Initialize:
         """
         config = self.config
 
-        self.bp.add_route(endpoints.AuthenticateEndpoint.as_view(config=config), '/')
-        self.bp.add_route(endpoints.RetrieveUserEndpoint.as_view(config=config), '/me')
-        self.bp.add_route(endpoints.VerifyEndpoint.as_view(config=config), '/verify')
-        self.bp.add_route(endpoints.RefreshEndpoint.as_view(config=config), '/refresh')
+        endpoint_mappings = (
+            ('AuthenticateEndpoint', 'authenticate'),
+            ('RetrieveUserEndpoint', 'retrieve_user'),
+            ('VerifyEndpoint', 'verify'),
+            ('RefreshEndpoint', 'refresh'),
+        )
+
+        for endpoint in endpoint_mappings:
+            self.__add_single_endpoint(*endpoint)
 
         if not self.instance_is_blueprint:
             self.instance.blueprint(
@@ -144,6 +149,11 @@ class Initialize:
     def __load_response(self):
         response = self.response_class()
         make_response(response)
+
+    def __add_single_endpoint(self, class_name, path_name):
+        view = getattr(endpoints, class_name)
+        path_name = getattr(self.config, 'path_to_{}'.format(path_name))
+        self.bp.add_route(view.as_view(config=self.config), path_name)
 
     @staticmethod
     def __get_app(instance, app=None):

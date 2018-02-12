@@ -110,9 +110,10 @@ class Authentication(BaseAuthentication):
     async def _get_payload(self, user):
         payload = await utils.call(
             self.build_payload, user)
-        # TODO:
-        # - Add verification check to make sure payload is a dict
-        #   with a `user_id` key
+
+        if not isinstance(payload, dict) or self.config.user_id not in payload:
+            raise exceptions.InvalidPayload
+
         payload = await utils.call(
             self.extend_payload, payload)
 

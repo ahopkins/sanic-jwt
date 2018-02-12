@@ -102,3 +102,9 @@ class InvalidConfiguration(SanicJWTException):
     def __init__(self, message=""):
         message = "An invalid setting was passed to the Sanic JWT configuration: " + str(message)
         super().__init__(message)
+
+
+class InvalidPayload(SanicJWTException):
+    def __init__(self, message=""):
+        message = "Payload must be a dictionary with a key mapped to SANIC_JWT_USER_ID"
+        super().__init__(message)

@@ -1,7 +1,7 @@
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
-from sanic_jwt import initialize
+from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
 
 blueprint = Blueprint('Test', '/test')
@@ -21,7 +21,7 @@ app = Sanic()
 
 app.blueprint(blueprint)
 
-initialize(
+sanicjwt = Initialize(
     app,
     authenticate=authenticate,
 )
@@ -38,8 +38,12 @@ def test_protected_blueprint():
             'password': 'abcxyz'
         })
 
-    access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME,
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name,
                                      None)
+
+    assert access_token is not None
 
     _, response = app.test_client.get(
         '/test/',

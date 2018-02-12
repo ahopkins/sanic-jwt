@@ -22,7 +22,7 @@ initialize(
     app,
     authenticate=lambda: True,
     class_views=[
-        ('/magic-login', MagicLoginHandler)     # The path will be relative to the url prefix (which defaults to /auth)
+        ('/magic-login', MagicLoginHandler)  # The path will be relative to the url prefix (which defaults to /auth)
     ]
 )
 

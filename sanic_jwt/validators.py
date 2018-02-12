@@ -1,4 +1,4 @@
-import asyncio
+from sanic_jwt import utils
 
 
 def validate_single_scope(required, user_scopes, require_all_actions=True):
@@ -25,8 +25,6 @@ def validate_single_scope(required, user_scopes, require_all_actions=True):
                 valid_actions = True
             else:
                 method = all if require_all_actions else any
-                print('requested', requested)
-                print('required', required)
                 valid_actions = method(x in requested[1] for x in required[1])
         else:
             valid_actions = len(requested[1]) == 0
@@ -39,11 +37,16 @@ def validate_single_scope(required, user_scopes, require_all_actions=True):
     return is_valid
 
 
-async def validate_scopes(request, scopes, user_scopes, require_all=True, require_all_actions=True, *args, **kwargs):
-    if asyncio.iscoroutinefunction(scopes):
-        scopes = await scopes(request, *args, **kwargs)
-    elif callable(scopes):
-        scopes = scopes(request, *args, **kwargs)
+async def validate_scopes(
+    request,
+    scopes,
+    user_scopes,
+    require_all=True,
+    require_all_actions=True,
+    *args,
+    **kwargs
+):
+    scopes = await utils.call(scopes, request, *args, **kwargs)
 
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]
@@ -56,7 +59,3 @@ async def validate_scopes(request, scopes, user_scopes, require_all=True, requir
             require_all_actions=require_all_actions
         ) for x in scopes
     )
-
-
-# entity:matrixadmin:node<34> [':matrixadmin']
-# print('True', validate_single_scope('entity:matrixadmin:node<34>', [':matrixadmin'], require_all_actions=False))

@@ -1,15 +1,11 @@
+from .validators import validate_scopes
 from functools import wraps
 from inspect import isawaitable
-
 from sanic.response import json
-
-from .validators import validate_scopes
 
 
 def protected(*args):
-
     def decorator(f):
-
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             if request.method == 'OPTIONS':

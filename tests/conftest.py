@@ -1,8 +1,8 @@
+import pytest
 from sanic import Sanic
 from sanic.response import json
 
-import pytest
-from sanic_jwt import exceptions, initialize
+from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 
@@ -12,9 +12,6 @@ class User(object):
         self.user_id = id
         self.username = username
         self.password = password
-
-    def __str__(self):
-        return "User(id='%s')" % self.id
 
     def to_dict(self):
         properties = [
@@ -63,7 +60,7 @@ def authenticate(username_table):
 def app(username_table, authenticate):
 
     sanic_app = Sanic()
-    initialize(
+    sanic_jwt = Initialize(
         sanic_app,
         authenticate=authenticate,
     )
@@ -77,4 +74,4 @@ def app(username_table, authenticate):
     async def protected_request(request):
         return json({"protected": True})
 
-    yield sanic_app
+    yield (sanic_app, sanic_jwt)

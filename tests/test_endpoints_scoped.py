@@ -1,11 +1,9 @@
+import pytest
 from sanic import Sanic
 from sanic.response import json
 
-import pytest
-from sanic_jwt import Initialize
-from sanic_jwt import exceptions
-from sanic_jwt.decorators import protected
-from sanic_jwt.decorators import scoped
+from sanic_jwt import exceptions, Initialize
+from sanic_jwt.decorators import protected, scoped
 
 
 class User(object):
@@ -46,7 +44,8 @@ def app_with_scopes():
         password = request.json.get('password', None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed('Missing username or password.')
+            raise exceptions.AuthenticationFailed(
+                'Missing username or password.')
 
         user = username_table.get(username, None)
         if user is None:

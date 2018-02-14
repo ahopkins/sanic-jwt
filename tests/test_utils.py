@@ -1,5 +1,6 @@
 import pytest
 from sanic_jwt import utils
+from pathlib import Path
 
 
 @pytest.mark.asyncio
@@ -20,3 +21,11 @@ async def test_call():
     assert await utils.call(async_func, a=0, b=2, c=1) == 3
     assert await utils.call(async_func, 1, 2, 3) == 6
     assert await utils.call(async_func) == 3
+
+
+def test_load_file_or_str():
+    fcontent = '3b$FGj@);[{~&+Lx>adYR+iG_QqGC3EI7FsbQAV@Nj&m&&mT\n'
+    p = Path(__file__).parent / 'resources' / 'test-file.txt'
+    assert utils.load_file_or_str(str(p)) == fcontent
+    assert utils.load_file_or_str(p) == fcontent
+    assert utils.load_file_or_str(fcontent) == fcontent

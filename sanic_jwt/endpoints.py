@@ -27,9 +27,8 @@ class AuthenticateEndpoint(BaseEndpoint):
         user = await utils.call(
             request.app.auth.authenticate, request, *args, **kwargs)
 
-        access_token, output = await response.get_access_token_output(request,
-                                                                      user,
-                                                                      self.config)
+        access_token, output = await response.get_access_token_output(
+            request, user, self.config)
 
         if config.refresh_token_enabled:
             refresh_token = await utils.call(
@@ -40,16 +39,13 @@ class AuthenticateEndpoint(BaseEndpoint):
         else:
             refresh_token = None
 
-        output.update(response.extend_authenticate(request,
-                                                   user=user,
-                                                   access_token=access_token,
-                                                   refresh_token=refresh_token))
+        output.update(response.extend_authenticate(
+            request, user=user, access_token=access_token,
+            refresh_token=refresh_token))
 
-        resp = response.get_token_reponse(request,
-                                          access_token,
-                                          output,
-                                          refresh_token=refresh_token,
-                                          config=self.config)
+        resp = response.get_token_reponse(
+            request, access_token, output, refresh_token=refresh_token,
+            config=self.config)
 
         return resp
 
@@ -80,9 +76,8 @@ class RetrieveUserEndpoint(BaseEndpoint):
             'me': me
         }
 
-        output.update(response.extend_retrieve_user(request,
-                                                    user=user,
-                                                    payload=payload,))
+        output.update(response.extend_retrieve_user(
+            request, user=user, payload=payload,))
 
         resp = json(output)
 
@@ -106,10 +101,7 @@ class VerifyEndpoint(BaseEndpoint):
             output.update({'reason': reason})
 
         output.update(response.extend_verify(request,))
-
-        resp = json(output, status=status)
-
-        return resp
+        return json(output, status=status)
 
 
 class RefreshEndpoint(BaseEndpoint):
@@ -136,17 +128,15 @@ class RefreshEndpoint(BaseEndpoint):
         if refresh_token != purported_token:
             raise exceptions.AuthenticationFailed()
 
-        access_token, output = await response.get_access_token_output(request,
-                                                                      user,
-                                                                      self.config)
+        access_token, output = await response.get_access_token_output(
+            request, user, self.config)
 
-        output.update(response.extend_refresh(request,
-                                              user=user,
-                                              access_token=access_token,
-                                              refresh_token=refresh_token,
-                                              purported_token=purported_token,
-                                              payload=payload,))
+        output.update(response.extend_refresh(
+            request, user=user, access_token=access_token,
+            refresh_token=refresh_token, purported_token=purported_token,
+            payload=payload,))
 
-        resp = response.get_token_reponse(request, access_token, output, config=self.config)
+        resp = response.get_token_reponse(request, access_token, output,
+                                          config=self.config)
 
         return resp

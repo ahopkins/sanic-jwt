@@ -28,6 +28,7 @@ tests_require = [
     'sanic',
     'pyjwt',
     # 'uvloop',  # XXX setup crashes by not being 'able to create executables'
+    'cryptography',
 ]
 
 extras_require = {

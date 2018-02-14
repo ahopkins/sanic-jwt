@@ -2,7 +2,11 @@ import binascii
 import datetime
 import importlib
 import inspect
+import logging
 import os
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
 
 
 def generate_token(n=24):
@@ -54,3 +58,17 @@ async def call(fn, *args, **kwargs):
     elif callable(fn):
         fn = fn(*args, **kwargs)
     return fn
+
+
+def load_file_or_str(path_or_str):
+    if isinstance(path_or_str, Path) and \
+            path_or_str.is_file():
+        logger.debug('reading {}'.format(str(path_or_str)))
+        return path_or_str.read_text()
+    elif isinstance(path_or_str, str):
+        p = Path(path_or_str)
+        if p.is_file():
+            return p.read_text()
+        else:
+            return path_or_str
+    return path_or_str

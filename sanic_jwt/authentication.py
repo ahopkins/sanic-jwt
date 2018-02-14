@@ -1,12 +1,13 @@
-import jwt
 import copy
+import logging
+from datetime import datetime, timedelta
 
-from datetime import datetime
-from datetime import timedelta
-from . import exceptions
-from . import utils
+import jwt
+
+from . import exceptions, utils
 from .configuration import Configuration
 
+logger = logging.getLogger(__name__)
 claim_label = {
     'iss': 'issuer',
     'iat': 'iat',
@@ -19,10 +20,12 @@ class BaseAuthentication:
     def __init__(self, app, config):
         self.app = app
         self.claims = ['exp']
+        self._secrets = {}  # simple cache if using keys from the FS
         if isinstance(config, Configuration):
             self.config = copy.deepcopy(config)
         else:
-            msg = "Sanic JWT was not initialized properly. It did not receive an instance of Configuration"
+            msg = 'Sanic JWT was not initialized properly. It did not '\
+                'received an instance of Configuration'
             raise exceptions.InitializationFailure(message=msg)
 
     async def build_payload(self, user, *args, **kwargs):
@@ -130,10 +133,25 @@ class Authentication(BaseAuthentication):
 
         return payload
 
-    def _get_secret(self):
+    def _get_secret(self, encode=False):
         # TODO:
         # - Ability to have per user secrets
-        return self.config.secret
+        if not self._secrets:
+            logger.debug('loading secret(s) into cache')
+            needs_private_key = \
+                self.config.algorithm.lower()[:2] in ('rs', 'es', 'ps')
+            self._secrets['needs_private_key'] = needs_private_key
+            self._secrets['public'] = \
+                utils.load_file_or_str(self.config.secret)
+            if needs_private_key:
+                logger.debug('the algorithm provided requires a private key')
+                self._secrets['private'] = \
+                    utils.load_file_or_str(self.config.secret_key)
+
+        if self._secrets.get('needs_private_key'):
+            if encode:
+                return self._secrets.get('private')
+        return self._secrets.get('public')
 
     def _get_token(self, request, refresh_token=False):
         cookie_token_name_key = 'cookie_access_token_name' \
@@ -185,7 +203,7 @@ class Authentication(BaseAuthentication):
 
     async def get_access_token(self, user):
         payload = await self._get_payload(user)
-        secret = self._get_secret()
+        secret = self._get_secret(True)
         algorithm = self._get_algorithm()
 
         return jwt.encode(payload, secret, algorithm=algorithm)

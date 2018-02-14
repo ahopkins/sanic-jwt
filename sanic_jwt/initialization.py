@@ -95,7 +95,8 @@ class Initialize:
 
     def __check_initialization(self):
         """
-        Confirm that required parameters were initialized and report back exceptions
+        Confirm that required parameters were initialized and report back
+        exceptions
         """
         config = self.config
         if hasattr(config, 'refresh_token_enabled') and \
@@ -137,7 +138,8 @@ class Initialize:
         for config_item in config_to_enable:
             if config_item[0] in self.kwargs:
                 list(map(lambda x: self.kwargs.update(
-                    {x: True, config_item[0]: self.kwargs.get(config_item[0])}),
+                    {x: True, config_item[0]:
+                        self.kwargs.get(config_item[0])}),
                     config_item[1]))
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)

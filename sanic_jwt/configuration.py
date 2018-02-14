@@ -1,4 +1,7 @@
 import copy
+import logging
+
+from . import exceptions
 
 
 defaults = {
@@ -30,6 +33,7 @@ defaults = {
     'scopes_enabled': False,
     'scopes_name': 'scopes',
     'secret': 'This is a big secret. Shhhhh',
+    'secret_key': None,
     'strict_slashes': False,
     'url_prefix': '/auth',
     'user_id': 'user_id',
@@ -49,6 +53,7 @@ class Configuration:
         self.defaults.update(kwargs)
 
         list(map(self.__map_config, self.defaults.items()))
+        self._validate_keys()
 
     def __map_config(self, config_item):
         key, value = config_item
@@ -56,10 +61,16 @@ class Configuration:
             setattr(self, key, value)
 
     def __iter__(self):
-        return ((x, getattr(self, x)) for x in self.defaults.keys())
+        return ((x, getattr(self, x)) for x in self.defaults.keys())  # noqa
 
     def __repr__(self):
-        return str(dict(iter(self)))
+        return str(dict(iter(self)))  # noqa
+
+    def _validate_keys(self):
+        logging.getLogger(__name__).debug('validating provided secret(s)')
+        if self.algorithm.lower()[:2] in ('rs', 'es', 'ps') and \
+                self.secret_key is None:
+            raise exceptions.RequiredKeysNotFound
 
     @staticmethod
     def extract_presets(app_config):

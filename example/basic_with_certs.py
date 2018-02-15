@@ -55,8 +55,8 @@ app = Sanic()
 initialize(
     app,
     authenticate=authenticate,
-    secret=public_key,
-    secret_key=private_key,
+    public_key=public_key,
+    private_key=private_key,
     algorithm='RS256')  # or RS384 or RS512
 
 

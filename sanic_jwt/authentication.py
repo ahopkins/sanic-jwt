@@ -138,19 +138,18 @@ class Authentication(BaseAuthentication):
         # - Ability to have per user secrets
         if not self._secrets:
             logger.debug('loading secret(s) into cache')
-            needs_private_key = \
-                self.config.algorithm.lower()[:2] in ('rs', 'es', 'ps')
-            self._secrets['needs_private_key'] = needs_private_key
+            is_asymmetric = utils.algorithm_is_asymmetric(
+                self.config.algorithm)
+            self._secrets['is_asymmetric'] = is_asymmetric
             self._secrets['public'] = \
                 utils.load_file_or_str(self.config.secret)
-            if needs_private_key:
+            if is_asymmetric:
                 logger.debug('the algorithm provided requires a private key')
                 self._secrets['private'] = \
-                    utils.load_file_or_str(self.config.secret_key)
+                    utils.load_file_or_str(self.config.private_key)
 
-        if self._secrets.get('needs_private_key'):
-            if encode:
-                return self._secrets.get('private')
+        if self._secrets.get('is_asymmetric') and encode:
+            return self._secrets.get('private')
         return self._secrets.get('public')
 
     def _get_token(self, request, refresh_token=False):

@@ -72,3 +72,14 @@ def load_file_or_str(path_or_str):
         else:
             return path_or_str
     return path_or_str
+
+
+def algorithm_is_asymmetric(algorithm):
+    """This is a simple method to verify the need to provide a private key to
+    a given ``algorithm``, as `documented by PyJWT
+    <https://pyjwt.readthedocs.io/en/latest/algorithms.html>`_
+
+    :param algorithm: the given algorithm, like HS256, ES384, RS512, PS256, etc
+    :return: True is algorithm is asymmetric
+    """
+    return algorithm.lower()[:2] in ('rs', 'es', 'ps')

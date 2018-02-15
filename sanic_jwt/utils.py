@@ -80,6 +80,6 @@ def algorithm_is_asymmetric(algorithm):
     <https://pyjwt.readthedocs.io/en/latest/algorithms.html>`_
 
     :param algorithm: the given algorithm, like HS256, ES384, RS512, PS256, etc
-    :return: True is algorithm is asymmetric
+    :return: True if algorithm is asymmetric
     """
     return algorithm.lower()[:2] in ('rs', 'es', 'ps')

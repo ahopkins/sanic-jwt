@@ -71,14 +71,6 @@ class Configuration:
     def __repr__(self):
         return str(dict(iter(self)))  # noqa
 
-    def _merge_aliases(self, config):
-        popped = {}
-        for k in aliases.keys():
-            if k in config:
-                popped[aliases[k]] = config.pop(k)
-        config.update(popped)
-        return config
-
     def _validate_keys(self):
         logging.getLogger(__name__).debug('validating provided secret(s)')
         if utils.algorithm_is_asymmetric(self.algorithm) and \
@@ -94,3 +86,12 @@ class Configuration:
             x.lower()[10:]: app_config.get(x)
             for x in filter(lambda x: x.startswith('SANIC_JWT'), app_config)
         }
+
+    @staticmethod
+    def _merge_aliases(config):
+        popped = {}
+        for k in aliases.keys():
+            if k in config:
+                popped[aliases[k]] = config.pop(k)
+        config.update(popped)
+        return config

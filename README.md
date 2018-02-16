@@ -1,5 +1,10 @@
 # Sanic JWT
 
+
+**FYI - Version 1.0 is just around the corner. Look for it around March 1, 2018**
+[See #58 for details](https://github.com/ahopkins/sanic-jwt/pull/58)
+
+
 [![Latest PyPI version](https://img.shields.io/pypi/v/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
 [![Version status](https://img.shields.io/pypi/status/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
 [![Python versions](https://img.shields.io/pypi/pyversions/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)

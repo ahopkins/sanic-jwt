@@ -67,10 +67,12 @@ class RetrieveUserEndpoint(BaseEndpoint):
         if not user:
             me = None
         else:
-            if hasattr(user, 'to_dict'):
+            if isinstance(user, dict):
+                me = user
+            elif hasattr(user, 'to_dict'):
                 me = await utils.call(user.to_dict)
-            else:
-                me = dict(user)
+            # else:
+            #     me = dict(user)
 
         output = {
             'me': me

@@ -62,15 +62,12 @@ async def call(fn, *args, **kwargs):
 
 def load_file_or_str(path_or_str):
     if isinstance(path_or_str, Path) and \
-            path_or_str.is_file():
-        logger.debug('reading {}'.format(str(path_or_str)))
+            os.path.isfile(str(path_or_str)):
+        logger.debug('reading file \"{}\"'.format(str(path_or_str)))
         return path_or_str.read_text()
     elif isinstance(path_or_str, str):
-        p = Path(path_or_str)
-        if p.is_file():
-            return p.read_text()
-        else:
-            return path_or_str
+        if os.path.isfile(path_or_str):
+            return Path(path_or_str).read_text()
     return path_or_str
 
 

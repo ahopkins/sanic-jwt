@@ -374,6 +374,31 @@ def test_jwt_crypto_wrong_keys():
     assert response.status == 500
 
 
+def test_jwt_crypto_very_long_path():
+    app = Sanic()
+    n = 16 * 1024
+
+    Initialize(
+        app,
+        authenticate=authenticate,
+        public_key=str(binascii.hexlify(os.urandom(n)), 'utf-8'),
+        private_key=str(binascii.hexlify(os.urandom(n)), 'utf-8'),
+        algorithm='RS256')
+
+    @app.route("/protected")
+    @protected()
+    async def protected_request(request):
+        return json({"protected": True})
+
+    _, response = app.test_client.post(
+        '/auth', json={
+            'username': 'foo',
+            'password': 'bar'
+        })
+
+    assert response.status == 500
+
+
 def test_jwt_crypto_missing_private_key(public_rsa_key):
     with pytest.raises(exceptions.RequiredKeysNotFound):
         Initialize(

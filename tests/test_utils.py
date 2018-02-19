@@ -1,5 +1,6 @@
 import pytest
 from sanic_jwt import utils
+from sanic_jwt import exceptions
 from pathlib import Path
 
 
@@ -29,3 +30,6 @@ def test_load_file_or_str():
     assert utils.load_file_or_str(str(p)) == fcontent
     assert utils.load_file_or_str(p) == fcontent
     assert utils.load_file_or_str(fcontent) == fcontent
+
+    with pytest.raises(exceptions.ProvidedPathNotFound):
+        utils.load_file_or_str(Path(__file__) / 'foobar')

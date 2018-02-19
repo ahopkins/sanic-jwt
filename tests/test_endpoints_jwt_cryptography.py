@@ -406,3 +406,46 @@ def test_jwt_crypto_missing_private_key(public_rsa_key):
             authenticate=lambda: True,
             secret=public_rsa_key,
             algorithm='RS256')
+
+
+def test_jwt_crypto_invalid_secret():
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            secret=None)
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(Sanic(), authenticate=lambda: True, public_key='')
+
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(Sanic(), authenticate=lambda: True, secret='     ')
+
+
+def test_jwt_crypto_invalid_public_key(public_rsa_key, private_rsa_key):
+    with pytest.raises(exceptions.RequiredKeysNotFound):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            public_key=public_rsa_key / 'foo',
+            private_key=private_rsa_key,
+            algorithm='RS256')
+
+
+def test_jwt_crypto_invalid_private_key(public_rsa_key, private_rsa_key):
+    with pytest.raises(exceptions.RequiredKeysNotFound):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            public_key=public_rsa_key,
+            private_key=private_rsa_key / 'bar',
+            algorithm='RS256')
+
+
+def test_jwt_crypto_invalid_both_keys(public_rsa_key, private_rsa_key):
+    with pytest.raises(exceptions.RequiredKeysNotFound):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            secret=public_rsa_key / 'foo',
+            private_key=private_rsa_key / 'bar',
+            algorithm='RS256')

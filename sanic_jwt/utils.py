@@ -6,6 +6,8 @@ import logging
 import os
 from pathlib import Path
 
+from . import exceptions
+
 logger = logging.getLogger(__name__)
 
 
@@ -61,10 +63,12 @@ async def call(fn, *args, **kwargs):
 
 
 def load_file_or_str(path_or_str):
-    if isinstance(path_or_str, Path) and \
-            os.path.isfile(str(path_or_str)):
-        logger.debug('reading file \"{}\"'.format(str(path_or_str)))
-        return path_or_str.read_text()
+    if isinstance(path_or_str, Path):
+        if os.path.isfile(str(path_or_str)):
+            logger.debug('reading file \"{}\"'.format(str(path_or_str)))
+            return path_or_str.read_text()
+        else:
+            raise exceptions.ProvidedPathNotFound
     elif isinstance(path_or_str, str):
         if os.path.isfile(path_or_str):
             return Path(path_or_str).read_text()

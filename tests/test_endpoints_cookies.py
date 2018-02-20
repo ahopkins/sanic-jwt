@@ -79,6 +79,8 @@ class TestEndpointsCookies(object):
             self, app_with_refresh_token, authenticated_response):
         _, sanicjwt = app_with_refresh_token
         key = sanicjwt.config.cookie_access_token_name
+        print(key)
+        print(authenticated_response.cookies.values())
         access_token_from_cookie = authenticated_response.cookies.get(key,
                                                                       None)
 

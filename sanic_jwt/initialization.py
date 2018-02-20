@@ -5,8 +5,7 @@ from sanic_jwt import exceptions
 from sanic_jwt import endpoints
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
-from sanic_jwt.response import Response
-from sanic_jwt.response import make_response
+from sanic_jwt.responses import Responses
 
 
 def initialize(*args, **kwargs):
@@ -34,7 +33,7 @@ class Initialize:
     """
     configuration_class = Configuration
     authentication_class = Authentication
-    response_class = Response
+    responses_class = Responses
 
     def __init__(self, instance, app=None, **kwargs):
         app = self.__get_app(instance, app=app)
@@ -46,12 +45,11 @@ class Initialize:
         self.instance = instance
 
         self.__load_configuration()
-        self.__load_response()
+        self.__load_responses()
         self.__check_initialization()
         self.__add_class_views()
         self.__add_endpoints()
         self.__initialize_instance()
-        self.__install_on_app()
 
     def __add_endpoints(self):
         """
@@ -68,7 +66,7 @@ class Initialize:
             self.__add_single_endpoint(*endpoint)
 
         self.bp.exception(exceptions.SanicJWTException)(
-            self.response.exception_response)
+            self.responses.exception_response)
 
         if not self.instance_is_blueprint:
             url_prefix = self._get_url_prefix()
@@ -113,8 +111,9 @@ class Initialize:
         """
         Take any predefined methods/handlers and insert them into Sanic JWT
         """
-        # Initialize instance of the Authentication class
         config = self.config
+
+        # Initialize instance of the Authentication class
         self.instance.auth = self.authentication_class(self.app, config=config)
 
         if 'authenticate' not in self.kwargs:
@@ -144,26 +143,23 @@ class Initialize:
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
 
-    def __install_on_app(self):
-        if not hasattr(self.app, 'jwt_inits'):
-            setattr(self.app, 'jwt_inits', {})
-        name = self.instance.name if self.instance_is_blueprint else 'App'
-        routes = self.instance.routes if self.instance_is_blueprint \
-            else self.instance.router.routes_all
-        self.app.jwt_inits[name] = {
-            'instance': self.instance,
-            'routes': routes,
-        }
-
-    def __load_response(self):
-        response = self.response_class()
-        make_response(response)
-        self.response = response
+    def __load_responses(self):
+        self.responses = self.responses_class(self.config, self.instance)
 
     def __add_single_endpoint(self, class_name, path_name):
         view = getattr(endpoints, class_name)
         path_name = getattr(self.config, 'path_to_{}'.format(path_name))
-        self.bp.add_route(view.as_view(config=self.config), path_name)
+        if self.instance_is_blueprint:
+            path_name = self._get_url_prefix() + path_name
+            self.instance.add_route(
+                view.as_view(config=self.config,
+                             instance=self.instance,
+                             responses=self.responses), path_name)
+        else:
+            self.bp.add_route(
+                view.as_view(config=self.config,
+                             instance=self.instance,
+                             responses=self.responses), path_name)
 
     def _get_url_prefix(self):
         bp_url_prefix = self.bp.url_prefix\

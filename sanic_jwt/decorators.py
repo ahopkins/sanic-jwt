@@ -2,47 +2,39 @@ from .validators import validate_scopes
 from functools import wraps
 from inspect import isawaitable
 from sanic.response import json
+from sanic import Blueprint
 
 
-def __base_protected_decorator(f):
-    @wraps(f)
-    async def decorated_function(request, *args, **kwargs):
-        if request.method == 'OPTIONS':
-            response = f(request, *args, **kwargs)
-            if isawaitable(response):
-                return await response
-            return response
+def protected(*pargs):
+    def decorator(f):
+        @wraps(f)
+        async def decorated_function(request, *args, **kwargs):
+            if pargs and isinstance(pargs[0], Blueprint):
+                instance = pargs[0]
+            else:
+                instance = request.app
 
-        instance = request.app
-        # import pprint
-        # pprint.pprint(instance.router.routes_all)
-        # pprint.pprint(request.app.jwt_inits)
-        # pprint.pprint(dir(request))
-        # pprint.pprint(request.path)
-        # pprint.pprint(f.__name__)
+            if request.method == 'OPTIONS':
+                response = f(request, *args, **kwargs)
+                if isawaitable(response):
+                    return await response
+                return response
 
-        is_authorized = instance.auth.is_authenticated(
-            request, *args, **kwargs)
+            is_authorized = instance.auth.is_authenticated(
+                request, *args, **kwargs)
 
-        if is_authorized:
-            response = f(request, *args, **kwargs)
-            if isawaitable(response):
-                return await response
-            return response
-        else:
-            # the user is not authorized.
-            return json({
-                'status': 'not_authorized',
-            }, 403)
-    return decorated_function
-
-
-def protected():
-    return __base_protected_decorator
-
-
-def protected_class_view(*args):
-    return __base_protected_decorator(*args)
+            if is_authorized:
+                response = f(request, *args, **kwargs)
+                if isawaitable(response):
+                    return await response
+                return response
+            else:
+                # the user is not authorized.
+                return json({
+                    'status': 'not_authorized',
+                }, 403)
+        return decorated_function
+    return decorator
 
 
 def scoped(scopes, require_all=True, require_all_actions=True):

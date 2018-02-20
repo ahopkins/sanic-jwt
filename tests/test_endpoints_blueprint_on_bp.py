@@ -8,13 +8,13 @@ blueprint = Blueprint('Test')
 
 
 @blueprint.get("/", strict_slashes=True)
-@protected()
+@protected(blueprint)
 def protected_hello_world(request):
     return json({'message': 'hello world'})
 
 
 @blueprint.get("/user/<id>", strict_slashes=True)
-@protected()
+@protected(blueprint)
 def protected_user(request, id):
     return json({'user': id})
 
@@ -25,7 +25,6 @@ async def authenticate(request, *args, **kwargs):
 
 app = Sanic()
 
-app.blueprint(blueprint, url_prefix='/test')
 
 sanicjwt = Initialize(
     blueprint,
@@ -33,31 +32,32 @@ sanicjwt = Initialize(
     authenticate=authenticate,
 )
 
+app.blueprint(blueprint, url_prefix='/test')
 
-# def test_protected_blueprint():
-#     _, response = app.test_client.get('/test/')
-#     # print(response.body)
 
-#     assert response.status == 401
+def test_protected_blueprint():
+    _, response = app.test_client.get('/test/')
 
-#     _, response = app.test_client.post(
-#         '/test/auth', json={
-#             'username': 'user1',
-#             'password': 'abcxyz'
-#         })
+    assert response.status == 401
 
-#     assert response.status == 200
+    _, response = app.test_client.post(
+        '/test/auth', json={
+            'username': 'user1',
+            'password': 'abcxyz'
+        })
 
-#     access_token = response.json.get(sanicjwt.config.access_token_name,
-#                                      None)
+    assert response.status == 200
 
-#     assert access_token is not None
+    access_token = response.json.get(sanicjwt.config.access_token_name,
+                                     None)
 
-#     _, response = app.test_client.get(
-#         '/test/',
-#         headers={
-#             'Authorization': 'Bearer {}'.format(access_token)
-#         })
+    assert access_token is not None
 
-#     assert response.status == 200
-#     assert response.json.get('message') == 'hello world'
+    _, response = app.test_client.get(
+        '/test/',
+        headers={
+            'Authorization': 'Bearer {}'.format(access_token)
+        })
+
+    assert response.status == 200
+    assert response.json.get('message') == 'hello world'

@@ -1,18 +1,19 @@
-import importlib
 from sanic.response import json
+from .base import BaseDerivative
 
 
-class Response:
-    @staticmethod
-    async def get_access_token_output(request, user, config):
-        access_token = await request.app.auth.get_access_token(user)
+class Responses(BaseDerivative):
+    async def get_access_token_output(self, request, user, config):
+        instance = request.app if hasattr(request.app, 'auth') \
+            else self.instance
+        access_token = await instance.auth.get_access_token(user)
 
         output = {config.access_token_name: access_token}
 
         return access_token, output
 
-    @staticmethod
-    def get_token_reponse(request,
+    def get_token_reponse(self,
+                          request,
                           access_token,
                           output,
                           config,
@@ -67,11 +68,3 @@ class Response:
         return json({
             'exception': str(exception)
         }, status=exception.status_code)
-
-
-def make_response(r):
-    # TODO:
-    # - Find a better solution to assigning to the module's response attribute
-    module = importlib.import_module('sanic_jwt.endpoints')
-    if module.response is None:
-        setattr(module, 'response', r)

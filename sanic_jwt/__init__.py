@@ -4,7 +4,7 @@ from .authentication import Authentication
 from .initialization import Initialize
 from .initialization import initialize
 from .configuration import Configuration
-from .response import Response
+from .responses import Responses
 from .decorators import protected
 from .decorators import scoped
 
@@ -16,7 +16,7 @@ __all__ = [
     'Authentication',
     'Initialize',
     'Configuration',
-    'Response',
+    'Responses',
     'initialize',
     'protected',
     'scoped',

@@ -195,7 +195,7 @@ class Authentication(BaseAuthentication):
         secret = self._get_secret(True)
         algorithm = self._get_algorithm()
 
-        return jwt.encode(payload, secret, algorithm=algorithm)
+        return jwt.encode(payload, secret, algorithm=algorithm).decode('utf-8')
 
     async def get_refresh_token(self, request, user):
         refresh_token = utils.generate_token()

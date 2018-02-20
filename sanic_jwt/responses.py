@@ -12,8 +12,8 @@ class Responses(BaseDerivative):
 
         return access_token, output
 
-    def get_token_reponse(self,
-                          request,
+    @staticmethod
+    def get_token_reponse(request,
                           access_token,
                           output,
                           config,

@@ -4,34 +4,45 @@ from inspect import isawaitable
 from sanic.response import json
 
 
-def protected(*args):
-    def decorator(f):
-        @wraps(f)
-        async def decorated_function(request, *args, **kwargs):
-            if request.method == 'OPTIONS':
-                response = f(request, *args, **kwargs)
-                if isawaitable(response):
-                    return await response
-                return response
+def __base_protected_decorator(f):
+    @wraps(f)
+    async def decorated_function(request, *args, **kwargs):
+        if request.method == 'OPTIONS':
+            response = f(request, *args, **kwargs)
+            if isawaitable(response):
+                return await response
+            return response
 
-            is_authorized = request.app.auth.is_authenticated(
-                request, *args, **kwargs)
+        instance = request.app
+        # import pprint
+        # pprint.pprint(instance.router.routes_all)
+        # pprint.pprint(request.app.jwt_inits)
+        # pprint.pprint(dir(request))
+        # pprint.pprint(request.path)
+        # pprint.pprint(f.__name__)
 
-            if is_authorized:
-                response = f(request, *args, **kwargs)
-                if isawaitable(response):
-                    return await response
-                return response
-            else:
-                # the user is not authorized.
-                return json({
-                    'status': 'not_authorized',
-                }, 403)
-        return decorated_function
-    if args:
-        return decorator(*args)
-    else:
-        return decorator
+        is_authorized = instance.auth.is_authenticated(
+            request, *args, **kwargs)
+
+        if is_authorized:
+            response = f(request, *args, **kwargs)
+            if isawaitable(response):
+                return await response
+            return response
+        else:
+            # the user is not authorized.
+            return json({
+                'status': 'not_authorized',
+            }, 403)
+    return decorated_function
+
+
+def protected():
+    return __base_protected_decorator
+
+
+def protected_class_view(*args):
+    return __base_protected_decorator(*args)
 
 
 def scoped(scopes, require_all=True, require_all_actions=True):
@@ -41,8 +52,9 @@ def scoped(scopes, require_all=True, require_all_actions=True):
             is_authenticated = request.app.auth.is_authenticated(
                 request, *args, **kwargs)
             if is_authenticated:
+                instance = request.app
                 # Retrieve the scopes from the payload
-                user_scopes = request.app.auth.retrieve_scopes(request)
+                user_scopes = instance.auth.retrieve_scopes(request)
                 if user_scopes is None:
                     # If there are no defined scopes in the payload,
                     # deny access

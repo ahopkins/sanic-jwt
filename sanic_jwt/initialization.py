@@ -51,13 +51,12 @@ class Initialize:
         self.__add_class_views()
         self.__add_endpoints()
         self.__initialize_instance()
+        self.__install_on_app()
 
     def __add_endpoints(self):
         """
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
-        config = self.config
-
         endpoint_mappings = (
             ('AuthenticateEndpoint', 'authenticate'),
             ('RetrieveUserEndpoint', 'retrieve_user'),
@@ -72,8 +71,9 @@ class Initialize:
             self.response.exception_response)
 
         if not self.instance_is_blueprint:
+            url_prefix = self._get_url_prefix()
             self.instance.blueprint(
-                self.bp, url_prefix=config.url_prefix)
+                self.bp, url_prefix=url_prefix)
 
     def __add_class_views(self):
         """
@@ -144,6 +144,17 @@ class Initialize:
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
 
+    def __install_on_app(self):
+        if not hasattr(self.app, 'jwt_inits'):
+            setattr(self.app, 'jwt_inits', {})
+        name = self.instance.name if self.instance_is_blueprint else 'App'
+        routes = self.instance.routes if self.instance_is_blueprint \
+            else self.instance.router.routes_all
+        self.app.jwt_inits[name] = {
+            'instance': self.instance,
+            'routes': routes,
+        }
+
     def __load_response(self):
         response = self.response_class()
         make_response(response)
@@ -153,6 +164,13 @@ class Initialize:
         view = getattr(endpoints, class_name)
         path_name = getattr(self.config, 'path_to_{}'.format(path_name))
         self.bp.add_route(view.as_view(config=self.config), path_name)
+
+    def _get_url_prefix(self):
+        bp_url_prefix = self.bp.url_prefix\
+            if self.bp.url_prefix is not None else ''
+        config_url_prefix = self.config.url_prefix
+        url_prefix = bp_url_prefix + config_url_prefix
+        return url_prefix
 
     @staticmethod
     def __get_app(instance, app=None):

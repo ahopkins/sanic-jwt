@@ -4,7 +4,7 @@ from sanic import Sanic
 from sanic.response import json
 from sanic_jwt import exceptions
 from sanic_jwt import Initialize
-from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import protected_class_view
 from sanic.views import HTTPMethodView
 
 
@@ -60,7 +60,7 @@ class PublicView(HTTPMethodView):
 
 
 class ProtectedView(HTTPMethodView):
-    decorators = [protected]
+    decorators = [protected_class_view]
 
     async def get(self, request):
         return json({"protected": True})

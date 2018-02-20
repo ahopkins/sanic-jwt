@@ -318,6 +318,9 @@ def test_jwt_rsapss_crypto_from_str(public_rsa_key, private_rsa_key):
 def test_jwt_ec_crypto_from_str(public_ec_key, private_ec_key):
     app = Sanic()
 
+    # print(public_ec_key.read_text())
+    # print(private_ec_key.read_text())
+
     sanicjwt = Initialize(
         app,
         authenticate=authenticate,

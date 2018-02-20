@@ -112,3 +112,51 @@ def test_initialize_class_on_non_app_or_bp():
 
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(bp, app=app, authenticate=lambda: True)
+
+
+def test_initialize_class_on_multiple_blueprints():
+    app = Sanic()
+    bp1 = Blueprint('test1')
+    app.blueprint(bp1)
+    bp2 = Blueprint('test2')
+    app.blueprint(bp2)
+
+    sanicjwt1 = Initialize(bp1, app=app, authenticate=lambda: True)
+    sanicjwt2 = Initialize(
+        bp2, app=app, authenticate=lambda: True, access_token_name='token')
+
+    assert sanicjwt1.config.access_token_name == 'access_token'
+    assert sanicjwt2.config.access_token_name == 'token'
+
+
+def test_initialize_class_on_app_and_blueprint():
+    app = Sanic()
+    bp = Blueprint('test')
+    app.blueprint(bp)
+
+    sanicjwt1 = Initialize(app, authenticate=lambda: True)
+    sanicjwt2 = Initialize(
+        bp, app=app, authenticate=lambda: True, access_token_name='token')
+
+    assert sanicjwt1.config.access_token_name == 'access_token'
+    assert sanicjwt2.config.access_token_name == 'token'
+
+
+def test_initialize_class_on_blueprint_with_url_prefix():
+    app = Sanic()
+    bp = Blueprint('test', url_prefix='/test')
+    app.blueprint(bp)
+
+    init = Initialize(bp, app=app, authenticate=lambda: True)
+
+    assert init._get_url_prefix() == '/test/auth'
+
+
+def test_initialize_class_on_blueprint_with_url_prefix_and_config():
+    app = Sanic()
+    bp = Blueprint('test', url_prefix='/test')
+    app.blueprint(bp)
+
+    init = Initialize(bp, app=app, authenticate=lambda: True, url_prefix='/a')
+
+    assert init._get_url_prefix() == '/test/a'

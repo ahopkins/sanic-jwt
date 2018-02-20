@@ -21,7 +21,7 @@ class Response:
 
         if config.cookie_set:
             key = config.cookie_access_token_name
-            response.cookies[key] = str(access_token, 'utf-8')
+            response.cookies[key] = access_token
             response.cookies[key]['domain'] = \
                 config.cookie_domain
             response.cookies[key]['httponly'] = \

@@ -20,7 +20,6 @@ class BaseAuthentication:
     def __init__(self, app, config):
         self.app = app
         self.claims = ['exp']
-        self._secrets = {}  # simple cache if using keys from the FS
         if isinstance(config, Configuration):
             self.config = copy.deepcopy(config)
         else:
@@ -136,21 +135,12 @@ class Authentication(BaseAuthentication):
     def _get_secret(self, encode=False):
         # TODO:
         # - Ability to have per user secrets
-        if not self._secrets:
-            logger.debug('loading secret(s) into cache')
-            is_asymmetric = utils.algorithm_is_asymmetric(
+        if not hasattr(self, '_is_asymmetric'):
+            self._is_asymmetric = utils.algorithm_is_asymmetric(
                 self.config.algorithm)
-            self._secrets['is_asymmetric'] = is_asymmetric
-            self._secrets['public'] = \
-                utils.load_file_or_str(self.config.secret)
-            if is_asymmetric:
-                logger.debug('the algorithm provided requires a private key')
-                self._secrets['private'] = \
-                    utils.load_file_or_str(self.config.private_key)
-
-        if self._secrets.get('is_asymmetric') and encode:
-            return self._secrets.get('private')
-        return self._secrets.get('public')
+        if self._is_asymmetric and encode:
+            return self.config.private_key
+        return self.config.secret
 
     def _get_token(self, request, refresh_token=False):
         cookie_token_name_key = 'cookie_access_token_name' \
@@ -205,7 +195,7 @@ class Authentication(BaseAuthentication):
         secret = self._get_secret(True)
         algorithm = self._get_algorithm()
 
-        return jwt.encode(payload, secret, algorithm=algorithm)
+        return jwt.encode(payload, secret, algorithm=algorithm).decode('utf-8')
 
     async def get_refresh_token(self, request, user):
         refresh_token = utils.generate_token()

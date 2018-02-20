@@ -93,7 +93,7 @@ Response ::
 
 .. note::
 
-    Because this package does not know about you user management layer, you need to have a user object that either is a dict or a object instance with a ``to_dict()`` or ``__dict__`` method. The output of these methods will be used to generate the ``/me`` response.
+    Because this package does not know about you user management layer, you need to have a user object that either is a dict or a object instance with a ``to_dict()`` method (this order is respected). The output of these methods will be used to generate the ``/me`` response.
 
 ------------
 

@@ -45,7 +45,7 @@ aliases = {
     'public_key': 'secret',
 }
 
-
+logger = logging.getLogger(__name__)
 config = None
 
 
@@ -58,7 +58,9 @@ class Configuration:
         self.defaults.update(self.kwargs)
 
         list(map(self.__map_config, self.defaults.items()))
+        self._validate_secret()
         self._validate_keys()
+        self._load_keys()
 
     def __map_config(self, config_item):
         key, value = config_item
@@ -71,11 +73,43 @@ class Configuration:
     def __repr__(self):
         return str(dict(iter(self)))  # noqa
 
+    def _validate_secret(self):
+        logger.debug('validating provided secret')
+        if self.secret is None or (
+                isinstance(self.secret, str) and self.secret.strip() == ''):
+            raise exceptions.InvalidConfiguration(
+                'the SANIC_JWT_SECRET parameter cannot be None nor an empty '
+                'string')
+
     def _validate_keys(self):
-        logging.getLogger(__name__).debug('validating provided secret(s)')
-        if utils.algorithm_is_asymmetric(self.algorithm) and \
-                self.private_key is None:
+        logger.debug('validating keys (if needed)')
+        if utils.algorithm_is_asymmetric(self.algorithm) and (
+            self.private_key is None or (
+                isinstance(self.private_key, str) and
+                self.private_key.strip() == ''
+            )
+        ):
             raise exceptions.RequiredKeysNotFound
+
+    def _load_keys(self):
+        logger.debug('loading secret and/or keys (if needed)')
+        try:
+            self.secret = utils.load_file_or_str(self.secret)
+            if utils.algorithm_is_asymmetric(self.algorithm):
+                self.private_key = utils.load_file_or_str(self.private_key)
+        except exceptions.ProvidedPathNotFound as exc:
+            if utils.algorithm_is_asymmetric(self.algorithm):
+                raise exceptions.RequiredKeysNotFound
+            raise exc
+
+    @staticmethod
+    def _merge_aliases(config):
+        popped = {}
+        for k in aliases.keys():
+            if k in config:
+                popped[aliases[k]] = config.pop(k)
+        config.update(popped)
+        return config
 
     @staticmethod
     def extract_presets(app_config):
@@ -86,12 +120,3 @@ class Configuration:
             x.lower()[10:]: app_config.get(x)
             for x in filter(lambda x: x.startswith('SANIC_JWT'), app_config)
         }
-
-    @staticmethod
-    def _merge_aliases(config):
-        popped = {}
-        for k in aliases.keys():
-            if k in config:
-                popped[aliases[k]] = config.pop(k)
-        config.update(popped)
-        return config

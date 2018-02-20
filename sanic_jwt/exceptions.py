@@ -147,7 +147,15 @@ class RequiredKeysNotFound(SanicJWTException):
 
     def __init__(
             self,
-            message='You must provide SANIC_JWT_SECRET and '
-                    'SANIC_JWT_SECRET_KEY when using cryptographic algorithms '
-                    'like RS* or EC*'):
+            message='You must provide both (valid) SANIC_JWT_PUBLIC_KEY and '
+                    'SANIC_JWT_PRIVATE_KEY when using asymmetric '
+                    'cryptographic algorithms like RS*, EC* or PS*'
+    ):
+        super().__init__(message)
+
+
+class ProvidedPathNotFound(SanicJWTException):
+
+    def __init__(self,
+                 message='The Path object given is not a valid file'):
         super().__init__(message)

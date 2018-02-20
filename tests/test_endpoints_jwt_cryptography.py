@@ -377,10 +377,78 @@ def test_jwt_crypto_wrong_keys():
     assert response.status == 500
 
 
+def test_jwt_crypto_very_long_path():
+    app = Sanic()
+    n = 16 * 1024
+
+    Initialize(
+        app,
+        authenticate=authenticate,
+        public_key=str(binascii.hexlify(os.urandom(n)), 'utf-8'),
+        private_key=str(binascii.hexlify(os.urandom(n)), 'utf-8'),
+        algorithm='RS256')
+
+    @app.route("/protected")
+    @protected()
+    async def protected_request(request):
+        return json({"protected": True})
+
+    _, response = app.test_client.post(
+        '/auth', json={
+            'username': 'foo',
+            'password': 'bar'
+        })
+
+    assert response.status == 500
+
+
 def test_jwt_crypto_missing_private_key(public_rsa_key):
     with pytest.raises(exceptions.RequiredKeysNotFound):
         Initialize(
             Sanic(),
             authenticate=lambda: True,
             secret=public_rsa_key,
+            algorithm='RS256')
+
+
+def test_jwt_crypto_invalid_secret():
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            secret=None)
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(Sanic(), authenticate=lambda: True, public_key='')
+
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(Sanic(), authenticate=lambda: True, secret='     ')
+
+
+def test_jwt_crypto_invalid_public_key(public_rsa_key, private_rsa_key):
+    with pytest.raises(exceptions.RequiredKeysNotFound):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            public_key=public_rsa_key / 'foo',
+            private_key=private_rsa_key,
+            algorithm='RS256')
+
+
+def test_jwt_crypto_invalid_private_key(public_rsa_key, private_rsa_key):
+    with pytest.raises(exceptions.RequiredKeysNotFound):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            public_key=public_rsa_key,
+            private_key=private_rsa_key / 'bar',
+            algorithm='RS256')
+
+
+def test_jwt_crypto_invalid_both_keys(public_rsa_key, private_rsa_key):
+    with pytest.raises(exceptions.RequiredKeysNotFound):
+        Initialize(
+            Sanic(),
+            authenticate=lambda: True,
+            secret=public_rsa_key / 'foo',
+            private_key=private_rsa_key / 'bar',
             algorithm='RS256')

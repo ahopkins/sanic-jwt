@@ -22,7 +22,7 @@ class AuthenticateEndpoint(BaseEndpoint):
             self.instance.auth.authenticate, request, *args, **kwargs)
 
         access_token, output = await self.responses.get_access_token_output(
-            request, user, self.config)
+            request, user, self.config, self.instance)
 
         if config.refresh_token_enabled:
             refresh_token = await utils.call(
@@ -123,7 +123,7 @@ class RefreshEndpoint(BaseEndpoint):
             raise exceptions.AuthenticationFailed()
 
         access_token, output = await self.responses.get_access_token_output(
-            request, user, self.config)
+            request, user, self.config, self.instance)
 
         output.update(self.responses.extend_refresh(
             request, user=user, access_token=access_token,

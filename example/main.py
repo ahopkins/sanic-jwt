@@ -74,7 +74,7 @@ app.config.SANIC_JWT_CLAIM_AUD = 'bar:foo'
 
 class User(object):
     def __init__(self, id, username, password):
-        setattr(self, app.config.SANIC_JWT_USER_ID, id)
+        setattr(self, 'user_id', id)
         self.username = username
         self.password = password
 
@@ -83,12 +83,17 @@ class User(object):
 
     def serialized(self):
         output = [
-            getattr(self, app.config.SANIC_JWT_USER_ID),
+            getattr(self, 'user_id'),
             self.username,
             self.password,
             getattr(self, 'refresh_token', ''),
         ]
         return output
+
+    def to_dict(self):
+        return {
+            'user_id': self.user_id
+        }
 
 
 users = []
@@ -108,7 +113,7 @@ with open(file_path, 'r') as file:
         users.append(user)
 
 username_table = {u.username: u for u in users}
-userid_table = {getattr(u, app.config.SANIC_JWT_USER_ID): u for u in users}
+userid_table = {getattr(u, 'user_id'): u for u in users}
 
 
 def save_users():

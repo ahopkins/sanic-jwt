@@ -3,9 +3,8 @@ from .base import BaseDerivative
 
 
 class Responses(BaseDerivative):
-    async def get_access_token_output(self, request, user, config):
-        instance = request.app if hasattr(request.app, 'auth') \
-            else self.instance
+    @staticmethod
+    async def get_access_token_output(request, user, config, instance):
         access_token = await instance.auth.get_access_token(user)
 
         output = {config.access_token_name: access_token}

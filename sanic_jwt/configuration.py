@@ -42,6 +42,7 @@ defaults = {
 }
 
 aliases = {
+    'cookie_token_name': 'cookie_access_token_name',
     'public_key': 'secret',
 }
 

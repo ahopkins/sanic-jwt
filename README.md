@@ -2,7 +2,10 @@
 
 
 **FYI - Version 1.0 is just around the corner. Look for it around March 1, 2018**
+
 [See #58 for details](https://github.com/ahopkins/sanic-jwt/pull/58)
+
+**THE BELOW DOCUMENTATION IS OUT OF DATE WITH THE CURRENT MASTER BRANCH, WHICH NOW HAS THE V1 CODEBASE IN IT. VERSION 1 IS NEARLY 100% BACKWARDS COMPATIBLE, SO THE BELOW IS APPLICABLE. HOWEVER, IT IS RECOMMENDED THAT YOU ADOPT THE NEW `Initialize` CLASS. SEE THE TESTS FOR EXAMPLES. UPDATED DOCUMENTATION IS ON ITS WAY.**
 
 
 [![Latest PyPI version](https://img.shields.io/pypi/v/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)

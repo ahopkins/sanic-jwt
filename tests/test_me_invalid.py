@@ -3,17 +3,19 @@ import pytest
 
 @pytest.fixture
 def access_token(app):
-    _, response = app.test_client.post(
+    sanic_app, sanic_jwt = app
+    _, response = sanic_app.test_client.post(
         '/auth', json={
             'username': 'user1',
             'password': 'abcxyz'
         })
-    return response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+    return response.json.get(sanic_jwt.config.access_token_name, None)
 
 
 def test_me(app, access_token):
     with pytest.raises(Exception):
-        _, response = app.test_client.get(
+        sanic_app, _ = app
+        _, response = sanic_app.test_client.get(
             '/auth/me',
             headers={
                 'Authorization': 'Bearer {}'.format(access_token)

@@ -4,28 +4,30 @@ import pytest
 
 @pytest.fixture
 def access_token(app):
-    _, response = app.test_client.post('/auth', json={
+    sanic_app, sanic_jwt = app
+    _, response = sanic_app.test_client.post('/auth', json={
         'username': 'user1',
         'password': 'abcxyz'
     })
-    return response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME, None)
+    return response.json.get(sanic_jwt.config.access_token_name, None)
 
 
 @pytest.fixture
 def payload(app, access_token):
-    return jwt.decode(access_token, app.config.SANIC_JWT_SECRET)
+    _, sanic_jwt = app
+    return jwt.decode(access_token, sanic_jwt.config.secret)
 
 
 class TestEndpointsAuth(object):
-
     def dispatch(self, path, method, app, access_token):
+        sanic_app, sanic_jwt = app
         header_token = '{} {}'.format(
-            app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX, access_token)
-        method = getattr(app.test_client, method)
+            sanic_jwt.config.authorization_header_prefix, access_token)
+        method = getattr(sanic_app.test_client, method)
         request, response = method(
             path,
             headers={
-                app.config.SANIC_JWT_AUTHORIZATION_HEADER: header_token
+                sanic_jwt.config.authorization_header: header_token
             })
         return request, response
 

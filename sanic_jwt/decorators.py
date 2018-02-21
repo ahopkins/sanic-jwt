@@ -1,24 +1,26 @@
+from .validators import validate_scopes
 from functools import wraps
 from inspect import isawaitable
-
 from sanic.response import json
+from sanic import Blueprint
 
-from .validators import validate_scopes
 
-
-def protected(*args):
-
+def protected(initialized=None):
     def decorator(f):
-
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
+            if initialized and isinstance(initialized, Blueprint):
+                instance = initialized
+            else:
+                instance = request.app
+
             if request.method == 'OPTIONS':
                 response = f(request, *args, **kwargs)
                 if isawaitable(response):
                     return await response
                 return response
 
-            is_authorized = request.app.auth.is_authenticated(
+            is_authorized = instance.auth.is_authenticated(
                 request, *args, **kwargs)
 
             if is_authorized:
@@ -32,21 +34,23 @@ def protected(*args):
                     'status': 'not_authorized',
                 }, 403)
         return decorated_function
-    if args:
-        return decorator(*args)
-    else:
-        return decorator
+    return decorator
 
 
-def scoped(scopes, require_all=True, require_all_actions=True):
+def scoped(scopes, require_all=True, require_all_actions=True, initialized=None):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            is_authenticated = request.app.auth.is_authenticated(
+            if initialized and isinstance(initialized, Blueprint):
+                instance = initialized
+            else:
+                instance = request.app
+
+            is_authenticated = instance.auth.is_authenticated(
                 request, *args, **kwargs)
             if is_authenticated:
                 # Retrieve the scopes from the payload
-                user_scopes = request.app.auth.retrieve_scopes(request)
+                user_scopes = instance.auth.retrieve_scopes(request)
                 if user_scopes is None:
                     # If there are no defined scopes in the payload,
                     # deny access

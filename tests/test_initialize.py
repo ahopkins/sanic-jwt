@@ -1,17 +1,22 @@
+from sanic import Blueprint
 from sanic import Sanic
 
 import pytest
-from sanic_jwt import exceptions, initialize
+
+from sanic_jwt import Initialize
+from sanic_jwt import exceptions
+from sanic_jwt import initialize
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_ommitted():
     app = Sanic()
-    app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
+    # app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
-        initialize(
+        Initialize(
             app,
             authenticate=lambda: True,
+            refresh_token_enabled=True,
         )
 
 
@@ -20,7 +25,7 @@ def test_store_refresh_token_ommitted():
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
-        initialize(
+        Initialize(
             app,
             authenticate=lambda: True,
             retrieve_refresh_token=lambda: True,
@@ -62,3 +67,96 @@ def test_invalid_classview():
     with pytest.raises(exceptions.InvalidClassViewsFormat):
         initialize(
             app, authenticate=lambda: True, class_views=[(object, NotAView)])
+
+
+def test_initialize_class_missing_authenticate():
+    app = Sanic()
+
+    with pytest.raises(exceptions.AuthenticateNotImplemented):
+        Initialize(app)
+
+
+def test_initialize_class():
+    app = Sanic()
+    Initialize(app, authenticate=lambda: True)
+
+    assert True
+
+
+def test_initialize_class_on_blueprint_missing_app():
+    app = Sanic()
+    bp = Blueprint('test')
+    app.blueprint(bp)
+
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(bp, authenticate=lambda: True)
+
+
+def test_initialize_class_on_blueprint():
+    app = Sanic()
+    bp = Blueprint('test')
+    app.blueprint(bp)
+
+    Initialize(bp, app=app, authenticate=lambda: True)
+
+    assert True
+
+
+def test_initialize_class_on_non_app_or_bp():
+    app = Sanic()
+
+    class NotAnAppOrBP(object):
+        pass
+
+    bp = NotAnAppOrBP()
+
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(bp, app=app, authenticate=lambda: True)
+
+
+def test_initialize_class_on_multiple_blueprints():
+    app = Sanic()
+    bp1 = Blueprint('test1')
+    app.blueprint(bp1)
+    bp2 = Blueprint('test2')
+    app.blueprint(bp2)
+
+    sanicjwt1 = Initialize(bp1, app=app, authenticate=lambda: True)
+    sanicjwt2 = Initialize(
+        bp2, app=app, authenticate=lambda: True, access_token_name='token')
+
+    assert sanicjwt1.config.access_token_name == 'access_token'
+    assert sanicjwt2.config.access_token_name == 'token'
+
+
+def test_initialize_class_on_app_and_blueprint():
+    app = Sanic()
+    bp = Blueprint('test')
+    app.blueprint(bp)
+
+    sanicjwt1 = Initialize(app, authenticate=lambda: True)
+    sanicjwt2 = Initialize(
+        bp, app=app, authenticate=lambda: True, access_token_name='token')
+
+    assert sanicjwt1.config.access_token_name == 'access_token'
+    assert sanicjwt2.config.access_token_name == 'token'
+
+
+def test_initialize_class_on_blueprint_with_url_prefix():
+    app = Sanic()
+    bp = Blueprint('test', url_prefix='/test')
+    app.blueprint(bp)
+
+    init = Initialize(bp, app=app, authenticate=lambda: True)
+
+    assert init._get_url_prefix() == '/test/auth'
+
+
+def test_initialize_class_on_blueprint_with_url_prefix_and_config():
+    app = Sanic()
+    bp = Blueprint('test', url_prefix='/test')
+    app.blueprint(bp)
+
+    init = Initialize(bp, app=app, authenticate=lambda: True, url_prefix='/a')
+
+    assert init._get_url_prefix() == '/test/a'

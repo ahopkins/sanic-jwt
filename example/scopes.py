@@ -13,6 +13,15 @@ class User(object):
         self.password = password
         self.scopes = scopes
 
+    def __repr__(self):
+        return "User(id='{}')".format(self.user_id)
+
+    def to_dict(self):
+        return {
+            'user_id': self.user_id,
+            'username': self.username,
+        }
+
 
 users = [
     User(1, 'user1', 'abcxyz', ['user']),
@@ -22,7 +31,7 @@ users = [
 ]
 
 username_table = {u.username: u for u in users}
-userid_table = {u.id: u for u in users}
+userid_table = {u.user_id: u for u in users}
 
 
 async def authenticate(request, *args, **kwargs):
@@ -56,10 +65,9 @@ async def my_scope_extender(user, *args, **kwargs):
 
 
 app = Sanic()
-initialize(app, authenticate=authenticate, retrieve_user=retrieve_user)
-
-
 app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = my_scope_extender
+initialize(app, authenticate=authenticate, retrieve_user=retrieve_user)
+# initialize(app, authenticate=authenticate, retrieve_user=retrieve_user, add_scopes_to_payload=my_scope_extender)
 
 
 @app.route("/")

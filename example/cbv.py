@@ -15,6 +15,11 @@ class User(object):
     def __str__(self):
         return "User(id='%s')" % self.id
 
+    def to_dict(self):
+        return {
+            'user_id': self.user_id
+        }
+
 
 users = [
     User(1, 'user1', 'abcxyz'),
@@ -55,7 +60,7 @@ class PublicView(HTTPMethodView):
 
 
 class ProtectedView(HTTPMethodView):
-    decorators = [protected]
+    decorators = [protected()]
 
     async def get(self, request):
         return json({"protected": True})

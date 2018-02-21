@@ -1,0 +1,87 @@
+import pytest
+from sanic import Sanic
+from sanic_jwt import initialize, Initialize, Configuration
+
+
+def test_configuration_initialize_method_default():
+    try:
+        app = Sanic()
+        initialize(
+            app,
+            authenticate=lambda: True,
+        )
+    except Exception as e:
+        pytest.fail('Raised exception: {}'.format(e))
+
+
+def test_configuration_initialize_class_default():
+    try:
+        app = Sanic()
+        Initialize(
+            app,
+            authenticate=lambda: True,
+        )
+    except Exception as e:
+        pytest.fail('Raised exception: {}'.format(e))
+
+
+def test_configuration_initialize_class_app_level():
+    app = Sanic()
+    app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'app-level'
+    sanicjwt = Initialize(
+        app,
+        authenticate=lambda: True,
+    )
+
+    assert app.config.SANIC_JWT_ACCESS_TOKEN_NAME == 'app-level'
+    assert sanicjwt.config.access_token_name == 'app-level'
+
+
+def test_configuration_initialize_class_config_level_custom_classes():
+    app = Sanic()
+    app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'app-level'
+
+    class MyConfig(Configuration):
+        access_token_name = 'config-level'
+
+    class MyInitialize(Initialize):
+        configuration_class = MyConfig
+
+    sanicjwt = MyInitialize(
+        app,
+        authenticate=lambda: True,
+    )
+
+    assert sanicjwt.config.access_token_name == 'config-level'
+
+
+def test_configuration_initialize_class_instance_level():
+    app = Sanic()
+    app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'app-level'
+
+    sanicjwt = Initialize(
+        app,
+        authenticate=lambda: True,
+        access_token_name='instance-level'
+    )
+
+    assert sanicjwt.config.access_token_name == 'instance-level'
+
+
+def test_configuration_initialize_class_instance_level_custom_classes():
+    app = Sanic()
+    app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'app-level'
+
+    class MyConfig(Configuration):
+        access_token_name = 'config-level'
+
+    class MyInitialize(Initialize):
+        configuration_class = MyConfig
+
+    sanicjwt = MyInitialize(
+        app,
+        authenticate=lambda: True,
+        access_token_name='instance-level'
+    )
+
+    assert sanicjwt.config.access_token_name == 'instance-level'

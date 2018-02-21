@@ -46,7 +46,7 @@ async def validate_scopes(
     *args,
     **kwargs
 ):
-    scopes = await utils.call_maybe_coro(scopes, request, *args, **kwargs)
+    scopes = await utils.call(scopes, request, *args, **kwargs)
 
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]

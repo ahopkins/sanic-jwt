@@ -1,16 +1,22 @@
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
-from sanic_jwt import initialize
+from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
 
-blueprint = Blueprint('Test', '/test')
+blueprint = Blueprint('Test')
 
 
 @blueprint.get("/", strict_slashes=True)
-@protected()
+@protected(blueprint)
 def protected_hello_world(request):
     return json({'message': 'hello world'})
+
+
+@blueprint.get("/user/<id>", strict_slashes=True)
+@protected(blueprint)
+def protected_user(request, id):
+    return json({'user': id})
 
 
 async def authenticate(request, *args, **kwargs):
@@ -19,12 +25,14 @@ async def authenticate(request, *args, **kwargs):
 
 app = Sanic()
 
-app.blueprint(blueprint)
 
-initialize(
-    app,
+sanicjwt = Initialize(
+    blueprint,
+    app=app,
     authenticate=authenticate,
 )
+
+app.blueprint(blueprint, url_prefix='/test')
 
 
 def test_protected_blueprint():
@@ -33,13 +41,17 @@ def test_protected_blueprint():
     assert response.status == 401
 
     _, response = app.test_client.post(
-        '/auth', json={
+        '/test/auth', json={
             'username': 'user1',
             'password': 'abcxyz'
         })
 
-    access_token = response.json.get(app.config.SANIC_JWT_ACCESS_TOKEN_NAME,
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name,
                                      None)
+
+    assert access_token is not None
 
     _, response = app.test_client.get(
         '/test/',

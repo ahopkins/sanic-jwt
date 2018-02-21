@@ -5,12 +5,12 @@ from sanic.response import json
 from sanic import Blueprint
 
 
-def protected(*pargs):
+def protected(initialized=None):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            if pargs and isinstance(pargs[0], Blueprint):
-                instance = pargs[0]
+            if initialized and isinstance(initialized, Blueprint):
+                instance = initialized
             else:
                 instance = request.app
 
@@ -37,14 +37,18 @@ def protected(*pargs):
     return decorator
 
 
-def scoped(scopes, require_all=True, require_all_actions=True):
+def scoped(scopes, require_all=True, require_all_actions=True, initialized=None):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            is_authenticated = request.app.auth.is_authenticated(
+            if initialized and isinstance(initialized, Blueprint):
+                instance = initialized
+            else:
+                instance = request.app
+
+            is_authenticated = instance.auth.is_authenticated(
                 request, *args, **kwargs)
             if is_authenticated:
-                instance = request.app
                 # Retrieve the scopes from the payload
                 user_scopes = instance.auth.retrieve_scopes(request)
                 if user_scopes is None:

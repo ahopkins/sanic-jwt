@@ -2,11 +2,11 @@
 Sanic JWT
 =========
 
-Sanic JWT is a module meant to add authentication protection and endpoints to a `Sanic <http://sanic.readthedocs.io>`_.
+Sanic JWT adds authentication protection and endpoints to `Sanic <http://sanic.readthedocs.io>`_.
 
-It is meant to be both `easy` to get up and running, and `extensible` for the developer. It can act to :doc:`protect endpoints <pages/protected>` and also :doc:`provide authentication scoping <pages/scoped>`, all wrapped into a nice `JWT <https://jwt.io>`_.
+It is both **easy** to get up and running, and **extensible** for the developer. It can act to :doc:`protect endpoints <pages/protected>` and also :doc:`provide authentication scoping <pages/scoped>`, all wrapped into a nice `JWT <https://jwt.io>`_.
 
-Pick your favorite user management system, run :doc:`a single function to initialize <pages/initialization>`, and you are all set.
+Pick your favorite user management system, run :doc:`a single class to initialize <pages/initialization>`, and you are all set.
 
 .. toctree::
    :maxdepth: 2
@@ -18,7 +18,7 @@ Pick your favorite user management system, run :doc:`a single function to initia
    pages/whatisjwt
    pages/initialization
    pages/endpoints
-   pages/handlers
+   pages/payload
    pages/protected
    pages/scoped
    pages/refreshtokens
@@ -26,4 +26,47 @@ Pick your favorite user management system, run :doc:`a single function to initia
    pages/settings
    pages/examples
    pages/contributing
-   pages/history
+   pages/changelog
+
+------------
+
++++++++++++++++++++++++++++
+What is new in Version 1.0?
++++++++++++++++++++++++++++
+
+If you have been using Sanic JWT, there should really not be that much different, although under the hood **a lot** has changed. For starters, the ``initialize`` method still works. But, the new recommended way to start Sanic JWT is to use the new ``Initialize`` class as seen above.
+
+Using this class allows you to subclass it and really dive deep into modifying and configuring your project just the way you need it. Want to change the authentication responses? No problem. Want to add some new authentication endpoints? Easy.
+
+One of the bigger changes is that we have enabled a new way to add configuration settings. You can of course continue to set them `as recommended by Sanic <http://sanic.readthedocs.io/en/latest/sanic/config.html>`_ by making them in all capital letters, and giving it a ``SANIC_JWT_`` prefix.
+
+.. code-block:: python
+
+    app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'mytoken'
+
+Or, you can simply pass your :doc:`configurations<pages/settings>` into the ``Initialize`` class as keyword arguments.
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        access_token_name='mytoken'
+    )
+
+Do you need some more complicated logic, or control? Then perhaps you want to subclass the ``Configuration`` class.
+
+.. code-block:: python
+
+    class MyConfig(Configuration):
+        access_token_name='mytoken'
+        def get_refresh_token_name(self):
+            return some_crazy_logic_to_get_token_name()
+
+    Initialize(
+        app,
+        configuration_class=MyConfig
+    )
+
+The point is, with Version 1, we made the entire package extremely adaptable and extensible for you to get done what you need without making decisions for you.
+
+Have fun, and happy coding.

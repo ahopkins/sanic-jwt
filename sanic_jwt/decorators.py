@@ -5,12 +5,12 @@ from sanic.response import json
 from sanic import Blueprint
 
 
-def protected(initialized=None):
+def protected(initialized_on=None):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            if initialized and isinstance(initialized, Blueprint):
-                instance = initialized
+            if initialized_on and isinstance(initialized_on, Blueprint):
+                instance = initialized_on
             else:
                 instance = request.app
 
@@ -37,12 +37,15 @@ def protected(initialized=None):
     return decorator
 
 
-def scoped(scopes, require_all=True, require_all_actions=True, initialized=None):
+def scoped(scopes,
+           require_all=True,
+           require_all_actions=True,
+           initialized_on=None):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            if initialized and isinstance(initialized, Blueprint):
-                instance = initialized
+            if initialized_on and isinstance(initialized_on, Blueprint):
+                instance = initialized_on
             else:
                 instance = request.app
 

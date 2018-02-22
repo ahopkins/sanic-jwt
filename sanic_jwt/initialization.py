@@ -20,6 +20,7 @@ handlers = (
     ('retrieve_refresh_token', ('refresh_token_enabled', ),),
     ('retrieve_user', (),),
     ('add_scopes_to_payload', ('scopes_enabled', ),),
+    ('extend_payload', (),),
 )
 
 init_classes = (
@@ -37,8 +38,8 @@ class Initialize:
     dictionary, or has a `to_dict` method. The resulting dictionary MUST
     have a key/value for a unique user id.
     """
-    configuration_class = Configuration
     authentication_class = Authentication
+    configuration_class = Configuration
     responses_class = Responses
 
     def __init__(self, instance, app=None, **kwargs):

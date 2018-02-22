@@ -15,6 +15,12 @@ Let's take a look at a real simple example on how to use Sanic JWT to see the co
         def __str__(self):
             return "User(id={})".format(self.id)
 
+        def to_dict(self):
+            return {
+                'user_id': self.user_id,
+                'username': self.username,
+            }
+
     users = [
         User(1, 'user1', 'abcxyz'),
         User(2, 'user2', 'abcxyz'),
@@ -25,10 +31,9 @@ Let's take a look at a real simple example on how to use Sanic JWT to see the co
 
 We want to be able to pass in a **username** and a **password** to authenticate our user, and then receive back an **access token** that can be used later on to access protected (aka private) data.
 
+To get **Sanic JWT** started, we know that we need to :doc:`initialize <initialization>` with the ``authenticate`` method. The job of this method is to take the ``request`` and determine if there is a valid user to be authenticated. Since the developer decides upon the user management system, it is our job to figure out what this method should do.
 
-To get **Sanic JWT** started, we know that we need to :doc:`initialize <initialization>` with the `;authenticate;` method. The job of this method is to take the `request` and determine if there is a valid user to be authenticated. Since the developer decides upon the user management system, it is our job to figure out what this method should do.
-
-Very simply, since we want to pass a **username** and a **password** to authenticate our user, we just need to check that the credentials are correct. If yes, we return the user. If no, we raise an :doc:`exception <exceptions>`.
+Very simple. Since we want to pass a **username** and a **password** to authenticate our user, we just need to check that the credentials are correct. If yes, we return the user. If no, we raise an :doc:`exception <exceptions>`.
 
 .. code-block:: python
 
@@ -50,7 +55,7 @@ Very simply, since we want to pass a **username** and a **password** to authenti
 
         return user
 
-.. note:: In a real production setting it is advised to **not** tell the user why their authentication failed. Simply raising ``exceptions.AuthenticationFailed`` should be enough. Here, for example purposes, we added some helper messages just to make it clear where we are failing.
+.. warning:: In a real production setting it is advised to **not** tell the user why their authentication failed. Simply raising ``exceptions.AuthenticationFailed`` should be enough. Here, for example purposes, we added some helper messages just to make it clear where we are failing.
 
 Our whole application now looks like this:
 
@@ -58,7 +63,7 @@ Our whole application now looks like this:
 
     from sanic import Sanic
     from sanic_jwt import exceptions
-    from sanic_jwt import initialize
+    from sanic_jwt import Initialize
 
 
     class User(object):
@@ -98,10 +103,9 @@ Our whole application now looks like this:
 
 
     app = Sanic()
-    initialize(
+    Initialize(
         app,
-        authenticate=authenticate,
-    )
+        authenticate=authenticate,)
 
 
     if __name__ == "__main__":
@@ -219,4 +223,4 @@ Response: ::
 
 Excellent. Now that we can generate and verify tokens, we can get to work.
 
-Best of luck creating an authentication scheme that works for you. This package was meant to be simple to use, yet highly flexible. If you have any questions about how to implement Sanic JWT (or to make it better), please `create an issue <https://github.com/ahopkins/sanic-jwt/issues>`_ or get in touch.
+Best of luck creating an authentication scheme that works for you. If you have any questions about how to implement Sanic JWT (or to make it better), please `create an issue <https://github.com/ahopkins/sanic-jwt/issues>`_ or get in touch.

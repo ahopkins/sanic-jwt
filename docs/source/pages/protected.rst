@@ -31,11 +31,20 @@ The ``@protected`` decorator
 
 Now, anyone can access the ``/`` route. But, only users that pass a valid access token can reach ``protected``.
 
-------------
+If you have initialized Sanic JWT on a ``Blueprint``, then you will need to pass the instance of that blueprint into the ``@protected`` decorator.
 
-+++++++++++++++++
+.. code-block:: python
+
+    bp = Blueprint('Users')
+    Initialize(bp)
+
+    @bp.get('/users/<id>')
+    @protected(bp)
+    async def users(request, id):
+        ...
+
 Class based views
-+++++++++++++++++
+~~~~~~~~~~~~~~~~~
 
 Using the standard `Sanic methodology <http://sanic.readthedocs.io/en/latest/sanic/class_based_views.html>`_, you can protect class based views with the same decorator.
 
@@ -47,7 +56,7 @@ Using the standard `Sanic methodology <http://sanic.readthedocs.io/en/latest/san
 
 
     class ProtectedView(HTTPMethodView):
-        decorators = [protected]
+        decorators = [protected()]
 
         async def get(self, request):
             return json({"protected": True})
@@ -61,7 +70,7 @@ Using the standard `Sanic methodology <http://sanic.readthedocs.io/en/latest/san
 Passing the Token
 +++++++++++++++++
 
-There are two methods for passing a token: cookie based, and header based. By default, Sanic JWT will expect you to send tokens thru HTTP headers. ::
+There are two general methodologies for passing a token: cookie based, and header based. By default, Sanic JWT will expect you to send tokens thru HTTP headers. ::
 
     curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/me
 
@@ -73,12 +82,14 @@ Header tokens are passed by adding an ``Authorization`` header that consists of 
 1. the word ``Bearer``
 2. the JWT access token
 
-If you would like, you can modify this behavior by changing the :doc:`settings<settings>` for ``SANIC_JWT_AUTHORIZATION_HEADER`` and ``SANIC_JWT_AUTHORIZATION_HEADER_PREFIX``.
+If you would like, you can modify this behavior by changing the :doc:`settings<settings>` for ``authorization_header`` and ``authorization_header_prefix``.
 
 .. code-block:: python
 
-    app.config.SANIC_JWT_AUTHORIZATION_HEADER = 'somecustomheader'
-    app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX = 'MeFirst'
+    Initialize(
+        app,
+        authorization_header='somecustomheader',
+        authorization_header_prefix='MeFirst',)
 
 ::
 
@@ -87,29 +98,45 @@ If you would like, you can modify this behavior by changing the :doc:`settings<s
 Cookie Tokens
 ~~~~~~~~~~~~~
 
-If you would like to use tokens in cookies instead of headers, you need to first change a :doc:`setting<settings>`:
+If you would like to use tokens in cookies instead of headers, you need to first set ``cookie_set=True``
 
 .. code-block:: python
 
-    app.config.SANIC_JWT_COOKIE_SET = True
+    Initialize(app, cookie_set=True)
 
 Now, Sanic JWT will reject any request that does not have a valid access token in its cookie. As the developer, you can control how the cookie is generated with the following settings:
 
-| ``SANIC_JWT_COOKIE_DOMAIN`` - changes domain associated with a cooke (defaults to '')
-| ``SANIC_JWT_COOKIE_HTTPONLY`` - whether to set an httponly flag on the cookie
-| ``SANIC_JWT_COOKIE_TOKEN_NAME`` - the name where the cookie is stored
+| ``cookie_domain`` - changes domain associated with a cooke (defaults to '')
+| ``cookie_httponly`` - whether to set an httponly flag on the cookie (defaults to ``True``)
+| ``cookie_access_token_name`` - the name where the cookie is stored
 |
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        cookie_set=True,
+        cookie_domain='mydomain.com',
+        cookie_httponly=False,
+        cookie_access_token_name='some-token',)
 
 .. warning::
 
-    If you are using cookies to pass JWTs, then it is recommended that you do not disable ``SANIC_JWT_COOKIE_HTTPONLY``. Doing so means that any javascript running on the client can access the token. Bad news.
+    If you are using cookies to pass JWTs, then it is recommended that you do not disable ``cookie_httponly``. Doing so means that any javascript running on the client can access the token. Bad news.
 
 Both Header and Cookie
 ~~~~~~~~~~~~~~~~~~~~~~
 
-If you enable ``SANIC_JWT_COOKIE_SET``, you will get a ``MissingAuthorizationCookie`` exception if the cookie is not present. However, sometimes you may want to fall back and look for a header token if the cookie is not there.
+If you enable ``cookie_set``, you will get a ``MissingAuthorizationCookie`` exception if the cookie is not present. However, sometimes you may want to fall back and look for a header token if the cookie is not there.
 
-Is such cases, change ``SANIC_JWT_COOKIE_STRICT`` to ``False``.
+Is such cases, change ``cookie_strict`` to ``False``.
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        cookie_set=True,
+        cookie_strict=False,)
 
 Per view declaration
 ~~~~~~~~~~~~~~~~~~~~

@@ -40,7 +40,7 @@ class BaseAuthentication:
             self.config.user_id: user_id,
         }
 
-    async def extend_payload(self, payload, *args, **kwargs):
+    async def add_claims(self, payload, *args, **kwargs):
         delta = timedelta(seconds=self.config.expiration_delta)
         exp = datetime.utcnow() + delta
         additional = {
@@ -57,6 +57,9 @@ class BaseAuthentication:
 
         payload.update(additional)
 
+        return payload
+
+    async def extend_payload(self, payload, *args, **kwargs):
         return payload
 
     async def store_refresh_token(self, *args, **kwargs):
@@ -116,6 +119,8 @@ class Authentication(BaseAuthentication):
         if not isinstance(payload, dict) or self.config.user_id not in payload:
             raise exceptions.InvalidPayload
 
+        payload = await utils.call(
+            self.add_claims, payload)
         payload = await utils.call(
             self.extend_payload, payload)
 

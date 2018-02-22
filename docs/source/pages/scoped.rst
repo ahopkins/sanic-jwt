@@ -32,21 +32,30 @@ Example Scopes
 
 ::
 
-    scope:     user
-    namespace: user
-    action:    --
+    Example #1
+    scope:       user
+    namespace:   user
+    action:      --
 
-    scope:     user:read
-    namespace: user
-    action:    read
+    Example #2
+    scope:       user:read
+    namespace:   user
+    action:      read
 
-    scope:     user:read:write
-    namespace: user
-    action:    [read, write]
+    Example #3
+    scope:       user:read:write
+    namespace:   user
+    action:      [read, write]
 
-    scope:     :read
-    namespace: --
-    action:    read
+    Example #4
+    scope:       :read
+    namespace:   --
+    action:      read
+
+    Example #5
+    scope:       :read:write
+    namespace:   --
+    action:      [read, write]
 
 ------------
 
@@ -141,14 +150,16 @@ In order to protect a route from being accessed by tokens without the appropriat
     async def protected_route1(request):
         return json({"protected": True, "scoped": True})
 
-In the above example, only an access token with a payload containing a scope for ``user`` will be accepted (such as the payload below). ::
+In the above example, only an access token with a payload containing a scope for ``user`` will be accepted (such as the payload below).
+
+.. code-block:: text
 
     {
         "user_id": 1,
         "scopes: ["user"]
     }
 
-You can also define multiple scopes: ::
+You can also define multiple scopes:
 
 .. code-block:: python
 
@@ -156,7 +167,7 @@ You can also define multiple scopes: ::
 
 In the above example with a ``['user', 'admin']`` scope, a payload **MUST** contain both ``user`` and ``admin``.
 
-But, what if we only want to require one of the scopes, and not both ``user`` AND ``admin``? Easy: ::
+But, what if we only want to require one of the scopes, and not both ``user`` AND ``admin``? Easy:
 
 .. code-block:: python
 
@@ -164,14 +175,26 @@ But, what if we only want to require one of the scopes, and not both ``user`` AN
 
 Now, having a scope of either ``user`` OR ``admin`` will be acceptable.
 
+If you have initialized Sanic JWT on a ``Blueprint``, then you will need to pass the instance of that blueprint into the ``@scoped`` decorator.
+
+.. code-block:: python
+
+    bp = Blueprint('Users')
+    Initialize(bp)
+
+    @bp.get('/users/<id>')
+    @scoped(['user', 'admin'], initialized_on=bp)
+    async def users(request, id):
+        ...
+
 Parameters
 ~~~~~~~~~~
 
 The ``@scoped()`` decorator takes three parameters:
 
-..code-block:: python
-
-    scoped(scopes, requires_all, require_all_actions)
+- ``scopes``
+- ``requires_all`` - default ``True``
+- ``require_all_actions`` - default ``True``
 
 ``scopes`` - Required
 ``````````````````````
@@ -183,12 +206,16 @@ Either a single ``string``, or a ``list`` of strings that are the defined scopes
     @scoped('user')
     ...
 
-    # Or
+Or
+
+.. code-block:: python
 
     @scoped(['user', 'admin'])
     ...
 
-    # Or
+Or
+
+.. code-block:: python
 
     def get_some_scopes(request, *args, **kwargs):
         return ['user', 'admin']
@@ -196,7 +223,9 @@ Either a single ``string``, or a ``list`` of strings that are the defined scopes
     @scoped(get_some_scopes)
     ...
 
-    # Or
+Or
+
+.. code-block:: python
 
     async def get_some_scopes(request, *args, **kwargs):
         return await something_that_returns_scopes()
@@ -237,8 +266,14 @@ A ``boolean`` that determines whether all of the **actions** on a defined scope,
     # A payload can have either the `:read` or `:write` action in scope
 
 +++++++
-Example
+Handler
 +++++++
+
+See :doc:`payload` for how to add scopes to a payload using ``add_scopes_to_payload``.
+
++++++++++++
+Sample Code
++++++++++++
 
 .. code-block:: python
 
@@ -294,13 +329,10 @@ Example
 
 
     app = Sanic()
-    initialize(
+    Initialize(
         app,
         authenticate=authenticate,
-    )
-
-
-    app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = my_scope_extender
+        add_scopes_to_payload=my_scope_extender)
 
 
     @app.route("/")

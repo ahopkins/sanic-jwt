@@ -11,7 +11,7 @@ from sanic_jwt.responses import Responses
 def initialize(*args, **kwargs):
     if len(args) > 1:
         kwargs.update({'authenticate': args[1]})
-    Initialize(args[0], **kwargs)
+    return Initialize(args[0], **kwargs)
 
 
 handlers = (

@@ -91,7 +91,7 @@ def test_configuration_initialize_class_with_getter():
     app = Sanic()
 
     class MyConfig(Configuration):
-        def get_access_token_name(self):
+        def set_access_token_name(self):
             return 'return-level'
 
     class MyInitialize(Initialize):
@@ -109,7 +109,7 @@ def test_configuration_initialize_class_as_argument():
     app = Sanic()
 
     class MyConfig(Configuration):
-        def get_access_token_name(self):
+        def set_access_token_name(self):
             return 'return-level'
 
     sanicjwt = Initialize(

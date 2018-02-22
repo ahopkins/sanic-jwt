@@ -21,3 +21,7 @@ Dynamic Scoping
 ++++++++++++++++++
 Passwordless Login
 ++++++++++++++++++
+
++++++++++++++++++
+User registration
++++++++++++++++++

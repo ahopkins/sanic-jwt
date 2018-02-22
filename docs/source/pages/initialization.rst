@@ -369,3 +369,11 @@ Simply import, modify, and attach.
         authentication_class=MyAuthentication,
         configuration_class=MyConfiguration,
         responses_class=MyResponses,)
+
+------------
+
++++++++++++++++++++++++++
+The ``initialize`` method
++++++++++++++++++++++++++
+
+The old method for initializing Sanic JWT was to do so with the ``initialize`` method. It still works, and is in fact now just a wrapper for the ``Initialize`` class. However, it is recommended that you use the class because it is more explicit that you are declaring a new instance.

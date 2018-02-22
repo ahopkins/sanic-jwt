@@ -22,6 +22,12 @@ handlers = (
     ('add_scopes_to_payload', ('scopes_enabled', ),),
 )
 
+init_classes = (
+    'configuration_class',
+    'authentication_class',
+    'responses_class',
+)
+
 
 class Initialize:
     """Class used to initialize Sanic JWT
@@ -36,6 +42,11 @@ class Initialize:
     responses_class = Responses
 
     def __init__(self, instance, app=None, **kwargs):
+        for class_name in init_classes:
+            if class_name in kwargs:
+                value = kwargs.pop(class_name)
+                setattr(self, class_name, value)
+
         app = self.__get_app(instance, app=app)
         bp = self.__get_bp(instance)
 

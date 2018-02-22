@@ -66,6 +66,9 @@ class Configuration:
     def __map_config(self, config_item):
         key, value = config_item
         if (not hasattr(self, key) or key in self.kwargs):
+            getter_name = 'get_{}'.format(key)
+            if hasattr(self, getter_name):
+                value = getattr(self, getter_name)()
             setattr(self, key, value)
 
     def __iter__(self):

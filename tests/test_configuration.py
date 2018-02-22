@@ -85,3 +85,37 @@ def test_configuration_initialize_class_instance_level_custom_classes():
     )
 
     assert sanicjwt.config.access_token_name == 'instance-level'
+
+
+def test_configuration_initialize_class_with_getter():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+        def get_access_token_name(self):
+            return 'return-level'
+
+    class MyInitialize(Initialize):
+        configuration_class = MyConfig
+
+    sanicjwt = MyInitialize(
+        app,
+        authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.access_token_name == 'return-level'
+
+
+def test_configuration_initialize_class_as_argument():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+        def get_access_token_name(self):
+            return 'return-level'
+
+    sanicjwt = Initialize(
+        app,
+        configuration_class=MyConfig,
+        authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.access_token_name == 'return-level'

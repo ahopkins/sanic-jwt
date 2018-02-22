@@ -23,7 +23,7 @@ Pick your favorite user management system, run :doc:`a single class to initializ
    pages/scoped
    pages/refreshtokens
    pages/exceptions
-   pages/settings
+   pages/configuration
    pages/examples
    pages/contributing
    pages/changelog
@@ -44,7 +44,7 @@ One of the bigger changes is that we have enabled a new way to add configuration
 
     app.config.SANIC_JWT_ACCESS_TOKEN_NAME = 'mytoken'
 
-Or, you can simply pass your :doc:`configurations<pages/settings>` into the ``Initialize`` class as keyword arguments.
+Or, you can simply pass your :doc:`configurations<pages/configuration>` into the ``Initialize`` class as keyword arguments.
 
 .. code-block:: python
 

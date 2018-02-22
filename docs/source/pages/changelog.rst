@@ -10,8 +10,23 @@ Version 1.0.0 [2018-02-XX]
 
 | **Added**
 | - ``Initialize`` class
+| - New methods for adding configuration settings
 | - Customizable components
-| - Customizable response
+| - Customizable responses
+| - Ability to fallback to header based authentication if cookie based fails
+| - Initialize on a blueprint and isolate configuration
+|
+
+| **Fixed**
+| - ``@protected`` implementation on class based views
+| - Usage of signing algorithms with public and private keys
+|
+
+| **Deprecated**
+| - ``SANIC_JWT_PAYLOAD_HANDLER``
+| - ``SANIC_JWT_HANDLER_PAYLOAD_EXTEND``
+| - ``SANIC_JWT_HANDLER_PAYLOAD_SCOPES``
+|
 
 ++++++
 Legend

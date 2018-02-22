@@ -156,7 +156,7 @@ JWTs need to be digitally signed to allow for cryptographically verifying that a
         app,
         secret=mysecret)
 
-There are several hashing algorithms that can be used to accomplish this. Check out the :doc:`settings` page to see which algorithms are supported, and `read this <https://pyjwt.readthedocs.io/en/latest/algorithms.html#digital-signature-algorithms>`_ for more information.
+There are several hashing algorithms that can be used to accomplish this. Check out the :doc:`configuration` page to see which algorithms are supported, and `read this <https://pyjwt.readthedocs.io/en/latest/algorithms.html#digital-signature-algorithms>`_ for more information.
 
 If you decide to use an RSA or an EC algorithm, then you **must** provide Sanic JWT with both a public key and a private key to handle the encoding and decoding of the tokens.
 
@@ -164,8 +164,8 @@ If you decide to use an RSA or an EC algorithm, then you **must** provide Sanic 
 
     from pathlib import Path
 
-    public_ec_key = Path() / 'to' / 'my-ec-public-key.pem'
-    private_ec_key = Path() / 'to' / 'my-ec-private-key.pem'
+    public_ec_key = Path('/path') / 'to' / 'my-ec-public-key.pem'
+    private_ec_key = Path('/path') / 'to' / 'my-ec-private-key.pem'
 
     Initialize(
         app,

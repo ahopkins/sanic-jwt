@@ -1,5 +1,6 @@
 # Sanic JWT
 
+**Note: version 1.0 will be released to pypi on or before March 1, 2018**
 
 [![Latest PyPI version](https://img.shields.io/pypi/v/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
 [![Version status](https://img.shields.io/pypi/status/sanic-jwt.svg)](https://pypi.python.org/pypi/sanic-jwt)
@@ -18,6 +19,12 @@ developer. It can act to
 wrapped into a nice [JWT].
 
 [Read the documentation](http://sanic-jwt.rtfd.io/)
+
+Install using:
+
+```
+pip install sanic-jwt
+```
 
   [Sanic]: http://sanic.readthedocs.io
   [JWT]: https://jwt.io

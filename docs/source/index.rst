@@ -3,7 +3,8 @@ Sanic JWT
 =========
 
 |Latest PyPI version| |Version status| |Python versions| |Build Status|
-|Codacy Badge| |Waffle.io|
+|Codacy Badge| |Documentation| Waffle.io|
+
 
 Sanic JWT adds authentication protection and endpoints to `Sanic <http://sanic.readthedocs.io>`_.
 
@@ -86,5 +87,7 @@ Have fun, and happy coding.
    :target: https://travis-ci.org/ahopkins/sanic-jwt
 .. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/9727756ffccd45f7bc5ad6292596e03d
    :target: https://www.codacy.com/app/ahopkins/sanic-jwt?utm_source=github.com&utm_medium=referral&utm_content=ahopkins/sanic-jwt&utm_campaign=Badge_Grade
+.. |Documentation| image:: https://readthedocs.org/projects/sanic-jwt/badge/?version=latest
+   :target: http://sanic-jwt.readthedocs.io/en/latest/?badge=latest
 .. |Waffle.io| image:: https://badge.waffle.io/ahopkins/sanic-jwt.svg?columns=In%20Progress
    :target: https://waffle.io/ahopkins/sanic-jwt

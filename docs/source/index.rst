@@ -2,14 +2,19 @@
 Sanic JWT
 =========
 
+|Latest PyPI version| |Version status| |Python versions| |Build Status|
+|Codacy Badge| |Waffle.io|
+
 Sanic JWT adds authentication protection and endpoints to `Sanic <http://sanic.readthedocs.io>`_.
 
 It is both **easy** to get up and running, and **extensible** for the developer. It can act to :doc:`protect endpoints <pages/protected>` and also :doc:`provide authentication scoping <pages/scoped>`, all wrapped into a nice `JWT <https://jwt.io>`_.
 
 Pick your favorite user management system, run :doc:`a single class to initialize <pages/initialization>`, and you are all set.
 
+------------
+
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
    pages/gettingstarted
@@ -70,3 +75,16 @@ Do you need some more complicated logic, or control? Then perhaps you want to su
 The point is, with Version 1, we made the entire package extremely adaptable and extensible for you to get done what you need without making decisions for you.
 
 Have fun, and happy coding.
+
+.. |Latest PyPI version| image:: https://img.shields.io/pypi/v/sanic-jwt.svg
+   :target: https://pypi.python.org/pypi/sanic-jwt
+.. |Version status| image:: https://img.shields.io/pypi/status/sanic-jwt.svg
+   :target: https://pypi.python.org/pypi/sanic-jwt
+.. |Python versions| image:: https://img.shields.io/pypi/pyversions/sanic-jwt.svg
+   :target: https://pypi.python.org/pypi/sanic-jwt
+.. |Build Status| image:: https://travis-ci.org/ahopkins/sanic-jwt.svg?branch=master
+   :target: https://travis-ci.org/ahopkins/sanic-jwt
+.. |Codacy Badge| image:: https://api.codacy.com/project/badge/Grade/9727756ffccd45f7bc5ad6292596e03d
+   :target: https://www.codacy.com/app/ahopkins/sanic-jwt?utm_source=github.com&utm_medium=referral&utm_content=ahopkins/sanic-jwt&utm_campaign=Badge_Grade
+.. |Waffle.io| image:: https://badge.waffle.io/ahopkins/sanic-jwt.svg?columns=In%20Progress
+   :target: https://waffle.io/ahopkins/sanic-jwt

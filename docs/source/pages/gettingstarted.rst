@@ -6,13 +6,13 @@ In order to add **Sanic JWT**, all you need to do is initialize it by passing th
 
 .. code-block:: python
 
-    from sanic_jwt import initialize
+    from sanic_jwt import Initialize
 
     async def authenticate(request):
         return dict(user_id='some_id')
 
     app = Sanic()
-    initialize(app, authenticate)
+    Initialize(app, authenticate)
 
 
 You now will have a couple endpoints at your disposal:
@@ -29,4 +29,3 @@ You should get back a bit of JSON like this::
     {
         "access_token": "<JWT>"
     }
-

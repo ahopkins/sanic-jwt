@@ -40,7 +40,7 @@ class BaseAuthentication:
             self.config.user_id: user_id,
         }
 
-    async def extend_payload(self, payload, *args, **kwargs):
+    async def add_claims(self, payload, *args, **kwargs):
         delta = timedelta(seconds=self.config.expiration_delta)
         exp = datetime.utcnow() + delta
         additional = {
@@ -48,7 +48,7 @@ class BaseAuthentication:
         }
 
         for option in ['iss', 'iat', 'nbf', 'aud', ]:
-            setting = 'claim_{}'.format(option.upper())
+            setting = 'claim_{}'.format(option.lower())
             attr = getattr(self.config, setting, False)
             if attr:
                 method_name = 'build_claim_{}'.format(option)
@@ -57,6 +57,9 @@ class BaseAuthentication:
 
         payload.update(additional)
 
+        return payload
+
+    async def extend_payload(self, payload, *args, **kwargs):
         return payload
 
     async def store_refresh_token(self, *args, **kwargs):
@@ -92,9 +95,11 @@ class Authentication(BaseAuthentication):
                 value = getattr(self.config, setting, False)
                 kwargs.update({claim_label[claim]: value})
 
-        # TODO:
-        # - Add leeway=self.config.leeway to jwt.decode
-        # verify_exp
+        kwargs['leeway'] = int(getattr(self.config, 'leeway', 0))
+        if hasattr(self.config, 'claim_aud'):
+            kwargs['audience'] = getattr(self.config, 'claim_aud')
+        if hasattr(self.config, 'claim_iss'):
+            kwargs['issuer'] = getattr(self.config, 'claim_iss')
         return jwt.decode(
             token,
             secret,
@@ -116,6 +121,8 @@ class Authentication(BaseAuthentication):
         if not isinstance(payload, dict) or self.config.user_id not in payload:
             raise exceptions.InvalidPayload
 
+        payload = await utils.call(
+            self.add_claims, payload)
         payload = await utils.call(
             self.extend_payload, payload)
 
@@ -209,14 +216,14 @@ class Authentication(BaseAuthentication):
 
     def is_authenticated(self, request, *args, **kwargs):
         try:
-            is_valid, _, __ = self.verify(request, *args, **kwargs)
+            is_valid, status, reasons = self.verify(request, *args, **kwargs)
         except Exception as e:
             if self.config.debug:
                 raise Exception(e)
             else:
                 raise exceptions.Unauthorized()
 
-        return is_valid
+        return is_valid, status, reasons
 
     def verify(self, request, return_payload=False, verify=True, *args,
                **kwargs):
@@ -226,24 +233,22 @@ class Authentication(BaseAuthentication):
 
         try:
             payload = self._decode(token, verify=verify)
-        except jwt.exceptions.ExpiredSignatureError:
-            is_valid = False
-            reason = 'Signature has expired'
-            payload = None
         except (
+            jwt.exceptions.ExpiredSignatureError,
             jwt.exceptions.InvalidIssuerError,
             jwt.exceptions.ImmatureSignatureError,
             jwt.exceptions.InvalidIssuedAtError,
             jwt.exceptions.InvalidAudienceError,
         ) as e:
             is_valid = False
-            reason = e.args
+            reason = list(e.args)
             payload = None
+            status = 403
 
         if return_payload:
             return payload
 
-        status = 200 if is_valid else 400
+        status = 200 if is_valid else status
 
         return is_valid, status, reason
 

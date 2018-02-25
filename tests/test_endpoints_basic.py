@@ -12,6 +12,13 @@ class TestEndpointsBasic(object):
         _, response = sanic_app.test_client.get('/protected')
         assert response.status == 401
 
+    def test_options(self, app):
+        sanic_app, _ = app
+        _, response = sanic_app.test_client.options('/options')
+
+        assert response.body == b''
+        assert response.status == 204
+
     def test_auth_invalid_method(self, app):
         sanic_app, _ = app
         _, response = sanic_app.test_client.get('/auth')

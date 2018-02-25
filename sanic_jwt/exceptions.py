@@ -113,8 +113,8 @@ class InitializationFailure(SanicJWTException):
 
 class Unauthorized(SanicJWTException, SanicUnauthorized):
 
-    def __init__(self):
-        super().__init__("Auth required.", scheme="Bearer")
+    def __init__(self, message="Auth required."):
+        super().__init__(message, scheme="Bearer")
 
 
 class InvalidClassViewsFormat(SanicJWTException):

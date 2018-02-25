@@ -11,7 +11,7 @@ from sanic_jwt.responses import Responses
 def initialize(*args, **kwargs):
     if len(args) > 1:
         kwargs.update({'authenticate': args[1]})
-    Initialize(args[0], **kwargs)
+    return Initialize(args[0], **kwargs)
 
 
 handlers = (
@@ -20,6 +20,13 @@ handlers = (
     ('retrieve_refresh_token', ('refresh_token_enabled', ),),
     ('retrieve_user', (),),
     ('add_scopes_to_payload', ('scopes_enabled', ),),
+    ('extend_payload', (),),
+)
+
+init_classes = (
+    'configuration_class',
+    'authentication_class',
+    'responses_class',
 )
 
 
@@ -31,11 +38,16 @@ class Initialize:
     dictionary, or has a `to_dict` method. The resulting dictionary MUST
     have a key/value for a unique user id.
     """
-    configuration_class = Configuration
     authentication_class = Authentication
+    configuration_class = Configuration
     responses_class = Responses
 
     def __init__(self, instance, app=None, **kwargs):
+        for class_name in init_classes:
+            if class_name in kwargs:
+                value = kwargs.pop(class_name)
+                setattr(self, class_name, value)
+
         app = self.__get_app(instance, app=app)
         bp = self.__get_bp(instance)
 

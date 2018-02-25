@@ -72,15 +72,15 @@ As an application developer, this is where you can send information from your se
 
 While there are no real restrictions on what claims are inside of a JWT, there are some industry standards. Below is a list that Sanic JWT has integrated for you to easily use.
 
-``exp`` - (short for `expires`) This claim is a timestamp dictates when the access token will no longer be available. Because JWT access tokens cannot be invalidated after they are issued, they are typically given a short life span.
+``exp`` - (short for `expires`) This claim is a timestamp that dictates when the access token will no longer be available. Because JWT access tokens cannot be invalidated after they are issued, they are typically given a short life span.
 
 ``nbf`` - (short for `not before`) This claim is a timestamp that allows the token to be created and issued, but not yet enabled for usage until after a certain time.
 
-``iat`` - (short for `issues at`) This claim is a timestamp that provides the creation time of the JWT.
+``iat`` - (short for `issued at`) This claim is a timestamp that provides the creation time of the JWT.
 
 ``iss`` - (short for `issuer`) This claim is typically a URI or other identifier to say who created and issued the token.
 
-``aud`` - (short for `audience`) This claim identifies what service the JWT is intended to be used with. Typically it is a URI or other identifier that says the name of the server that is supposed to be validating the token.
+``aud`` - (short for `audience`) This claim identifies what service the JWT is intended to be used with. Typically it is a URI or other identifier that says the name of the client server that is supposed to be validating the token.
 
-In addition to these claims, there is another claim that generally is important for Sanic JWT: ``user_id``. This is meant to be some unique indentification of the user that requested the token. Other than that, you are free to add whatever information you would like. See :doc:`handlers<handlers>` for information on how to modify the payload in Sanic JWT.
+In addition to these claims, there is another claim that generally is important for Sanic JWT: ``user_id``. This is meant to be some unique indentification of the user that requested the token. Other than that, you are free to add whatever information you would like. See :doc:`payload` for information on how to modify the payload in Sanic JWT.
 

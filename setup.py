@@ -18,6 +18,7 @@ here = path.abspath(path.dirname(__file__))
 
 tests_require = [
     'coverage',
+    'freezegun',
     # 'pytest-cache',
     'pytest-cov',
     'pytest-flakes',
@@ -57,7 +58,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.4.1',
+    version='1.0.0',
     description='JWT oauth flow for Sanic',
 
     # The project's main homepage.
@@ -77,7 +78,7 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
 
         # Indicate who your project is intended for
         'Intended Audience :: Developers',

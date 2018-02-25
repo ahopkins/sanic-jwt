@@ -11,10 +11,10 @@ defaults = {
     'authorization_header': 'authorization',
     'authorization_header_prefix': 'Bearer',
     'authorization_header_refresh_prefix': 'Refresh',
-    'claim_aud': None,  # String
-    'claim_iat': None,  # Boolean
-    'claim_iss': None,  # String
-    'claim_nbf': None,  # Boolean
+    'claim_aud': None,
+    'claim_iat': False,
+    'claim_iss': None,
+    'claim_nbf': False,
     'claim_nbf_delta': 0,
     'cookie_domain': '',
     'cookie_httponly': True,
@@ -31,10 +31,10 @@ defaults = {
     'path_to_retrieve_user': '/me',
     'path_to_verify': '/verify',
     'path_to_refresh': '/refresh',
+    'private_key': None,
     'scopes_enabled': False,
     'scopes_name': 'scopes',
     'secret': 'This is a big secret. Shhhhh',
-    'private_key': None,
     'strict_slashes': False,
     'url_prefix': '/auth',
     'user_id': 'user_id',
@@ -66,6 +66,9 @@ class Configuration:
     def __map_config(self, config_item):
         key, value = config_item
         if (not hasattr(self, key) or key in self.kwargs):
+            setter_name = 'set_{}'.format(key)
+            if hasattr(self, setter_name):
+                value = getattr(self, setter_name)()
             setattr(self, key, value)
 
     def __iter__(self):

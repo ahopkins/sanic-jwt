@@ -15,5 +15,9 @@ install:
 script:
   - python setup.py test
 
+after_success:
+  - coverage xml
+  - python-codacy-coverage -r coverage.xml
+
 env:
   - DEVELOPMENT=false

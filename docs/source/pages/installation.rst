@@ -6,8 +6,6 @@ Install from pypi using::
 
     pip install sanic-jwt
 
-Install from GitHub::
+Not much else to say. Depending upon whether or not you change the encryption algorithm, you may be prompted to also install `cryptography <https://github.com/pyca/cryptography>`_. But, we only do that if you know you will need it.::
 
-    git clone https://github.com/ahopkins/sanic-jwt.git .
-
-.. note:: This package is still in active development. It is recommended to build from GitHub for the latest version since there probably will not be another release to pypi until the package moves out of **Beta**. This will probably be in early Spring 2018.
+    pip install cryptography

@@ -65,5 +65,6 @@ class Responses(BaseDerivative):
     @staticmethod
     def exception_response(request, exception):
         return json({
-            'exception': str(exception)
+            'reasons': exception.args[0],
+            'exception': exception.__class__.__name__
         }, status=exception.status_code)

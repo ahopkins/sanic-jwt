@@ -18,6 +18,7 @@ here = path.abspath(path.dirname(__file__))
 
 tests_require = [
     'coverage',
+    'freezegun',
     # 'pytest-cache',
     'pytest-cov',
     'pytest-flakes',

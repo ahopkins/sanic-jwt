@@ -2,6 +2,12 @@ import pytest
 from sanic_jwt import utils
 from sanic_jwt import exceptions
 from pathlib import Path
+from os import path
+
+
+@pytest.fixture
+def fcontent():
+    return '3b$FGj@);[{~&+Lx>adYR+iG_QqGC3EI7FsbQAV@Nj&m&&mT\n'
 
 
 @pytest.mark.asyncio
@@ -24,8 +30,7 @@ async def test_call():
     assert await utils.call(async_func) == 3
 
 
-def test_load_file_or_str():
-    fcontent = '3b$FGj@);[{~&+Lx>adYR+iG_QqGC3EI7FsbQAV@Nj&m&&mT\n'
+def test_load_file_or_str_with_Path(fcontent):
     p = Path(__file__).parent / 'resources' / 'test-file.txt'
     assert utils.load_file_or_str(str(p)) == fcontent
     assert utils.load_file_or_str(p) == fcontent
@@ -33,3 +38,10 @@ def test_load_file_or_str():
 
     with pytest.raises(exceptions.ProvidedPathNotFound):
         utils.load_file_or_str(Path(__file__) / 'foobar')
+
+
+def test_load_file_or_str_with_str(fcontent):
+    p = path.join(path.dirname(path.abspath(__file__)),
+                  'resources',
+                  'test-file.txt')
+    assert utils.load_file_or_str(p) == fcontent

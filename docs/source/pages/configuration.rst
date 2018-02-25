@@ -165,7 +165,7 @@ Settings
 -------------------
 
 | **Purpose**: The offset in seconds between the moment of token generation and the moment when you would like the token to be valid in the future.
-| **Default**: ``0``
+| **Default**: ``60 * 3``
 |
 
 ----------------------------

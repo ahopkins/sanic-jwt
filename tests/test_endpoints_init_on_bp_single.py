@@ -3,6 +3,7 @@ from sanic.blueprints import Blueprint
 from sanic.response import json
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import scoped
 
 blueprint = Blueprint('Test')
 
@@ -17,6 +18,12 @@ def protected_hello_world(request):
 @protected(blueprint)
 def protected_user(request, id):
     return json({'user': id})
+
+
+@blueprint.route("/scoped_empty")
+@scoped('something', initialized_on=blueprint)
+async def scoped(request):
+    return json({"scoped": True})
 
 
 async def authenticate(request, *args, **kwargs):
@@ -61,3 +68,8 @@ def test_protected_blueprint():
 
     assert response.status == 200
     assert response.json.get('message') == 'hello world'
+
+
+def test_scoped_empty():
+    _, response = app.test_client.get('/test/scoped_empty')
+    assert response.status == 401

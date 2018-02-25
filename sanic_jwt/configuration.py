@@ -35,7 +35,6 @@ defaults = {
     'scopes_enabled': False,
     'scopes_name': 'scopes',
     'secret': 'This is a big secret. Shhhhh',
-    'private_key': None,
     'strict_slashes': False,
     'url_prefix': '/auth',
     'user_id': 'user_id',

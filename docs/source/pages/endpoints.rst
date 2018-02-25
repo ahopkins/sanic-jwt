@@ -248,7 +248,7 @@ You hook up your custom endpoints at :doc:`initialization<initialization>` by pr
 
 .. note::
 
-    It must be a `class based view <http://sanic.readthedocs.io/en/latest/sanic/class_views.html#class-based-views>`_. While it is certainly possible to subclass Sanic's ``sanic.views.HTTPMethodView``, it is recommended that you subclass ``sanic_jwt.BaseEndpoint`` instead so you have access to:
+    It must be a `class based view <http://sanic.readthedocs.io/en/latest/sanic/class_based_views.html#class-based-views>`_. While it is certainly possible to subclass Sanic's ``sanic.views.HTTPMethodView``, it is recommended that you subclass ``sanic_jwt.BaseEndpoint`` instead so you have access to:
 
     - ``self.instance`` (the current Sanic JWT),
     - ``self.config`` (all current configurations), and

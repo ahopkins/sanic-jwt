@@ -193,7 +193,7 @@ Sometimes you may find the need to add another endpoint to your authentication s
         ('/my-view', MyEndpoint),
     )
 
-    Initialize(app, class_based_views=my_views)
+    Initialize(app, class_views=my_views)
 
 **Example**:
 
@@ -236,9 +236,9 @@ What if we wanted a ``/register`` endpoint? It could easily be added like this:
         ('/register', Register),
     )
 
-    Initialize(app, class_based_views=my_views)
+    Initialize(app, class_views=my_views)
 
-You hook up your custom endpoints at :doc:`initialization<initialization>` by providing ``Initialize`` with a ``class_based_views`` argument naming your endpoint and its path.
+You hook up your custom endpoints at :doc:`initialization<initialization>` by providing ``Initialize`` with a ``class_views`` argument naming your endpoint and its path.
 
 .. code-block:: python
 
@@ -248,7 +248,7 @@ You hook up your custom endpoints at :doc:`initialization<initialization>` by pr
 
 .. note::
 
-    It must be a `class based view <http://sanic.readthedocs.io/en/latest/sanic/class_based_views.html#class-based-views>`_. While it is certainly possible to subclass Sanic's ``sanic.views.HTTPMethodView``, it is recommended that you subclass ``sanic_jwt.BaseEndpoint`` instead so you have access to:
+    It must be a `class based view <http://sanic.readthedocs.io/en/latest/sanic/class_views.html#class-based-views>`_. While it is certainly possible to subclass Sanic's ``sanic.views.HTTPMethodView``, it is recommended that you subclass ``sanic_jwt.BaseEndpoint`` instead so you have access to:
 
     - ``self.instance`` (the current Sanic JWT),
     - ``self.config`` (all current configurations), and

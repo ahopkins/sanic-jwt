@@ -18,7 +18,7 @@ class TestClaimsExp:
 
         assert 'exp' in payload
 
-        exp = datetime.fromtimestamp(exp)
+        exp = datetime.utcfromtimestamp(exp)
 
         assert isinstance(exp, datetime)
         assert datetime.now() < exp
@@ -45,11 +45,11 @@ class TestClaimsExp:
 
         assert 'exp' in payload
 
-        exp = datetime.fromtimestamp(exp)
+        exp = datetime.utcfromtimestamp(exp)
 
-        with freeze_time(datetime.now() + timedelta(seconds=(60 * 35))):
+        with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 35))):
             assert isinstance(exp, datetime)
-            assert datetime.now() > exp
+            assert datetime.utcnow() > exp
 
             _, response = sanic_app.test_client.get(
                 '/protected',
@@ -71,7 +71,7 @@ class TestClaimsExp:
             sanic_jwt.config.access_token_name, None)
         payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
         exp = payload.get('exp', None)
-        exp = datetime.fromtimestamp(exp)
+        exp = datetime.utcfromtimestamp(exp)
 
         with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 35))):
             assert isinstance(exp, datetime)
@@ -95,7 +95,7 @@ class TestClaimsExp:
             sanic_jwt.config.access_token_name, None)
         payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
         exp = payload.get('exp', None)
-        exp = datetime.fromtimestamp(exp)
+        exp = datetime.utcfromtimestamp(exp)
 
         with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 35 + 1))):
             _, response = sanic_app.test_client.get(
@@ -124,7 +124,7 @@ class TestClaimsExp:
             sanic_jwt.config.access_token_name, None)
         payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
         exp = payload.get('exp', None)
-        exp = datetime.fromtimestamp(exp)
+        exp = datetime.utcfromtimestamp(exp)
 
         assert 'nbf' in payload
         assert isinstance(payload.get('nbf'), int)

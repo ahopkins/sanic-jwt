@@ -211,7 +211,7 @@ If your user should **not** be authenticated, then you should :doc:`raise an exc
 **Purpose**: It is a handler to retrieve a user object from your application. It is used to return the user object in the ``/auth/me`` `endpoint <endpoints>`_. It should return:
 
 - a ``dict``, **or**
-- an instance with a ``to_dict`` or ``__dict__`` method.
+- an instance with a ``to_dict`` method.
 
 **Example**:
 

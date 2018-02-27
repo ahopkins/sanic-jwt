@@ -11,11 +11,11 @@ class BaseEndpoint(BaseDerivative, HTTPMethodView):
         super().__init__(*args, **kwargs)
         self.responses = responses
 
-
-class AuthenticateEndpoint(BaseEndpoint):
     async def options(self, request, *args, **kwargs):
         return text('', status=204)
 
+
+class AuthenticateEndpoint(BaseEndpoint):
     async def post(self, request, *args, **kwargs):
         config = self.config
         user = await utils.call(
@@ -99,9 +99,6 @@ class VerifyEndpoint(BaseEndpoint):
 
 
 class RefreshEndpoint(BaseEndpoint):
-    async def options(self, request, *args, **kwargs):
-        return text('', status=204)
-
     async def post(self, request, *args, **kwargs):
         # TODO:
         # - Add more exceptions

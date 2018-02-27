@@ -21,7 +21,7 @@ class TestClaimsExp:
         exp = datetime.utcfromtimestamp(exp)
 
         assert isinstance(exp, datetime)
-        assert datetime.now() < exp
+        assert datetime.utcnow() < exp
 
         _, response = sanic_app.test_client.get(
             '/protected',

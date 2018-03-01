@@ -34,6 +34,9 @@ Initialize:
 from sanic import Sanic
 from sanic_jwt import Initialize
 
+def my_authenticate(request, *args, **kwargs):
+    ...
+
 app = Sanic()
 Initialize(
     app,

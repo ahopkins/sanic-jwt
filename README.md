@@ -19,7 +19,7 @@ developer. It can act to protect endpoints and also provide authentication scopi
 
 [Read the documentation](http://sanic-jwt.rtfd.io/)
 
-Install using:
+Install:
 
 ```
 pip install sanic-jwt
@@ -27,3 +27,20 @@ pip install sanic-jwt
 
   [Sanic]: http://sanic.readthedocs.io
   [JWT]: https://jwt.io
+
+Initialize:
+
+```python
+from sanic import Sanic
+from sanic_jwt import Initialize
+
+app = Sanic()
+Initialize(
+    app,
+    authenticate=my_authenticate
+)
+```
+
+Authenticate:
+
+    http://localhost/auth

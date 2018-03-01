@@ -30,6 +30,7 @@ tests_require = [
     'pyjwt',
     # 'uvloop',  # XXX setup crashes by not being 'able to create executables'
     'cryptography',
+    'codecov',
 ]
 
 extras_require = {

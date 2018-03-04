@@ -1,10 +1,10 @@
 from sanic import Sanic, response
-from sanic.views import HTTPMethodView
 from sanic.response import json
 from sanic_jwt import initialize
+from sanic_jwt import BaseEndpoint
 
 
-class MagicLoginHandler(HTTPMethodView):
+class MagicLoginHandler(BaseEndpoint):
     async def options(self, request):
         return response.text('', status=204)
 

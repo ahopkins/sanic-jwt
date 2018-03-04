@@ -123,7 +123,7 @@ class InvalidClassViewsFormat(SanicJWTException):
     def __init__(
         self,
         message='class_views should follow this format (\'<SOME ROUTE>\', '
-        'ClassInheritedFromHTTPMethodView)',
+        'ClassInheritedFromBaseEndpoint)',
             **kwargs):
         super().__init__(message, **kwargs)
 

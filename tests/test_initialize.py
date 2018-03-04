@@ -1,5 +1,7 @@
 from sanic import Blueprint
 from sanic import Sanic
+from sanic.response import text
+from sanic.views import HTTPMethodView
 
 import pytest
 
@@ -160,3 +162,22 @@ def test_initialize_class_on_blueprint_with_url_prefix_and_config():
     init = Initialize(bp, app=app, authenticate=lambda: True, url_prefix='/a')
 
     assert init._get_url_prefix() == '/test/a'
+
+
+def test_initialize_with_custom_endpoint_not_subclassed():
+    class SubclassHTTPMethodView(HTTPMethodView):
+        async def options(self, request):
+            return text('', status=204)
+
+        async def get(self, request):
+            return text('ok')
+
+    app = Sanic()
+    with pytest.raises(exceptions.InvalidClassViewsFormat):
+        Initialize(
+            app,
+            authenticate=lambda: True,
+            class_views=[
+                ('/subclass', SubclassHTTPMethodView)
+            ]
+        )

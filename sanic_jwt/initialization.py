@@ -1,6 +1,5 @@
 from sanic import Blueprint
 from sanic import Sanic
-from sanic.views import HTTPMethodView
 from sanic_jwt import exceptions
 from sanic_jwt import endpoints
 from sanic_jwt.authentication import Authentication
@@ -94,9 +93,14 @@ class Initialize:
             class_views = self.kwargs.pop('class_views')
 
             for route, view in class_views:
-                if issubclass(view, HTTPMethodView) and isinstance(route, str):
+                print(view)
+                if issubclass(view, endpoints.BaseEndpoint) and isinstance(route, str):
                     self.bp.add_route(
-                        view.as_view(),
+                        view.as_view(
+                            self.responses,
+                            config=self.config,
+                            instance=self.instance,
+                        ),
                         route,
                         strict_slashes=config.strict_slashes
                     )

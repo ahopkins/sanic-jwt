@@ -69,7 +69,7 @@ It can be **either** a callable or an awaitable. Here are two different examples
 
 .. code-block:: python
 
-    async def store_refresh_token(request, user_id, *args, **kwargs):
+    async def retrieve_refresh_token(request, user_id, *args, **kwargs):
         key = f'refresh_token_{user_id}'
         return await aredis.get(key)
 

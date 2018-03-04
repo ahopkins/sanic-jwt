@@ -93,7 +93,6 @@ class Initialize:
             class_views = self.kwargs.pop('class_views')
 
             for route, view in class_views:
-                print(view)
                 if issubclass(view, endpoints.BaseEndpoint) and isinstance(route, str):
                     self.bp.add_route(
                         view.as_view(

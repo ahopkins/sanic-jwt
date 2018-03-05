@@ -12,14 +12,15 @@ Let's take a look at a real simple example on how to use Sanic JWT to see the co
             self.username = username
             self.password = password
 
-        def __str__(self):
-            return "User(id={})".format(self.id)
+        def __repr__(self):
+            return "User(id='{}')".format(self.user_id)
 
         def to_dict(self):
             return {
                 'user_id': self.user_id,
                 'username': self.username,
             }
+
 
     users = [
         User(1, 'user1', 'abcxyz'),
@@ -72,8 +73,14 @@ Our whole application now looks like this:
             self.username = username
             self.password = password
 
-        def __str__(self):
-            return "User(id='%s')" % self.id
+        def __repr__(self):
+            return "User(id='{}')".format(self.user_id)
+
+        def to_dict(self):
+            return {
+                'user_id': self.user_id,
+                'username': self.username,
+            }
 
 
     users = [

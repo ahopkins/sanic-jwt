@@ -1,5 +1,6 @@
 import copy
 import logging
+import inspect
 from datetime import datetime, timedelta
 
 import jwt
@@ -59,7 +60,7 @@ class BaseAuthentication:
 
         return payload
 
-    async def extend_payload(self, payload, *args, **kwargs):
+    async def extend_payload(self, payload, user=None, *args, **kwargs):
         return payload
 
     async def store_refresh_token(self, *args, **kwargs):
@@ -76,13 +77,13 @@ class BaseAuthentication:
 
 
 class Authentication(BaseAuthentication):
-    def setup_claims(self, *args, **kwargs):
-        optional = ['iss', 'iat', 'nbf', 'aud', ]
+    # def setup_claims(self, *args, **kwargs):
+    #     optional = ['iss', 'iat', 'nbf', 'aud', ]
 
-        for option in optional:
-            setting = 'claim_{}'.format(option.upper())
-            if getattr(self.config, setting, False):
-                self.claims.append(option)
+    #     for option in optional:
+    #         setting = 'claim_{}'.format(option.upper())
+    #         if getattr(self.config, setting, False):
+    #             self.claims.append(option)
 
     def _decode(self, token, verify=True):
         secret = self._get_secret()
@@ -123,8 +124,13 @@ class Authentication(BaseAuthentication):
 
         payload = await utils.call(
             self.add_claims, payload)
+
+        extend_payload_args = inspect.getargspec(self.extend_payload)
+        args = [payload]
+        if 'user' in extend_payload_args.args:
+            args.append(user)
         payload = await utils.call(
-            self.extend_payload, payload)
+            self.extend_payload, *args)
 
         if self.config.scopes_enabled:
             scopes = await utils.call(

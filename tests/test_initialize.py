@@ -181,3 +181,34 @@ def test_initialize_with_custom_endpoint_not_subclassed():
                 ('/subclass', SubclassHTTPMethodView)
             ]
         )
+
+
+def test_invalid_configuration_object():
+
+    class MyInvalidConfiguration:
+        MY_CUSTOM_SETTING = 'foo'
+
+    app = Sanic()
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(app, configuration_class=MyInvalidConfiguration)
+
+
+def test_invalid_authentication_object():
+
+    class MyInvalidAuthentication:
+        async def authenticate(*args, **kwargs):
+            return True
+
+    app = Sanic()
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(app, authentication_class=MyInvalidAuthentication)
+
+
+def test_invalid_response_object():
+
+    class MyInvalidResponses:
+        pass
+
+    app = Sanic()
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(app, responses_class=MyInvalidResponses)

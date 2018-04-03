@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import jwt
 
 from . import exceptions, utils
-from .configuration import Configuration
 
 logger = logging.getLogger(__name__)
 claim_label = {
@@ -20,12 +19,7 @@ class BaseAuthentication:
     def __init__(self, app, config):
         self.app = app
         self.claims = ['exp']
-        if isinstance(config, Configuration):
-            self.config = copy.deepcopy(config)
-        else:
-            msg = 'Sanic JWT was not initialized properly. It did not '\
-                'received an instance of Configuration'
-            raise exceptions.InitializationFailure(message=msg)
+        self.config = copy.deepcopy(config)
 
     async def build_payload(self, user, *args, **kwargs):
         if isinstance(user, dict):
@@ -76,13 +70,6 @@ class BaseAuthentication:
 
 
 class Authentication(BaseAuthentication):
-    def setup_claims(self, *args, **kwargs):
-        optional = ['iss', 'iat', 'nbf', 'aud', ]
-
-        for option in optional:
-            setting = 'claim_{}'.format(option.upper())
-            if getattr(self.config, setting, False):
-                self.claims.append(option)
 
     def _decode(self, token, verify=True):
         secret = self._get_secret()
@@ -219,7 +206,7 @@ class Authentication(BaseAuthentication):
             is_valid, status, reasons = self.verify(request, *args, **kwargs)
         except Exception as e:
             if self.config.debug:
-                raise Exception(e)
+                raise Exception(e)  # noqa
             else:
                 raise exceptions.Unauthorized()
 

@@ -55,6 +55,7 @@ class Initialize:
         self.kwargs = kwargs
         self.instance = instance
 
+        self.__check_classes()
         self.__load_configuration()
         self.__load_responses()
         self.__check_initialization()
@@ -105,6 +106,24 @@ class Initialize:
                     )
                 else:
                     raise exceptions.InvalidClassViewsFormat()
+
+    def __check_classes(self):
+        """
+        Check if any of the default classes (`Authentication`, `Configuration`
+        and / or `Responses`) have been overwitten and if they're still valid
+        """
+        # msg took from BaseAuthentication
+        msg = 'Sanic JWT was not initialized properly. It did not '\
+              'received an instance of {}'
+        if not issubclass(self.authentication_class, Authentication):
+            raise exceptions.InitializationFailure(
+                message=msg.format('Authentication'))
+        if not issubclass(self.configuration_class, Configuration):
+            raise exceptions.InitializationFailure(
+                message=msg.format('Configuration'))
+        if not issubclass(self.responses_class, Responses):
+            raise exceptions.InitializationFailure(
+                message=msg.format('Responses'))
 
     def __check_initialization(self):
         """

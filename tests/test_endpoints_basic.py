@@ -1,7 +1,7 @@
 import jwt
 
 
-class TestEndpointsBasic(object):
+class TestEndpointsBasic:
     def test_unprotected(self, app):
         sanic_app, _ = app
         _, response = sanic_app.test_client.get('/')

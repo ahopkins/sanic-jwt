@@ -4,6 +4,7 @@ from sanic_jwt import exceptions
 from sanic_jwt import endpoints
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
+from sanic_jwt.decorators import protected, scoped
 from sanic_jwt.responses import Responses
 
 
@@ -102,7 +103,7 @@ class Initialize:
                             instance=self.instance,
                         ),
                         route,
-                        strict_slashes=config.strict_slashes
+                        strict_slashes=config.get('strict_slashes')
                     )
                 else:
                     raise exceptions.InvalidClassViewsFormat()
@@ -131,8 +132,8 @@ class Initialize:
         exceptions
         """
         config = self.config
-        if hasattr(config, 'refresh_token_enabled') and \
-            getattr(config, 'refresh_token_enabled') and (
+        if config.has('refresh_token_enabled') and \
+            config.get('refresh_token_enabled') and (
             not self.kwargs.get('store_refresh_token') or
             not self.kwargs.get('retrieve_refresh_token')
         ):
@@ -216,7 +217,7 @@ class Initialize:
     def _get_url_prefix(self):
         bp_url_prefix = self.bp.url_prefix\
             if self.bp.url_prefix is not None else ''
-        config_url_prefix = self.config.url_prefix
+        config_url_prefix = self.config.get('url_prefix')
         url_prefix = bp_url_prefix + config_url_prefix
         return url_prefix
 
@@ -236,6 +237,15 @@ class Initialize:
         elif isinstance(instance, Blueprint):
             return instance
         raise exceptions.InitializationFailure
+
+    def protected(self, *args, **kwargs):
+        args = list(args)
+        args.insert(0, self.instance)
+        return protected(*args, **kwargs)
+
+    def scoped(self, scopes, **kwargs):
+        kwargs.update({'initialized_on': self.instance})
+        return scoped(scopes, **kwargs)
 
     @property
     def instance_is_blueprint(self):

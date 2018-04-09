@@ -7,7 +7,7 @@ class Responses(BaseDerivative):
     async def get_access_token_output(request, user, config, instance):
         access_token = await instance.auth.get_access_token(user)
 
-        output = {config.access_token_name: access_token}
+        output = {config.get('access_token_name', request=request, user=user): access_token}
 
         return access_token, output
 
@@ -19,22 +19,22 @@ class Responses(BaseDerivative):
                           refresh_token=None):
         response = json(output)
 
-        if config.cookie_set:
-            key = config.cookie_access_token_name
+        if config.get('cookie_set', request=request):
+            key = config.get('cookie_access_token_name', request=request)
             response.cookies[key] = access_token
             response.cookies[key]['domain'] = \
-                config.cookie_domain
+                config.get('cookie_domain', request=request)
             response.cookies[key]['httponly'] = \
-                config.cookie_httponly
+                config.get('cookie_httponly', request=request)
 
             if refresh_token and \
-                    config.refresh_token_enabled:
+                    config.get('refresh_token_enabled', request=request):
                 key = config.cookie_refresh_token_name
                 response.cookies[key] = refresh_token
                 response.cookies[key]['domain'] = \
-                    config.cookie_domain
+                    config.get('cookie_domain', request=request)
                 response.cookies[key]['httponly'] = \
-                    config.cookie_httponly
+                    config.get('cookie_httponly', request=request)
 
         return response
 

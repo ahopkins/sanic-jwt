@@ -1,6 +1,6 @@
 import pytest
 from sanic import Sanic
-from sanic_jwt import initialize, Initialize, Configuration
+from sanic_jwt import initialize, Initialize, Configuration, exceptions
 
 
 def test_configuration_initialize_method_default():
@@ -119,3 +119,16 @@ def test_configuration_initialize_class_as_argument():
     )
 
     assert sanicjwt.config.access_token_name == 'return-level'
+
+
+def test_configuration_get_method():
+    app = Sanic()
+
+    sanicjwt = Initialize(
+        app, authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.get('access_token_name') == "access_token"
+
+    with pytest.raises(exceptions.LoopNotRunning):
+        assert sanicjwt.config.get("access_token_name", transient=True) == "access_token"

@@ -212,3 +212,14 @@ def test_invalid_response_object():
     app = Sanic()
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(app, responses_class=MyInvalidResponses)
+
+
+def test_initialize_compat():
+    app = Sanic()
+
+    initialize(
+        app,
+        lambda: True,
+    )
+
+    assert True

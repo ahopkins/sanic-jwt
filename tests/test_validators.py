@@ -9,6 +9,7 @@ def test_validate_single_scope():
     assert validate_single_scope('user:read', ['user:write']) is False
     assert validate_single_scope('user:read', ['user:read:write'])
     assert validate_single_scope('user', ['user:read']) is False
+    assert validate_single_scope('user', ['user:read']) is False
     assert validate_single_scope('user:read:write', ['user:read']) is False
     assert validate_single_scope('user:read:write', ['user:read:write'])
     assert validate_single_scope('user:read:write', ['user:write:read'])

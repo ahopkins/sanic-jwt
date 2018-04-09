@@ -131,17 +131,18 @@ class InvalidClassViewsFormat(SanicJWTException):
 class InvalidConfiguration(SanicJWTException):
 
     def __init__(self, message="", **kwargs):
-        message = 'An invalid setting was , **kwargspassed to the Sanic JWT ' \
+        message = 'An invalid setting was passed to the Sanic JWT ' \
                   'configuration: ' + str(message)
-        super().__init__(message)
+        super().__init__(message, **kwargs)
 
 
+@add_status_code(500)
 class InvalidPayload(SanicJWTException):
 
     def __init__(self, message="", **kwargs):
-        message = 'Payload must be a dicti, **kwargsonary with a key mapped to ' \
+        message = 'Payload must be a dictionary with a key mapped to ' \
                   'SANIC_JWT_USER_ID'
-        super().__init__(message)
+        super().__init__(message, **kwargs)
 
 
 class RequiredKeysNotFound(SanicJWTException):
@@ -160,4 +161,12 @@ class ProvidedPathNotFound(SanicJWTException):
     def __init__(self,
                  message='The Path object given is not a valid file',
                  **kwargs):
+        super().__init__(message, **kwargs)
+
+
+class LoopNotRunning(SanicJWTException):
+
+    def __init__(
+        self, message="The asyncio loop is not currently running", **kwargs
+    ):
         super().__init__(message, **kwargs)

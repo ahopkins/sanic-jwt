@@ -10,7 +10,7 @@ from . import exceptions
 logger = logging.getLogger(__name__)
 
 
-def generate_token(n=24):
+def generate_token(n=24, *args, **kwargs):
     return str(binascii.hexlify(os.urandom(n)), 'utf-8')
 
 

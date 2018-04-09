@@ -1,12 +1,9 @@
-from abc import ABC, abstractmethod
 import copy
 import logging
+from abc import ABC, abstractmethod
 
-from . import exceptions
-from . import utils
-from .cache import get_value
-from .cache import has_value
-from .cache import set_value
+from . import exceptions, utils
+from .cache import get_value, has_value, set_value
 
 
 defaults = {
@@ -28,6 +25,7 @@ defaults = {
     'cookie_access_token_name': 'access_token',
     'debug': False,
     'expiration_delta': 60 * 5 * 6,
+    'generate_refresh_token': utils.generate_token,
     'leeway': 60 * 3,
     'refresh_token_enabled': False,
     'refresh_token_name': 'refresh_token',
@@ -80,11 +78,13 @@ class BaseConfiguration(ABC):
         else:
             self._inside_context = value
 
+    # def __getattribute__(self, item):
+    #     print('>>> getattribute {}'.format(item))
+    #     return super().__getattribute__(item)
+
     # def __getattr__(self, item):
-    #     v = self.defaults.get(item, None)
-    #     if v is None:
-    #         raise AttributeError
-    #     return v
+    #     print('>>> getattr {}'.format(item))
+    #     return super().__getattr__(item)
 
 
 class Configuration(BaseConfiguration):

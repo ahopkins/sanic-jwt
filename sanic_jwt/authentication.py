@@ -143,14 +143,11 @@ class Authentication(BaseAuthentication):
         return self.config.get('secret')
 
     def _get_token(self, request, refresh_token=False):
-        cookie_token_name_key = 'cookie_access_token_name' \
-            if refresh_token is False else \
-            'cookie_refresh_token_name'
-        cookie_token_name = self.config.get(cookie_token_name_key)
-        header_prefix_key = 'authorization_header_prefix'
-        header_prefix = self.config.get(header_prefix_key)
-
         if self.config.get('cookie_set'):
+            cookie_token_name_key = 'cookie_access_token_name' \
+                if refresh_token is False else \
+                'cookie_refresh_token_name'
+            cookie_token_name = self.config.get(cookie_token_name_key)
             token = request.cookies.get(cookie_token_name, None)
             if token:
                 return token
@@ -162,6 +159,8 @@ class Authentication(BaseAuthentication):
             self.config.get('authorization_header'), None)
 
         if header:
+            header_prefix_key = 'authorization_header_prefix'
+            header_prefix = self.config.get(header_prefix_key)
             try:
                 prefix, token = header.split(' ')
                 if prefix != header_prefix:
@@ -199,7 +198,10 @@ class Authentication(BaseAuthentication):
         return jwt.encode(payload, secret, algorithm=algorithm).decode('utf-8')
 
     async def get_refresh_token(self, request, user):
-        refresh_token = utils.generate_token()
+        refresh_token = await utils.call(
+            self.config.get("generate_refresh_token"),
+            request=request,
+            user=user)
         user_id = await self._get_user_id(user)
         await utils.call(
             self.store_refresh_token,

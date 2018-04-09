@@ -1,5 +1,6 @@
 import binascii
 import os
+import uuid
 
 from sanic import Sanic
 from sanic.response import json
@@ -8,6 +9,10 @@ import pytest
 from sanic_jwt import Initialize
 from sanic_jwt import exceptions
 from sanic_jwt.decorators import protected
+
+
+def generate_refresh_token(*args, **kwargs):
+    return str(uuid.uuid4())
 
 
 @pytest.yield_fixture
@@ -61,7 +66,8 @@ def app_with_sync_methods(users):
                           authenticate=authenticate,
                           store_refresh_token=store_refresh_token,
                           retrieve_refresh_token=retrieve_refresh_token,
-                          retrieve_user=retrieve_user)
+                          retrieve_user=retrieve_user,
+                          generate_refresh_token=generate_refresh_token)
 
     sanic_app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
     sanic_app.config.SANIC_JWT_SECRET = str(

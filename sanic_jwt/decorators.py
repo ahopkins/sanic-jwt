@@ -46,7 +46,7 @@ def protected(initialized_on=None, **kw):
 
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(
-                        request, *args, **kwargs
+                        request, request_args=args, request_kwargs=kwargs
                     )
                 except AttributeError:
                     raise exceptions.SanicJWTException(
@@ -69,7 +69,6 @@ def protected(initialized_on=None, **kw):
 
                 else:
                     raise exceptions.Unauthorized(reasons, status_code=status)
-
         return decorated_function
 
     return decorator
@@ -95,7 +94,7 @@ def scoped(
             with instant_config(instance, request=request, **kw):
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(
-                        request, *args, **kwargs
+                        request, request_args=args, request_kwargs=kwargs
                     )
                 except AttributeError:
                     raise exceptions.SanicJWTException(

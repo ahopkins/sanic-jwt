@@ -1,7 +1,7 @@
 import pytest
 from sanic import Sanic
 from sanic.response import json
-from sanic_jwt import initialize, Initialize, Configuration  # , exceptions
+from sanic_jwt import initialize, Initialize, Configuration, exceptions
 from sanic_jwt.configuration import ConfigItem
 
 
@@ -210,3 +210,31 @@ def test_configuration_custom_class_and_config_item_as_method():
     )
 
     assert sanicjwt.config.access_token_name() == "config-item-function-level"
+
+
+def test_deprecated_handler_payload_scopes():
+    app = Sanic()
+    app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = lambda *a, **kw: {}
+
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(
+            app, authenticate=lambda: True
+        )
+
+
+def test_deprecated_payload_handler():
+    app = Sanic()
+    app.config.SANIC_JWT_PAYLOAD_HANDLER = lambda *a, **kw: {}
+
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(
+            app, authenticate=lambda: True
+        )
+
+
+def test_deprecated_handler_payload_extend():
+    app = Sanic()
+    app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND = lambda *a, **kw: {}
+
+    with pytest.raises(exceptions.InvalidConfiguration):
+        Initialize(app, authenticate=lambda: True)

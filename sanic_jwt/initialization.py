@@ -146,18 +146,18 @@ class Initialize:
         # Depracation notices
         if 'SANIC_JWT_HANDLER_PAYLOAD_SCOPES' in self.app.config:
             raise exceptions.InvalidConfiguration(
-                "SANIC_JWT_HANDLER_PAYLOAD_SCOPES has been depracated. "
+                "SANIC_JWT_HANDLER_PAYLOAD_SCOPES has been deprecated. "
                 "Instead, pass your handler method (not an import path) as "
                 "initialize(add_scopes_to_payload=my_scope_extender)")
 
         if 'SANIC_JWT_PAYLOAD_HANDLER' in self.app.config:
             raise exceptions.InvalidConfiguration(
-                "SANIC_JWT_PAYLOAD_HANDLER has been depracated. "
+                "SANIC_JWT_PAYLOAD_HANDLER has been deprecated. "
                 "Instead, you will need to subclass Authentication. ")
 
         if 'SANIC_JWT_HANDLER_PAYLOAD_EXTEND' in self.app.config:
             raise exceptions.InvalidConfiguration(
-                "SANIC_JWT_HANDLER_PAYLOAD_EXTEND has been depracated. "
+                "SANIC_JWT_HANDLER_PAYLOAD_EXTEND has been deprecated. "
                 "Instead, you will need to subclass Authentication. "
                 "Check out the documentation for more information.")
 

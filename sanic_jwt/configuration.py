@@ -49,10 +49,13 @@ aliases = {
 }
 
 ignore_keys = (
+    "add_scopes_to_payload",
     "authenticate",
     "class_views",
+    "extend_payload",
+    "retrieve_refresh_token",
     "retrieve_user",
-    "add_scopes_to_payload",
+    "store_refresh_token",
 )
 
 logger = logging.getLogger(__name__)

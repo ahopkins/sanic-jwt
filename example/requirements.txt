@@ -19,7 +19,7 @@ pathtools==0.1.2
 py==1.5.2
 pycparser==2.18
 PyJWT==1.5.3
-pytest==3.2.5
+pytest==3.5.0
 python-dateutil==2.6.1
 PyYAML==3.12
 requests==2.18.4

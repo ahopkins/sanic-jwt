@@ -23,7 +23,7 @@ def build_claim_iat(attr, *args, **kwargs):
 
 
 def build_claim_nbf(attr, config, *args, **kwargs):
-    seconds = config.get('leeway') + config.get('claim_nbf_delta')
+    seconds = config.leeway() + config.claim_nbf_delta()
     return datetime.datetime.utcnow() + datetime.timedelta(
         seconds=seconds
     ) if attr else None

@@ -7,8 +7,7 @@ from sanic import Blueprint
 from sanic.exceptions import add_status_code
 
 from . import exceptions
-from .cache import clear_value
-# from .cache import set_value
+from .cache import clear_cache, to_cache
 from .validators import validate_scopes
 
 logger = logging.getLogger(__name__)
@@ -16,18 +15,15 @@ logger = logging.getLogger(__name__)
 
 @contextmanager
 def instant_config(instance, **kwargs):
-    if kwargs:
-        instance.auth.config.inside_context = True
-        to_clean = []
+    if kwargs and hasattr(instance, 'auth'):
+        to_cache('_request', kwargs.get('request'))
         for key, val in kwargs.items():
-            if hasattr(instance.auth.config, key):
-                to_clean.append(key)
-                instance.auth.config.set(key, val, transient=True)
+            if key in instance.auth.config:
+                if callable(val):
+                    val = val()
+                to_cache(key, val)
     yield
-    if kwargs:
-        instance.auth.config.inside_context = False
-        for key in to_clean:
-            clear_value(key)
+    clear_cache()
 
 
 def protected(initialized_on=None, **kw):
@@ -39,7 +35,7 @@ def protected(initialized_on=None, **kw):
             else:
                 instance = request.app
 
-            with instant_config(instance, **kw):
+            with instant_config(instance, request=request, **kw):
                 if request.method == 'OPTIONS':
                     response = f(request, *args, **kwargs)
                     if isawaitable(response):
@@ -76,7 +72,7 @@ def scoped(scopes, require_all=True,
             else:
                 instance = request.app
 
-            with instant_config(instance, **kw):
+            with instant_config(instance, request=request, **kw):
 
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(

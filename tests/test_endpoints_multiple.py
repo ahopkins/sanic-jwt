@@ -16,8 +16,8 @@ def access_tokens(app_with_bp):
 
     print(response2.body, response2.status)
 
-    token1 = response1.json.get(app_int.config.access_token_name, None)
-    token2 = response2.json.get(bp_init.config.access_token_name, None)
+    token1 = response1.json.get(app_int.config.access_token_name(), None)
+    token2 = response2.json.get(bp_init.config.access_token_name(), None)
 
     return (token1, token2)
 

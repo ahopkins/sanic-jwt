@@ -55,7 +55,7 @@ class TestEndpointsAsync(object):
                          authenticated_response):
         app, sanicjwt = app_with_dict_test
         access_token = authenticated_response.json.get(
-            sanicjwt.config.access_token_name, None)
+            sanicjwt.config.access_token_name(), None)
 
         _, response = app.test_client.get(
             '/auth/me',

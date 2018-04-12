@@ -9,7 +9,7 @@ def access_token(app):
             'username': 'user1',
             'password': 'abcxyz'
         })
-    return response.json.get(sanic_jwt.config.access_token_name, None)
+    return response.json.get(sanic_jwt.config.access_token_name(), None)
 
 
 def test_me(app, access_token):

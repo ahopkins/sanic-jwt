@@ -6,7 +6,7 @@ import pytest
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import Initialize, exceptions
+from sanic_jwt import Configuration, Initialize, exceptions
 from sanic_jwt.decorators import protected
 
 
@@ -57,7 +57,7 @@ def test_jwt_rsa_crypto_from_path_object(public_rsa_key, private_rsa_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -93,7 +93,7 @@ def test_jwt_rsapss_crypto_from_path_object(public_rsa_key, private_rsa_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -128,7 +128,7 @@ def test_jwt_ec_crypto_from_path_object(public_ec_key, private_ec_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -143,11 +143,16 @@ def test_jwt_ec_crypto_from_path_object(public_ec_key, private_ec_key):
 def test_jwt_rsa_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key):
     app = Sanic()
 
-    sanicjwt = Initialize(
+    class MyConfig(Configuration):
+        secret = str(public_rsa_key)
+        private_key = str(private_rsa_key)
+
+    class MyInitialize(Initialize):
+        configuration_class = MyConfig
+
+    sanicjwt = MyInitialize(
         app,
         authenticate=authenticate,
-        secret=str(public_rsa_key),
-        private_key=str(private_rsa_key),
         algorithm='RS384')
 
     @app.route("/protected")
@@ -163,7 +168,7 @@ def test_jwt_rsa_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -178,12 +183,17 @@ def test_jwt_rsa_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key):
 def test_jwt_rsapss_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key):
     app = Sanic()
 
-    sanicjwt = Initialize(
+    class MyConfig(Configuration):
+        secret = str(public_rsa_key)
+        private_key = str(private_rsa_key)
+        algorithm = "PS384"
+
+    class MyInitialize(Initialize):
+        configuration_class = MyConfig
+
+    sanicjwt = MyInitialize(
         app,
-        authenticate=authenticate,
-        public_key=str(public_rsa_key),
-        private_key=str(private_rsa_key),
-        algorithm='PS384')
+        authenticate=authenticate)
 
     @app.route("/protected")
     @protected()
@@ -198,7 +208,7 @@ def test_jwt_rsapss_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key)
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -213,11 +223,16 @@ def test_jwt_rsapss_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key)
 def test_jwt_ec_crypto_from_fullpath_as_str(public_ec_key, private_ec_key):
     app = Sanic()
 
-    sanicjwt = Initialize(
+    class MyConfig(Configuration):
+        secret = str(public_ec_key)
+        private_key = str(private_ec_key)
+
+    class MyInitialize(Initialize):
+        configuration_class = MyConfig
+
+    sanicjwt = MyInitialize(
         app,
         authenticate=authenticate,
-        secret=str(public_ec_key),
-        private_key=str(private_ec_key),
         algorithm='ES384')
 
     @app.route("/protected")
@@ -233,7 +248,7 @@ def test_jwt_ec_crypto_from_fullpath_as_str(public_ec_key, private_ec_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -268,7 +283,7 @@ def test_jwt_rsa_crypto_from_str(public_rsa_key, private_rsa_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -303,7 +318,7 @@ def test_jwt_rsapss_crypto_from_str(public_rsa_key, private_rsa_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 
@@ -317,9 +332,6 @@ def test_jwt_rsapss_crypto_from_str(public_rsa_key, private_rsa_key):
 
 def test_jwt_ec_crypto_from_str(public_ec_key, private_ec_key):
     app = Sanic()
-
-    # print(public_ec_key.read_text())
-    # print(private_ec_key.read_text())
 
     sanicjwt = Initialize(
         app,
@@ -341,7 +353,7 @@ def test_jwt_ec_crypto_from_str(public_ec_key, private_ec_key):
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     assert access_token is not None
 

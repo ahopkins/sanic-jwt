@@ -35,7 +35,7 @@ def test_forgotten_initialized_on_protected():
     })
 
     access_token = response.json.get(
-        sanicjwt.config.access_token_name, None)
+        sanicjwt.config.access_token_name(), None)
 
     _, response = app.test_client.get(
         '/test/protected',

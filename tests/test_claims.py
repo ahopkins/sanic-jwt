@@ -12,8 +12,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret())
         exp = payload.get('exp', None)
 
         assert 'exp' in payload
@@ -39,8 +39,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret())
         exp = payload.get('exp', None)
 
         assert 'exp' in payload
@@ -68,8 +68,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
         exp = payload.get('exp', None)
         exp = datetime.utcfromtimestamp(exp)
 
@@ -92,8 +92,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
         exp = payload.get('exp', None)
         exp = datetime.utcfromtimestamp(exp)
 
@@ -121,8 +121,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
         exp = payload.get('exp', None)
         exp = datetime.utcfromtimestamp(exp)
 
@@ -164,8 +164,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
 
         assert 'iat' in payload
         assert isinstance(payload.get('iat'), int)
@@ -186,8 +186,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
 
         assert 'iss' in payload
         assert isinstance(payload.get('iss'), str)
@@ -209,8 +209,8 @@ class TestClaimsExp:
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret, verify=False)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
 
         assert 'aud' in payload
         assert isinstance(payload.get('aud'), str)

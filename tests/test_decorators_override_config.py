@@ -48,9 +48,9 @@ def test_decorators_override_configuration_defaults():
         "/test/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanicjwt.config.access_token_name, None)
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
-    payload = jwt.decode(access_token, sanicjwt.config.secret)
+    payload = jwt.decode(access_token, sanicjwt.config.secret())
     exp = payload.get("exp", None)
 
     assert "exp" in payload

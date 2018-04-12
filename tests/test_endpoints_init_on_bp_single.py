@@ -55,7 +55,7 @@ def test_protected_blueprint():
 
     assert response.status == 200
 
-    access_token = response.json.get(sanicjwt.config.access_token_name,
+    access_token = response.json.get(sanicjwt.config.access_token_name(),
                                      None)
 
     assert access_token is not None

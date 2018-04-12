@@ -1,7 +1,8 @@
+import pytest
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import Authentication, Initialize
+from sanic_jwt import Authentication, Initialize, exceptions
 
 
 class WrongAuthentication(Authentication):
@@ -20,6 +21,18 @@ async def authenticate(request, *args, **kwargs):
     return {"user_id": 1}
 
 
+def test_authentication_subclass_without_authenticate_parameter():
+
+    app = Sanic()
+
+    with pytest.raises(exceptions.AuthenticateNotImplemented):
+
+        Initialize(
+            app,
+            authentication_class=WrongAuthentication,
+        )
+
+
 def test_payload_without_correct_key():
 
     app = Sanic()
@@ -27,8 +40,7 @@ def test_payload_without_correct_key():
     Initialize(
         app,
         authenticate=authenticate,
-        authentication_class=WrongAuthentication,
-    )
+        authentication_class=WrongAuthentication)
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -45,8 +57,7 @@ def test_payload_not_a_dict():
     Initialize(
         app,
         authenticate=authenticate,
-        authentication_class=AnotherWrongAuthentication,
-    )
+        authentication_class=AnotherWrongAuthentication)
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -62,7 +73,7 @@ def test_wrong_header(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name, None)
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
 
     assert response.status == 200
     assert access_token is not None
@@ -80,9 +91,9 @@ def test_tricky_debug_option(app):
     sanic_app, sanic_jwt = app
 
     @sanic_app.route("/another_protected")
-    @sanic_jwt.protected(debug=True)
+    @sanic_jwt.protected(debug=lambda: True)
     def another_protected(request):
-        return json({'protected': True, "is_debug": request.app.auth.config.get('debug')})
+        return json({'protected': True, "is_debug": request.app.auth.config.debug()})
 
     @sanic_app.exception(Exception)
     def in_case_of_exception(request, exception):
@@ -94,7 +105,7 @@ def test_tricky_debug_option(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name, None)
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
 
     assert response.status == 200
     assert access_token is not None

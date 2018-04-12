@@ -71,17 +71,17 @@ def test_protected_blueprints():
     assert response1.status == 200
     assert response2.status == 200
 
-    access_token_1 = response1.json.get(sanicjwt1.config.access_token_name,
+    access_token_1 = response1.json.get(sanicjwt1.config.access_token_name(),
                                         None)
-    access_token_2 = response2.json.get(sanicjwt2.config.access_token_name,
+    access_token_2 = response2.json.get(sanicjwt2.config.access_token_name(),
                                         None)
 
     assert access_token_1 is not None
     assert access_token_2 is not None
 
-    wrong_token_grab_1 = response1.json.get(sanicjwt2.config.access_token_name,
+    wrong_token_grab_1 = response1.json.get(sanicjwt2.config.access_token_name(),
                                             None)
-    wrong_token_grab_2 = response2.json.get(sanicjwt1.config.access_token_name,
+    wrong_token_grab_2 = response2.json.get(sanicjwt1.config.access_token_name(),
                                             None)
 
     assert wrong_token_grab_1 is None
@@ -95,7 +95,7 @@ def test_protected_blueprints():
     _, response2 = app.test_client.get(
         '/',
         cookies={
-            sanicjwt2.config.cookie_access_token_name:
+            sanicjwt2.config.cookie_access_token_name():
             access_token_2
         })
 
@@ -112,7 +112,7 @@ def test_protected_blueprints():
     _, response2 = app.test_client.get(
         '/',
         cookies={
-            sanicjwt2.config.cookie_access_token_name:
+            sanicjwt2.config.cookie_access_token_name():
             access_token_1
         })
 

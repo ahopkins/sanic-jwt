@@ -1,3 +1,5 @@
+import inspect
+
 from sanic import Blueprint
 from sanic import Sanic
 from sanic_jwt import exceptions
@@ -103,7 +105,7 @@ class Initialize:
                             instance=self.instance,
                         ),
                         route,
-                        strict_slashes=config.get('strict_slashes')
+                        strict_slashes=config.strict_slashes()
                     )
                 else:
                     raise exceptions.InvalidClassViewsFormat()
@@ -132,11 +134,10 @@ class Initialize:
         exceptions
         """
         config = self.config
-        if config.has('refresh_token_enabled') and \
-            config.get('refresh_token_enabled') and (
-            not self.kwargs.get('store_refresh_token') or
-            not self.kwargs.get('retrieve_refresh_token')
-        ):
+        if "refresh_token_enabled" in config and \
+            config.refresh_token_enabled() and (
+                not self.kwargs.get('store_refresh_token') or
+                not self.kwargs.get('retrieve_refresh_token')):
             raise exceptions.RefreshTokenNotImplemented
 
         # TODO:
@@ -169,8 +170,13 @@ class Initialize:
         # Initialize instance of the Authentication class
         self.instance.auth = self.authentication_class(self.app, config=config)
 
-        if 'authenticate' not in self.kwargs:
-            raise exceptions.AuthenticateNotImplemented
+        if "authenticate" not in self.kwargs:
+            auth_impl = self.instance.auth.authenticate
+            if not inspect.ismethod(auth_impl):
+                raise exceptions.AuthenticateNotImplemented
+            if auth_impl.__func__ == Authentication.authenticate:
+                raise exceptions.AuthenticateNotImplemented
+            self.kwargs.update({"authenticate": auth_impl})
 
         for handler in handlers:
             handler_name, _ = handler
@@ -189,10 +195,8 @@ class Initialize:
         config_to_enable = [x for x in handlers if x[1]]
         for config_item in config_to_enable:
             if config_item[0] in self.kwargs:
-                list(map(lambda x: self.kwargs.update(
-                    {x: True, config_item[0]:
-                        self.kwargs.get(config_item[0])}),
-                    config_item[1]))
+                for k in config_item[1]:
+                    self.kwargs.update({k: True, config_item[0]: self.kwargs.get(config_item[0])})
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
 
@@ -201,7 +205,7 @@ class Initialize:
 
     def __add_single_endpoint(self, class_name, path_name):
         view = getattr(endpoints, class_name)
-        path_name = getattr(self.config, 'path_to_{}'.format(path_name))
+        path_name = getattr(self.config, 'path_to_{}'.format(path_name))()
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
             self.instance.add_route(
@@ -215,9 +219,9 @@ class Initialize:
                              responses=self.responses), path_name)
 
     def _get_url_prefix(self):
-        bp_url_prefix = self.bp.url_prefix\
+        bp_url_prefix = self.bp.url_prefix \
             if self.bp.url_prefix is not None else ''
-        config_url_prefix = self.config.get('url_prefix')
+        config_url_prefix = self.config.url_prefix()
         url_prefix = bp_url_prefix + config_url_prefix
         return url_prefix
 

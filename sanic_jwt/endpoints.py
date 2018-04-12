@@ -24,11 +24,11 @@ class AuthenticateEndpoint(BaseEndpoint):
         access_token, output = await self.responses.get_access_token_output(
             request, user, self.config, self.instance)
 
-        if config.get('refresh_token_enabled'):
+        if config.refresh_token_enabled():
             refresh_token = await utils.call(
                 self.instance.auth.get_refresh_token, request, user)
             output.update({
-                config.get('refresh_token_name'): refresh_token
+                config.refresh_token_name(): refresh_token
             })
         else:
             refresh_token = None
@@ -75,8 +75,8 @@ class RetrieveUserEndpoint(BaseEndpoint):
 
         resp = json(output)
 
-        if payload is None and config.get('cookie_set'):
-            key = config.get('cookie_access_token_name')
+        if payload is None and config.cookie_set():
+            key = config.cookie_access_token_name()
             del resp.cookies[key]
 
         return resp

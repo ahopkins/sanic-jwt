@@ -67,8 +67,8 @@ def test_extend_simple():
     assert response.status == 200
 
     access_token = response.json.get(
-        sanicjwt.config.access_token_name, None)
-    payload = jwt.decode(access_token, sanicjwt.config.secret)
+        sanicjwt.config.access_token_name(), None)
+    payload = jwt.decode(access_token, sanicjwt.config.secret())
 
     assert 'foo' in payload
     assert payload.get('foo') == 'bar'
@@ -95,8 +95,8 @@ def test_extend_with_username():
     assert response.status == 200
 
     access_token = response.json.get(
-        sanicjwt.config.access_token_name, None)
-    payload = jwt.decode(access_token, sanicjwt.config.secret)
+        sanicjwt.config.access_token_name(), None)
+    payload = jwt.decode(access_token, sanicjwt.config.secret())
 
     assert 'username' in payload
     assert payload.get('username') == 'user1'
@@ -124,8 +124,8 @@ def test_extend_with_username_as_subclass():
     assert response.status == 200
 
     access_token = response.json.get(
-        sanicjwt.config.access_token_name, None)
-    payload = jwt.decode(access_token, sanicjwt.config.secret)
+        sanicjwt.config.access_token_name(), None)
+    payload = jwt.decode(access_token, sanicjwt.config.secret())
 
     assert 'username' in payload
     assert payload.get('username') == 'user1'

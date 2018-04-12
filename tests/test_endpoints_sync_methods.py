@@ -107,7 +107,7 @@ class TestEndpointsSync(object):
                                 authenticated_response):
         sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
-            sanicjwt.config.access_token_name, None)
+            sanicjwt.config.access_token_name(), None)
 
         _, response = sanic_app.test_client.get(
             '/protected',
@@ -122,7 +122,7 @@ class TestEndpointsSync(object):
                          authenticated_response):
         sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
-            sanicjwt.config.access_token_name, None)
+            sanicjwt.config.access_token_name(), None)
 
         _, response = sanic_app.test_client.get(
             '/auth/me',
@@ -136,26 +136,26 @@ class TestEndpointsSync(object):
                                 authenticated_response):
         sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
-            sanicjwt.config.access_token_name, None)
+            sanicjwt.config.access_token_name(), None)
         refresh_token = authenticated_response.json.get(
-            sanicjwt.config.refresh_token_name, None)
+            sanicjwt.config.refresh_token_name(), None)
 
         _, response = sanic_app.test_client.post(
             '/auth/refresh',
             headers={'Authorization': 'Bearer {}'.format(access_token)},
             json={
-                sanicjwt.config.refresh_token_name:
+                sanicjwt.config.refresh_token_name():
                     refresh_token
             })
 
         new_access_token = response.json.get(
-            sanicjwt.config.access_token_name, None)
+            sanicjwt.config.access_token_name(), None)
 
         assert response.status == 200
         assert new_access_token is not None
         assert response.json.get(
-            sanicjwt.config.refresh_token_name,
+            sanicjwt.config.refresh_token_name(),
             None) is None  # there is no new refresh token
         assert \
-            sanicjwt.config.refresh_token_name \
+            sanicjwt.config.refresh_token_name() \
             not in response.json

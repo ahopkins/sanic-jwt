@@ -9,19 +9,19 @@ def access_token(app_with_url_prefix):
         'username': 'user1',
         'password': 'abcxyz'
     })
-    return response.json.get(sanic_jwt.config.access_token_name, None)
+    return response.json.get(sanic_jwt.config.access_token_name(), None)
 
 
 class TestEndpointsAuth(object):
     def dispatch(self, path, method, app_with_url_prefix, access_token):
         sanic_app, sanic_jwt = app_with_url_prefix
         header_token = '{} {}'.format(
-            sanic_jwt.config.authorization_header_prefix, access_token)
+            sanic_jwt.config.authorization_header_prefix(), access_token)
         method = getattr(sanic_app.test_client, method)
         request, response = method(
             path,
             headers={
-                sanic_jwt.config.authorization_header: header_token
+                sanic_jwt.config.authorization_header(): header_token
             })
         return request, response
 

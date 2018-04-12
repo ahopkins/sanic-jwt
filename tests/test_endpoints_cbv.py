@@ -90,13 +90,13 @@ class TestEndpointsCBV(object):
         })
 
         access_token = response.json.get(
-            sanic_jwt.config.access_token_name, None)
-        payload = jwt.decode(access_token, sanic_jwt.config.secret)
+            sanic_jwt.config.access_token_name(), None)
+        payload = jwt.decode(access_token, sanic_jwt.config.secret())
 
         assert response.status == 200
         assert access_token is not None
         assert isinstance(payload, dict)
-        assert sanic_jwt.config.user_id in payload
+        assert sanic_jwt.config.user_id() in payload
         assert 'exp' in payload
 
         _, response = sanic_app.test_client.get('/protected', headers={

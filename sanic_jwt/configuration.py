@@ -1,181 +1,253 @@
+import asyncio
 import copy
 import logging
-from abc import ABC, abstractmethod
 
 from . import exceptions, utils
-from .cache import get_value, has_value, set_value
+from .cache import get_cached, is_cached
 
 
 defaults = {
-    'access_token_name': 'access_token',
-    'algorithm': 'HS256',
-    'authorization_header': 'authorization',
-    'authorization_header_prefix': 'Bearer',
-    'authorization_header_refresh_prefix': 'Refresh',
-    'claim_aud': None,
-    'claim_iat': False,
-    'claim_iss': None,
-    'claim_nbf': False,
-    'claim_nbf_delta': 0,
-    'cookie_domain': '',
-    'cookie_httponly': True,
-    'cookie_refresh_token_name': 'refresh_token',
-    'cookie_set': False,
-    'cookie_strict': True,
-    'cookie_access_token_name': 'access_token',
-    'debug': False,
-    'expiration_delta': 60 * 5 * 6,
-    'generate_refresh_token': utils.generate_token,
-    'leeway': 60 * 3,
-    'refresh_token_enabled': False,
-    'refresh_token_name': 'refresh_token',
-    'path_to_authenticate': '/',
-    'path_to_retrieve_user': '/me',
-    'path_to_verify': '/verify',
-    'path_to_refresh': '/refresh',
-    'private_key': None,
-    'scopes_enabled': False,
-    'scopes_name': 'scopes',
-    'secret': 'This is a big secret. Shhhhh',
-    'strict_slashes': False,  # not dynamic (no request, no user)
-    'url_prefix': '/auth',  # not dynamic (no request, no user)
-    'user_id': 'user_id',
-    'verify_exp': True,
+    "access_token_name": "access_token",
+    "algorithm": "HS256",
+    "authorization_header": "authorization",
+    "authorization_header_prefix": "Bearer",
+    "authorization_header_refresh_prefix": "Refresh",
+    "claim_aud": None,
+    "claim_iat": False,
+    "claim_iss": None,
+    "claim_nbf": False,
+    "claim_nbf_delta": 0,
+    "cookie_domain": "",
+    "cookie_httponly": True,
+    "cookie_refresh_token_name": "refresh_token",
+    "cookie_set": False,
+    "cookie_strict": True,
+    "cookie_access_token_name": "access_token",
+    "debug": False,
+    "expiration_delta": 60 * 5 * 6,
+    "generate_refresh_token": utils.generate_token,
+    "leeway": 60 * 3,
+    "refresh_token_enabled": False,
+    "refresh_token_name": "refresh_token",
+    "path_to_authenticate": "/",
+    "path_to_retrieve_user": "/me",
+    "path_to_verify": "/verify",
+    "path_to_refresh": "/refresh",
+    "private_key": None,
+    "scopes_enabled": False,
+    "scopes_name": "scopes",
+    "secret": "This is a big secret. Shhhhh",
+    "strict_slashes": False,
+    "url_prefix": "/auth",
+    "user_id": "user_id",
+    "verify_exp": True
 }
 
 aliases = {
-    'cookie_token_name': 'cookie_access_token_name',
-    'public_key': 'secret',
+    "cookie_access_token_name": "cookie_token_name",
+    "secret": "public_key"
 }
 
+ignore_keys = (
+    "authenticate",
+    "class_views",
+    "retrieve_user",
+    "add_scopes_to_payload",
+)
+
 logger = logging.getLogger(__name__)
-config = None
 
 
-class BaseConfiguration(ABC):
-    @abstractmethod
-    def get(self, key, *, request=None, user=None, **kwargs):
-        pass  # noqa
+def _warn_key(key):
+    if key not in ignore_keys:
+        logger.warning(
+            "Configuration key '%s' found is not valid for sanic-jwt",
+            key,
+        )
 
-    @abstractmethod
-    def set(self, key, value, *, request=None, user=None, transient=True, **kwargs):
-        pass  # noqa
 
-    @abstractmethod
-    def has(self, key):
-        pass  # noqa
+class ConfigItem:
+
+    def __init__(self, value, item_name=None, config=None, inject_request=True, aliases=[]):
+        self._value = value
+        self._item_name = item_name
+        self._config = config
+        self._inject_request = inject_request
+        self._aliases = aliases
+
+    def update(self, value):
+        self._value = value
+
+    def __call__(self, **kwargs):
+        if asyncio.get_event_loop().is_running():
+            if self._get_from_config is not None:
+                args = []
+
+                if self._inject_request and is_cached("_request"):
+                    args.append(get_cached("_request"))
+                return self._get_from_config(*args)
+
+            if is_cached(self._item_name):
+                return get_cached(self._item_name)
+
+        return self._value
 
     @property
-    def inside_context(self):
-        if hasattr(self, '_inside_context'):
-            return self._inside_context
-        return False
+    def _get_from_config(self):
+        if hasattr(self._config, self._get_fn):
+            return getattr(self._config, self._get_fn)
+        return None
 
-    @inside_context.setter
-    def inside_context(self, value):
-        if not hasattr(self, '_inside_context'):
-            setattr(self, '_inside_context', value)
-        else:
-            self._inside_context = value
+    @property
+    def _get_fn(self):
+        return "get_{}".format(self._item_name)
 
-    # def __getattribute__(self, item):
-    #     print('>>> getattribute {}'.format(item))
-    #     return super().__getattribute__(item)
-
-    # def __getattr__(self, item):
-    #     print('>>> getattr {}'.format(item))
-    #     return super().__getattr__(item)
+    @property
+    def aliases(self):
+        return self._aliases
 
 
-class Configuration(BaseConfiguration):
+class Configuration:
+
+    def __iter__(self):  # noqa
+        for key in self.config_keys:
+            yield getattr(self, key)
+        for key in self.aliases_keys:
+            yield getattr(self, key)
+
+    def __contains__(self, item):
+        return item in self.all_config_keys
+
+    def __new__(cls, *args, **kwargs):
+        instance = super().__new__(cls)
+
+        _defaults = copy.deepcopy(defaults)
+        _aliases = copy.deepcopy(aliases)
+        _config_keys = []
+
+        if args and isinstance(args[0], dict):
+            _args = cls.extract_presets(args[0])
+            for key, value in _args.items():
+                if key in _defaults or key in _aliases:
+                    _defaults.update({key: value})
+
+        for key, value in _defaults.items():
+            item_aliases = []
+            if key in _aliases:
+                item_aliases = [aliases.get(key)]
+
+            # check if a configuration key is set and is an instance of ConfigItem
+            if hasattr(instance, key) and isinstance(getattr(instance, key), ConfigItem):
+                getattr(instance, key)._item_name = key
+                getattr(instance, key)._aliases = item_aliases
+                getattr(instance, key)._config = instance
+            # check if a configuration key is set with a value
+            elif hasattr(instance, key):
+                val = getattr(instance, key)
+                setattr(instance, key, ConfigItem(val, item_name=key, config=instance, aliases=item_aliases))
+            else:
+                setattr(instance, key, ConfigItem(value, item_name=key, config=instance, aliases=item_aliases))
+
+            # check if a setter is available on config class
+            fn_name = 'set_{}'.format(key)
+            if hasattr(instance, fn_name):
+                set_fn = getattr(instance, fn_name)
+                if not callable(set_fn):
+                    logger.warning('variable "%s" set in Configuration is not callable', fn_name)
+                    continue
+                val = set_fn.__call__()
+                if isinstance(val, ConfigItem):
+                    val._item_name = key
+                    val._aliases = item_aliases
+                    val._config = instance
+                    setattr(instance, key, val)
+                else:
+                    setattr(
+                        instance,
+                        key,
+                        ConfigItem(val, item_name=key, config=instance, aliases=item_aliases),
+                    )
+
+            # 'reference' aliases
+            for alias in item_aliases:
+                setattr(instance, alias, getattr(instance, key))
+
+            _config_keys.append(key)
+
+        setattr(instance, '_config_keys', _config_keys)
+        setattr(instance, '_config_aliases', _aliases)
+
+        return instance
+
+    @property
+    def config_keys(self):
+        return self._config_keys
+
+    @property
+    def config_aliases(self):
+        return self._config_aliases
+
+    @property
+    def all_config_keys(self):
+        return self.config_keys + self.config_aliases_keys
+
+    @property
+    def config_aliases_keys(self):
+        return list(self.config_aliases.values())
+
     def __init__(self, app_config, **kwargs):
-        presets = self.extract_presets(app_config)
-        self.kwargs = self._merge_aliases(kwargs)
-        self.defaults = copy.deepcopy(defaults)
-        self.defaults.update(self._merge_aliases(presets))
-        self.defaults.update(self.kwargs)
+        for key, value in kwargs.items():
+            self._merge(key, value)
 
-        list(map(self.__map_config, self.defaults.items()))
         self._validate_secret()
         self._validate_keys()
         self._load_keys()
 
-    def get(self, key, *, request=None, user=None, transient=False, default=None, **kwargs):
-        v = None
-        if self.inside_context or transient:
-            v = get_value(key)
-        if v is None:
-            v = getattr(self, key)
-        if default and v is None:
-            return default
-        return v
-
-    def set(self, key, value, *, request=None, user=None, transient=True, **kwargs):
-        if self.inside_context or transient:
-            set_value(key, value)
+    def _merge(self, key, value):
+        if key in self.config_keys:
+            item = getattr(self, key)
+            item.update(value)
+            for alias in item.aliases:
+                self._merge(alias, value)
+        elif key in self.config_aliases_keys:
+            correct_key = None
+            for k, v in self.config_aliases.items():
+                if key == v:
+                    correct_key = key
+                    break
+            if hasattr(self, correct_key):
+                getattr(self, correct_key).update(value)
         else:
-            setattr(self, key, value)
-            self.defaults.update({key: value})
-
-    def has(self, key, transient=False):
-        key_exists = False
-        if self.inside_context or transient:
-            key_exists = key_exists or has_value(key)
-        return key_exists or hasattr(self, key) or key in self.defaults
-
-    def __map_config(self, config_item):
-        key, value = config_item
-        if (not hasattr(self, key) or key in self.kwargs):
-            setter_name = 'set_{}'.format(key)
-            if hasattr(self, setter_name):
-                value = getattr(self, setter_name)()
-            setattr(self, key, value)
-
-    def __iter__(self):
-        return ((x, getattr(self, x)) for x in self.defaults.keys())  # noqa
-
-    def __repr__(self):
-        return str(dict(iter(self)))  # noqa
+            _warn_key(key)
 
     def _validate_secret(self):
         logger.debug('validating provided secret')
-        if self.secret is None or (
-                isinstance(self.secret, str) and self.secret.strip() == ''):
+        if self.secret() is None or (
+                isinstance(self.secret(), str) and self.secret().strip() == ""):
             raise exceptions.InvalidConfiguration(
-                'the SANIC_JWT_SECRET parameter cannot be None nor an empty '
-                'string')
+                "the SANIC_JWT_SECRET parameter cannot be None nor an empty "
+                "string")
 
     def _validate_keys(self):
-        logger.debug('validating keys (if needed)')
-        if utils.algorithm_is_asymmetric(self.algorithm) and (
-            self.private_key is None or (
-                isinstance(self.private_key, str) and
-                self.private_key.strip() == ''
+        logger.debug("validating keys (if needed)")
+        if utils.algorithm_is_asymmetric(self.algorithm()) and (
+            self.private_key() is None or (
+                isinstance(self.private_key(), str) and
+                self.private_key().strip() == ''
             )
         ):
             raise exceptions.RequiredKeysNotFound
 
     def _load_keys(self):
-        logger.debug('loading secret and/or keys (if needed)')
+        logger.debug("loading secret and/or keys (if needed)")
         try:
-            self.secret = utils.load_file_or_str(self.secret)
-            self.defaults.update({'secret': self.secret})
-            if utils.algorithm_is_asymmetric(self.algorithm):
-                self.private_key = utils.load_file_or_str(self.private_key)
-                self.defaults.update({'private_key': self.private_key})
+            self.secret.update(utils.load_file_or_str(self.secret()))
+            if utils.algorithm_is_asymmetric(self.algorithm()):
+                self.private_key.update(utils.load_file_or_str(self.private_key()))
         except exceptions.ProvidedPathNotFound as exc:
-            if utils.algorithm_is_asymmetric(self.algorithm):
+            if utils.algorithm_is_asymmetric(self.algorithm()):
                 raise exceptions.RequiredKeysNotFound
             raise exc
-
-    @staticmethod
-    def _merge_aliases(config):
-        popped = {}
-        for k in aliases.keys():
-            if k in config:
-                popped[aliases[k]] = config.pop(k)
-        config.update(popped)
-        return config
 
     @staticmethod
     def extract_presets(app_config):
@@ -186,62 +258,3 @@ class Configuration(BaseConfiguration):
             x.lower()[10:]: app_config.get(x)
             for x in filter(lambda x: x.startswith('SANIC_JWT'), app_config)
         }
-
-
-# class _MetaConfiguration(type):
-
-#     def __new__(cls, name, bases, namespace, **kw):
-#         print('-------------------------')
-#         print('name')
-#         print(name)
-#         print('bases')
-#         print(bases)
-#         print('namespace')
-#         print(namespace)
-#         print('kw')
-#         print(kw)
-#         print('')
-#         return super().__new__(cls, name, bases, namespace)
-
-#     # def __instancecheck__(self, instance):
-#     #     pass
-
-#     # def __subclasscheck__(self, subclass):
-#     #     pass
-
-#     def __getattribute__(*args):
-#         print("Metaclass getattribute invoked")
-#         print(args)
-#         return type.__getattribute__(*args)
-
-
-class DynamicConfiguration(Configuration):
-    def __init__(self, app_config, **kwargs):
-        # presets = self.extract_presets(app_config)
-        # self.kwargs = self._merge_aliases(kwargs)
-        # self.defaults = copy.deepcopy(defaults)
-        # self.defaults.update(self._merge_aliases(presets))
-        # self.defaults.update(self.kwargs)
-
-        # list(map(self.__map_config, self.defaults.items()))
-        # self._validate_secret()
-        # self._validate_keys()
-        # self._load_keys()
-        pass
-
-    async def get(self, key, *, request=None, user=None, transient=False, **kwargs):
-        # v = None
-        # if transient:
-        #     v = get_value(key)
-        # if v is None:
-        #     v = getattr(self, key)
-        # return v
-        pass
-
-    async def set(self, key, value, *, request=None, user=None, transient=True, **kwargs):
-        # if transient:
-        #     set_value(key, value)
-        # else:
-        #     setattr(self, key, value)
-        #     self.defaults.update({key: value})
-        pass

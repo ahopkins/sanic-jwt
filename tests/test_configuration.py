@@ -1,6 +1,8 @@
 import pytest
 from sanic import Sanic
-from sanic_jwt import initialize, Initialize, Configuration, exceptions
+from sanic.response import json
+from sanic_jwt import initialize, Initialize, Configuration  # , exceptions
+from sanic_jwt.configuration import ConfigItem
 
 
 def test_configuration_initialize_method_default():
@@ -34,7 +36,7 @@ def test_configuration_initialize_class_app_level():
     )
 
     assert app.config.SANIC_JWT_ACCESS_TOKEN_NAME == 'app-level'
-    assert sanicjwt.config.access_token_name == 'app-level'
+    assert sanicjwt.config.access_token_name() == 'app-level'
 
 
 def test_configuration_initialize_class_config_level_custom_classes():
@@ -52,7 +54,7 @@ def test_configuration_initialize_class_config_level_custom_classes():
         authenticate=lambda: True,
     )
 
-    assert sanicjwt.config.access_token_name == 'config-level'
+    assert sanicjwt.config.access_token_name() == 'config-level'
 
 
 def test_configuration_initialize_class_instance_level():
@@ -65,7 +67,7 @@ def test_configuration_initialize_class_instance_level():
         access_token_name='instance-level'
     )
 
-    assert sanicjwt.config.access_token_name == 'instance-level'
+    assert sanicjwt.config.access_token_name() == 'instance-level'
 
 
 def test_configuration_initialize_class_instance_level_custom_classes():
@@ -84,7 +86,7 @@ def test_configuration_initialize_class_instance_level_custom_classes():
         access_token_name='instance-level'
     )
 
-    assert sanicjwt.config.access_token_name == 'instance-level'
+    assert sanicjwt.config.access_token_name() == 'instance-level'
 
 
 def test_configuration_initialize_class_with_getter():
@@ -102,7 +104,7 @@ def test_configuration_initialize_class_with_getter():
         authenticate=lambda: True
     )
 
-    assert sanicjwt.config.access_token_name == 'return-level'
+    assert sanicjwt.config.access_token_name() == 'return-level'
 
 
 def test_configuration_initialize_class_as_argument():
@@ -118,17 +120,93 @@ def test_configuration_initialize_class_as_argument():
         authenticate=lambda: True
     )
 
-    assert sanicjwt.config.access_token_name == 'return-level'
+    assert sanicjwt.config.access_token_name() == 'return-level'
 
 
-def test_configuration_get_method():
+def test_configuration_warning_non_callable(caplog):
     app = Sanic()
 
+    class MyConfig(Configuration):
+        set_access_token_name = "return-level"
+
     sanicjwt = Initialize(
-        app, authenticate=lambda: True
+        app, configuration_class=MyConfig, authenticate=lambda: True
     )
 
-    assert sanicjwt.config.get('access_token_name') == "access_token"
+    for record in caplog.records:
+        if record.levelname == 'WARNING':
+            assert record.message == "variable \"set_access_token_name\" set in Configuration is not callable"
 
-    with pytest.raises(exceptions.LoopNotRunning):
-        assert sanicjwt.config.get("access_token_name", transient=True) == "access_token"
+    assert sanicjwt.config.access_token_name() == "access_token"
+
+
+def test_configuration_dynamic_config():
+    app = Sanic()
+    auth_header_key = 'x-authorization-header'
+
+    class MyConfig(Configuration):
+        def get_authorization_header(self, request):
+            if auth_header_key in request.headers:
+                return request.headers.get(auth_header_key)
+            return 'authorization'
+
+    async def authenticate(request, *args, **kwargs):
+        return {"user_id": 1}
+
+    sanicjwt = Initialize(
+        app, configuration_class=MyConfig, authenticate=authenticate
+    )
+
+    @app.route('/protected')
+    @sanicjwt.protected()
+    def protected_route(request):
+        return json({'protected': 'yes'})
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+    assert access_token is not None
+
+    _, response = app.test_client.get(
+        "/protected", headers={auth_header_key: 'foobarbaz', 'foobarbaz': 'Bearer {}'.format(access_token)}
+    )
+
+    assert response.status == 200
+    assert response.json.get('protected') == 'yes'
+
+    _, response = app.test_client.get(
+        "/protected", headers={sanicjwt.config.authorization_header(): 'Bearer {}'.format(access_token)}
+    )
+
+    assert response.status == 200
+    assert response.json.get('protected') == 'yes'
+
+
+# i don't see the following scenarios happening in real life, but we have to test them ...
+def test_configuration_custom_class_and_config_item():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+        access_token_name = ConfigItem('config-item-level')
+
+    sanicjwt = Initialize(
+        app, configuration_class=MyConfig, authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.access_token_name() == "config-item-level"
+
+
+def test_configuration_custom_class_and_config_item_as_method():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+        def set_access_token_name(self):
+            return ConfigItem('config-item-function-level')
+
+    sanicjwt = Initialize(
+        app, configuration_class=MyConfig, authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.access_token_name() == "config-item-function-level"

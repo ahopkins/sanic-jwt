@@ -41,7 +41,7 @@ def test_load_file_or_str_with_Path(fcontent):
 
 
 def test_load_file_or_str_with_str(fcontent):
-    p = path.join(path.dirname(path.abspath(__file__)),
+    p = path.join(path.dirname(str(path.abspath(__file__))),
                   'resources',
                   'test-file.txt')
     assert utils.load_file_or_str(p) == fcontent

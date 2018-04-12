@@ -127,8 +127,8 @@ def test_initialize_class_on_multiple_blueprints():
     sanicjwt2 = Initialize(
         bp2, app=app, authenticate=lambda: True, access_token_name='token')
 
-    assert sanicjwt1.config.access_token_name == 'access_token'
-    assert sanicjwt2.config.access_token_name == 'token'
+    assert sanicjwt1.config.access_token_name() == 'access_token'
+    assert sanicjwt2.config.access_token_name() == 'token'
 
 
 def test_initialize_class_on_app_and_blueprint():
@@ -140,8 +140,8 @@ def test_initialize_class_on_app_and_blueprint():
     sanicjwt2 = Initialize(
         bp, app=app, authenticate=lambda: True, access_token_name='token')
 
-    assert sanicjwt1.config.access_token_name == 'access_token'
-    assert sanicjwt2.config.access_token_name == 'token'
+    assert sanicjwt1.config.access_token_name() == 'access_token'
+    assert sanicjwt2.config.access_token_name() == 'token'
 
 
 def test_initialize_class_on_blueprint_with_url_prefix():

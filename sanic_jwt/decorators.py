@@ -52,7 +52,10 @@ def protected(initialized_on=None, **kw):
                     raise exceptions.SanicJWTException(
                         "Authentication instance not found. Perhaps you used "
                         "@protected without passing in a blueprint? "
-                        "Try @protected(blueprint)", status_code=500)
+                        "Try @protected(blueprint)",
+                        status_code=500,
+                    )
+
                 except exceptions.SanicJWTException as e:
                     is_authenticated = False
                     status = e.status_code
@@ -98,7 +101,10 @@ def scoped(
                     raise exceptions.SanicJWTException(
                         "Authentication instance not found. Perhaps you used "
                         "@scoped without passing in a blueprint? "
-                        "Try @scoped(..., initialized_on=blueprint)", status_code=500)
+                        "Try @scoped(..., initialized_on=blueprint)",
+                        status_code=500,
+                    )
+
                 except exceptions.SanicJWTException as e:
                     is_authenticated = False
                     status = e.status_code

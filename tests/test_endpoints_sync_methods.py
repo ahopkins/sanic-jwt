@@ -138,7 +138,9 @@ class TestEndpointsSync(object):
 
         assert response.status == 200
 
-    def test_verify_endpoint_with_error(self, app_with_sync_methods, authenticated_response):
+    def test_verify_endpoint_with_error(
+        self, app_with_sync_methods, authenticated_response
+    ):
         sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -151,7 +153,7 @@ class TestEndpointsSync(object):
             )
 
             assert response.status == 403
-            assert response.json.get('reason', None) is not None
+            assert response.json.get("reason", None) is not None
 
     def test_refresh_token_sync(
         self, app_with_sync_methods, authenticated_response

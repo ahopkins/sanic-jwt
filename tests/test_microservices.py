@@ -41,13 +41,16 @@ def test_microservice_interaction():
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
     assert response.status == 200
     assert access_token is not None
 
-    _, response = microservice_app.test_client.get("/protected", headers={
-        "Authorization": "Bearer {}".format(access_token)
-    })
+    _, response = microservice_app.test_client.get(
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
 
     assert response.status == 200
     assert response.json.get("protected") is True

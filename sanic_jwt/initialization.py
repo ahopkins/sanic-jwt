@@ -141,12 +141,15 @@ class Initialize:
         exceptions
         """
         config = self.config
-        if config.auth_mode() and (
-            "refresh_token_enabled" in config
-            and config.refresh_token_enabled()
+        if (
+            config.auth_mode()
             and (
-                not self.kwargs.get("store_refresh_token")
-                or not self.kwargs.get("retrieve_refresh_token")
+                "refresh_token_enabled" in config
+                and config.refresh_token_enabled()
+                and (
+                    not self.kwargs.get("store_refresh_token")
+                    or not self.kwargs.get("retrieve_refresh_token")
+                )
             )
         ):
             raise exceptions.RefreshTokenNotImplemented

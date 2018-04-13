@@ -19,7 +19,7 @@ class AnotherWrongAuthentication(Authentication):
 
 class AuthenticationWithNoMethod(Authentication):
 
-    authenticate = 'foobar'
+    authenticate = "foobar"
 
 
 class AuthenticationInClassBody(Authentication):
@@ -54,10 +54,7 @@ def test_authentication_subbclass_with_method_in_class():
 
     app = Sanic()
 
-    sanicjwt = Initialize(
-        app,
-        authentication_class=AuthenticationInClassBody
-    )
+    sanicjwt = Initialize(app, authentication_class=AuthenticationInClassBody)
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -74,7 +71,7 @@ def test_payload_without_correct_key():
     Initialize(
         app,
         authenticate=authenticate,
-        authentication_class=WrongAuthentication
+        authentication_class=WrongAuthentication,
     )
 
     _, response = app.test_client.post(

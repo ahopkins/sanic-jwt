@@ -127,9 +127,7 @@ def test_configuration_warning_non_callable(caplog):
 def test_configuration_warning_non_valid_key(caplog):
     app = Sanic()
 
-    Initialize(
-        app, foobar="baz", authenticate=lambda: True
-    )
+    Initialize(app, foobar="baz", authenticate=lambda: True)
 
     for record in caplog.records:
         if record.levelname == "WARNING":

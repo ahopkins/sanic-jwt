@@ -124,6 +124,21 @@ def test_configuration_warning_non_callable(caplog):
     assert sanicjwt.config.access_token_name() == "access_token"
 
 
+def test_configuration_warning_non_valid_key(caplog):
+    app = Sanic()
+
+    Initialize(
+        app, foobar="baz", authenticate=lambda: True
+    )
+
+    for record in caplog.records:
+        if record.levelname == "WARNING":
+            assert (
+                record.message
+                == "Configuration key 'foobar' found is not valid for sanic-jwt"
+            )
+
+
 def test_configuration_dynamic_config():
     app = Sanic()
     auth_header_key = "x-authorization-header"

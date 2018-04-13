@@ -140,7 +140,7 @@ class Authentication(BaseAuthentication):
             cookie_token_name_key = "cookie_access_token_name" if refresh_token is False else "cookie_refresh_token_name"
             cookie_token_name = getattr(self.config, cookie_token_name_key)
             token = request.cookies.get(cookie_token_name(), None)
-            if token:
+            if token is not None:
                 return token
 
             else:
@@ -149,7 +149,7 @@ class Authentication(BaseAuthentication):
 
         header = request.headers.get(self.config.authorization_header(), None)
 
-        if header:
+        if header is not None:
             header_prefix_key = "authorization_header_prefix"
             header_prefix = getattr(self.config, header_prefix_key)
             try:

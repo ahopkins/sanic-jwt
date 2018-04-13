@@ -17,6 +17,17 @@ class AnotherWrongAuthentication(Authentication):
         return list(range(5))
 
 
+class AuthenticationWithNoMethod(Authentication):
+
+    authenticate = 'foobar'
+
+
+class AuthenticationInClassBody(Authentication):
+
+    async def authenticate(self, request, *args, **kwargs):
+        return {"user_id": 1}
+
+
 async def authenticate(request, *args, **kwargs):
     return {"user_id": 1}
 
@@ -30,6 +41,32 @@ def test_authentication_subclass_without_authenticate_parameter():
         Initialize(app, authentication_class=WrongAuthentication)
 
 
+def test_authentication_subclass_with_autenticate_not_as_method():
+
+    app = Sanic()
+
+    with pytest.raises(exceptions.AuthenticateNotImplemented):
+
+        Initialize(app, authentication_class=AuthenticationWithNoMethod)
+
+
+def test_authentication_subbclass_with_method_in_class():
+
+    app = Sanic()
+
+    sanicjwt = Initialize(
+        app,
+        authentication_class=AuthenticationInClassBody
+    )
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    assert response.status == 200
+    assert sanicjwt.config.access_token_name() in response.json
+
+
 def test_payload_without_correct_key():
 
     app = Sanic()
@@ -37,7 +74,7 @@ def test_payload_without_correct_key():
     Initialize(
         app,
         authenticate=authenticate,
-        authentication_class=WrongAuthentication,
+        authentication_class=WrongAuthentication
     )
 
     _, response = app.test_client.post(

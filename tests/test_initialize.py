@@ -216,3 +216,11 @@ def test_initialize_compat():
     initialize(app, lambda: True)
 
     assert True
+
+
+def test_invalid_initialization_object():
+
+    app = Sanic()
+
+    with pytest.raises(exceptions.InitializationFailure):
+        Initialize(object, app=app, authenticate=lambda: True)

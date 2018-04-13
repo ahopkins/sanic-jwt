@@ -4,7 +4,6 @@ from functools import wraps
 from inspect import isawaitable
 
 from sanic import Blueprint
-from sanic.exceptions import add_status_code
 
 from . import exceptions
 from .cache import clear_cache, to_cache
@@ -50,13 +49,14 @@ def protected(initialized_on=None, **kw):
                         request, *args, **kwargs
                     )
                 except AttributeError:
-                    raise add_status_code(500)(
-                        exceptions.SanicJWTException(
-                            "Authentication instance not found. Perhaps you used "
-                            "@protected without passing in a blueprint? "
-                            "Try @protected(blueprint)"
-                        )
-                    )
+                    raise exceptions.SanicJWTException(
+                        "Authentication instance not found. Perhaps you used "
+                        "@protected without passing in a blueprint? "
+                        "Try @protected(blueprint)", status_code=500)
+                except exceptions.SanicJWTException as e:
+                    is_authenticated = False
+                    status = e.status_code
+                    reasons = e.args[0]
 
                 if is_authenticated:
                     response = f(request, *args, **kwargs)
@@ -65,9 +65,7 @@ def protected(initialized_on=None, **kw):
                     return response
 
                 else:
-                    raise add_status_code(status)(
-                        exceptions.Unauthorized(reasons)
-                    )
+                    raise exceptions.Unauthorized(reasons, status_code=status)
 
         return decorated_function
 
@@ -92,19 +90,19 @@ def scoped(
                 instance = request.app
 
             with instant_config(instance, request=request, **kw):
-
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(
                         request, *args, **kwargs
                     )
                 except AttributeError:
-                    raise add_status_code(500)(
-                        exceptions.SanicJWTException(
-                            "Authentication instance not found. Perhaps you used "
-                            "@scoped without passing in a blueprint? "
-                            "Try @scoped(..., initialized_on=blueprint)"
-                        )
-                    )
+                    raise exceptions.SanicJWTException(
+                        "Authentication instance not found. Perhaps you used "
+                        "@scoped without passing in a blueprint? "
+                        "Try @scoped(..., initialized_on=blueprint)", status_code=500)
+                except exceptions.SanicJWTException as e:
+                    is_authenticated = False
+                    status = e.status_code
+                    reasons = e.args[0]
 
                 if is_authenticated:
                     # Retrieve the scopes from the payload
@@ -120,8 +118,8 @@ def scoped(
                             request,
                             scopes,
                             user_scopes,
-                            require_all,
-                            require_all_actions,
+                            require_all=require_all,
+                            require_all_actions=require_all_actions,
                             *args,
                             **kwargs
                         )
@@ -140,9 +138,7 @@ def scoped(
                     return response
 
                 else:
-                    raise add_status_code(status)(
-                        exceptions.Unauthorized(reasons)
-                    )
+                    raise exceptions.Unauthorized(reasons, status_code=status)
 
         # return response
         return decorated_function

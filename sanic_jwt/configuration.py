@@ -9,6 +9,7 @@ from .cache import get_cached, is_cached
 defaults = {
     "access_token_name": "access_token",
     "algorithm": "HS256",
+    "auth_mode": True,
     "authorization_header": "authorization",
     "authorization_header_prefix": "Bearer",
     "authorization_header_refresh_prefix": "Refresh",

@@ -60,8 +60,10 @@ class Initialize:
         self.__load_configuration()
         self.__load_responses()
         self.__check_initialization()
-        self.__add_class_views()
-        self.__add_endpoints()
+
+        if self.config.auth_mode():
+            self.__add_class_views()
+            self.__add_endpoints()
         self.__initialize_instance()
 
     def __add_endpoints(self):
@@ -139,7 +141,7 @@ class Initialize:
         exceptions
         """
         config = self.config
-        if (
+        if config.auth_mode() and (
             "refresh_token_enabled" in config
             and config.refresh_token_enabled()
             and (
@@ -182,21 +184,23 @@ class Initialize:
         # Initialize instance of the Authentication class
         self.instance.auth = self.authentication_class(self.app, config=config)
 
-        if "authenticate" not in self.kwargs:
-            auth_impl = self.instance.auth.authenticate
-            if not inspect.ismethod(auth_impl):
-                raise exceptions.AuthenticateNotImplemented
+        if config.auth_mode():
 
-            if auth_impl.__func__ == Authentication.authenticate:
-                raise exceptions.AuthenticateNotImplemented
+            if "authenticate" not in self.kwargs:
+                auth_impl = self.instance.auth.authenticate
+                if not inspect.ismethod(auth_impl):
+                    raise exceptions.AuthenticateNotImplemented
 
-            self.kwargs.update({"authenticate": auth_impl})
+                if auth_impl.__func__ == Authentication.authenticate:
+                    raise exceptions.AuthenticateNotImplemented
 
-        for handler in handlers:
-            handler_name, _ = handler
-            if handler_name in self.kwargs:
-                method = self.kwargs.pop(handler_name)
-                setattr(self.instance.auth, handler_name, method)
+                self.kwargs.update({"authenticate": auth_impl})
+
+            for handler in handlers:
+                handler_name, _ = handler
+                if handler_name in self.kwargs:
+                    method = self.kwargs.pop(handler_name)
+                    setattr(self.instance.auth, handler_name, method)
 
     def __load_configuration(self):
         """

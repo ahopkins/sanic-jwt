@@ -2,6 +2,8 @@ import binascii
 import os
 import uuid
 
+from datetime import datetime, timedelta
+from freezegun import freeze_time
 from sanic import Sanic
 from sanic.response import json
 
@@ -135,6 +137,21 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 200
+
+    def test_verify_endpoint_with_error(self, app_with_sync_methods, authenticated_response):
+        sanic_app, sanicjwt = app_with_sync_methods
+        access_token = authenticated_response.json.get(
+            sanicjwt.config.access_token_name(), None
+        )
+
+        with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 * 60))):
+            _, response = sanic_app.test_client.get(
+                "/auth/verify",
+                headers={"Authorization": "Bearer {}".format(access_token)},
+            )
+
+            assert response.status == 403
+            assert response.json.get('reason', None) is not None
 
     def test_refresh_token_sync(
         self, app_with_sync_methods, authenticated_response

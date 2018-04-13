@@ -4,15 +4,15 @@ import pytest
 @pytest.fixture
 def access_tokens(app_with_bp):
     app, app_int, bp, bp_init = app_with_bp
-    _, response1 = app.test_client.post(app_int._get_url_prefix(), json={
-        'username': 'user1',
-        'password': 'abcxyz'
-    })
-    print('bp_init._get_url_prefix()', bp_init._get_url_prefix())
-    _, response2 = app.test_client.post(bp_init._get_url_prefix() + '/', json={
-        'username': 'user2',
-        'password': 'abcxyz'
-    })
+    _, response1 = app.test_client.post(
+        app_int._get_url_prefix(),
+        json={"username": "user1", "password": "abcxyz"},
+    )
+    print("bp_init._get_url_prefix()", bp_init._get_url_prefix())
+    _, response2 = app.test_client.post(
+        bp_init._get_url_prefix() + "/",
+        json={"username": "user2", "password": "abcxyz"},
+    )
 
     print(response2.body, response2.status)
 

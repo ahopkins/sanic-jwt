@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 def generate_token(n=24, *args, **kwargs):
-    return str(binascii.hexlify(os.urandom(n)), 'utf-8')
+    return str(binascii.hexlify(os.urandom(n)), "utf-8")
 
 
 def build_claim_iss(attr, *args, **kwargs):
@@ -44,13 +44,16 @@ async def call(fn, *args, **kwargs):
 def load_file_or_str(path_or_str):
     if isinstance(path_or_str, Path):
         if os.path.isfile(str(path_or_str)):
-            logger.debug('reading file \"{}\"'.format(str(path_or_str)))
+            logger.debug('reading file "{}"'.format(str(path_or_str)))
             return path_or_str.read_text()
+
         else:
             raise exceptions.ProvidedPathNotFound
+
     elif isinstance(path_or_str, str):
         if os.path.isfile(path_or_str):
             return Path(path_or_str).read_text()
+
     return path_or_str
 
 
@@ -62,4 +65,4 @@ def algorithm_is_asymmetric(algorithm):
     :param algorithm: the given algorithm, like HS256, ES384, RS512, PS256, etc
     :return: True if algorithm is asymmetric
     """
-    return algorithm.lower()[:2] in ('rs', 'es', 'ps')
+    return algorithm.lower()[:2] in ("rs", "es", "ps")

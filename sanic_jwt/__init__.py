@@ -11,12 +11,12 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 __all__ = [
-    'Authentication',
-    'Initialize',
-    'Configuration',
-    'Responses',
-    'BaseEndpoint',
-    'initialize',
-    'protected',
-    'scoped',
+    "Authentication",
+    "Initialize",
+    "Configuration",
+    "Responses",
+    "BaseEndpoint",
+    "initialize",
+    "protected",
+    "scoped",
 ]

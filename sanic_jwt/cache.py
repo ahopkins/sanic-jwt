@@ -12,6 +12,7 @@ def _get_or_create_cache():
     loop = asyncio.get_event_loop()
     try:
         return asyncio.Task.current_task(loop=loop)._sanicjwt
+
     except AttributeError:
         asyncio.Task.current_task(loop=loop)._sanicjwt = {}
         return asyncio.Task.current_task(loop=loop)._sanicjwt

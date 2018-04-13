@@ -21,7 +21,7 @@ def protected_hello_world(request):
 
 
 @blueprint.get("/user/<id>", strict_slashes=True)
-@sanicjwt.protected(authorization_header='foobar')
+@sanicjwt.protected(authorization_header="foobar")
 def protected_user(request, id):
     return json({"user": id})
 
@@ -58,7 +58,8 @@ def test_protected_blueprint():
     assert response.json.get("message") == "hello world"
 
     _, response = app.test_client.get(
-        "/test/user/1", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/test/user/1",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 401
@@ -68,7 +69,7 @@ def test_protected_blueprint():
     )
 
     assert response.status == 200
-    assert response.json.get("user") == '1'
+    assert response.json.get("user") == "1"
 
 
 def test_scoped_empty():

@@ -12,23 +12,21 @@ from sanic_jwt.responses import Responses
 
 def initialize(*args, **kwargs):
     if len(args) > 1:
-        kwargs.update({'authenticate': args[1]})
+        kwargs.update({"authenticate": args[1]})
     return Initialize(args[0], **kwargs)
 
 
 handlers = (
-    ('authenticate', (),),
-    ('store_refresh_token', ('refresh_token_enabled', ),),
-    ('retrieve_refresh_token', ('refresh_token_enabled', ),),
-    ('retrieve_user', (),),
-    ('add_scopes_to_payload', ('scopes_enabled', ),),
-    ('extend_payload', (),),
+    ("authenticate", ()),
+    ("store_refresh_token", ("refresh_token_enabled",)),
+    ("retrieve_refresh_token", ("refresh_token_enabled",)),
+    ("retrieve_user", ()),
+    ("add_scopes_to_payload", ("scopes_enabled",)),
+    ("extend_payload", ()),
 )
 
 init_classes = (
-    'configuration_class',
-    'authentication_class',
-    'responses_class',
+    "configuration_class", "authentication_class", "responses_class"
 )
 
 
@@ -71,33 +69,36 @@ class Initialize:
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
         endpoint_mappings = (
-            ('AuthenticateEndpoint', 'authenticate'),
-            ('RetrieveUserEndpoint', 'retrieve_user'),
-            ('VerifyEndpoint', 'verify'),
-            ('RefreshEndpoint', 'refresh'),
+            ("AuthenticateEndpoint", "authenticate"),
+            ("RetrieveUserEndpoint", "retrieve_user"),
+            ("VerifyEndpoint", "verify"),
+            ("RefreshEndpoint", "refresh"),
         )
 
         for endpoint in endpoint_mappings:
             self.__add_single_endpoint(*endpoint)
 
         self.bp.exception(exceptions.SanicJWTException)(
-            self.responses.exception_response)
+            self.responses.exception_response
+        )
 
         if not self.instance_is_blueprint:
             url_prefix = self._get_url_prefix()
-            self.instance.blueprint(
-                self.bp, url_prefix=url_prefix)
+            self.instance.blueprint(self.bp, url_prefix=url_prefix)
 
     def __add_class_views(self):
         """
         Include any custom class views on the Sanic JWT Blueprint
         """
         config = self.config
-        if 'class_views' in self.kwargs:
-            class_views = self.kwargs.pop('class_views')
+        if "class_views" in self.kwargs:
+            class_views = self.kwargs.pop("class_views")
 
             for route, view in class_views:
-                if issubclass(view, endpoints.BaseEndpoint) and isinstance(route, str):
+                if (
+                    issubclass(view, endpoints.BaseEndpoint)
+                    and isinstance(route, str)
+                ):
                     self.bp.add_route(
                         view.as_view(
                             self.responses,
@@ -105,7 +106,7 @@ class Initialize:
                             instance=self.instance,
                         ),
                         route,
-                        strict_slashes=config.strict_slashes()
+                        strict_slashes=config.strict_slashes(),
                     )
                 else:
                     raise exceptions.InvalidClassViewsFormat()
@@ -116,17 +117,21 @@ class Initialize:
         and / or `Responses`) have been overwitten and if they're still valid
         """
         # msg took from BaseAuthentication
-        msg = 'Sanic JWT was not initialized properly. It did not '\
-              'received an instance of {}'
+        msg = "Sanic JWT was not initialized properly. It did not " "received an instance of {}"
         if not issubclass(self.authentication_class, Authentication):
             raise exceptions.InitializationFailure(
-                message=msg.format('Authentication'))
+                message=msg.format("Authentication")
+            )
+
         if not issubclass(self.configuration_class, Configuration):
             raise exceptions.InitializationFailure(
-                message=msg.format('Configuration'))
+                message=msg.format("Configuration")
+            )
+
         if not issubclass(self.responses_class, Responses):
             raise exceptions.InitializationFailure(
-                message=msg.format('Responses'))
+                message=msg.format("Responses")
+            )
 
     def __check_initialization(self):
         """
@@ -134,32 +139,39 @@ class Initialize:
         exceptions
         """
         config = self.config
-        if "refresh_token_enabled" in config and \
-            config.refresh_token_enabled() and (
-                not self.kwargs.get('store_refresh_token') or
-                not self.kwargs.get('retrieve_refresh_token')):
+        if (
+            "refresh_token_enabled" in config
+            and config.refresh_token_enabled()
+            and (
+                not self.kwargs.get("store_refresh_token")
+                or not self.kwargs.get("retrieve_refresh_token")
+            )
+        ):
             raise exceptions.RefreshTokenNotImplemented
 
         # TODO:
         # - Add additional checks
 
         # Depracation notices
-        if 'SANIC_JWT_HANDLER_PAYLOAD_SCOPES' in self.app.config:
+        if "SANIC_JWT_HANDLER_PAYLOAD_SCOPES" in self.app.config:
             raise exceptions.InvalidConfiguration(
                 "SANIC_JWT_HANDLER_PAYLOAD_SCOPES has been deprecated. "
                 "Instead, pass your handler method (not an import path) as "
-                "initialize(add_scopes_to_payload=my_scope_extender)")
+                "initialize(add_scopes_to_payload=my_scope_extender)"
+            )
 
-        if 'SANIC_JWT_PAYLOAD_HANDLER' in self.app.config:
+        if "SANIC_JWT_PAYLOAD_HANDLER" in self.app.config:
             raise exceptions.InvalidConfiguration(
                 "SANIC_JWT_PAYLOAD_HANDLER has been deprecated. "
-                "Instead, you will need to subclass Authentication. ")
+                "Instead, you will need to subclass Authentication. "
+            )
 
-        if 'SANIC_JWT_HANDLER_PAYLOAD_EXTEND' in self.app.config:
+        if "SANIC_JWT_HANDLER_PAYLOAD_EXTEND" in self.app.config:
             raise exceptions.InvalidConfiguration(
                 "SANIC_JWT_HANDLER_PAYLOAD_EXTEND has been deprecated. "
                 "Instead, you will need to subclass Authentication. "
-                "Check out the documentation for more information.")
+                "Check out the documentation for more information."
+            )
 
     def __initialize_instance(self):
         """
@@ -174,8 +186,10 @@ class Initialize:
             auth_impl = self.instance.auth.authenticate
             if not inspect.ismethod(auth_impl):
                 raise exceptions.AuthenticateNotImplemented
+
             if auth_impl.__func__ == Authentication.authenticate:
                 raise exceptions.AuthenticateNotImplemented
+
             self.kwargs.update({"authenticate": auth_impl})
 
         for handler in handlers:
@@ -196,7 +210,12 @@ class Initialize:
         for config_item in config_to_enable:
             if config_item[0] in self.kwargs:
                 for k in config_item[1]:
-                    self.kwargs.update({k: True, config_item[0]: self.kwargs.get(config_item[0])})
+                    self.kwargs.update(
+                        {
+                            k: True,
+                            config_item[0]: self.kwargs.get(config_item[0]),
+                        }
+                    )
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
 
@@ -205,22 +224,29 @@ class Initialize:
 
     def __add_single_endpoint(self, class_name, path_name):
         view = getattr(endpoints, class_name)
-        path_name = getattr(self.config, 'path_to_{}'.format(path_name))()
+        path_name = getattr(self.config, "path_to_{}".format(path_name))()
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
             self.instance.add_route(
-                view.as_view(config=self.config,
-                             instance=self.instance,
-                             responses=self.responses), path_name)
+                view.as_view(
+                    config=self.config,
+                    instance=self.instance,
+                    responses=self.responses,
+                ),
+                path_name,
+            )
         else:
             self.bp.add_route(
-                view.as_view(config=self.config,
-                             instance=self.instance,
-                             responses=self.responses), path_name)
+                view.as_view(
+                    config=self.config,
+                    instance=self.instance,
+                    responses=self.responses,
+                ),
+                path_name,
+            )
 
     def _get_url_prefix(self):
-        bp_url_prefix = self.bp.url_prefix \
-            if self.bp.url_prefix is not None else ''
+        bp_url_prefix = self.bp.url_prefix if self.bp.url_prefix is not None else ""
         config_url_prefix = self.config.url_prefix()
         url_prefix = bp_url_prefix + config_url_prefix
         return url_prefix
@@ -229,17 +255,21 @@ class Initialize:
     def __get_app(instance, app=None):
         if isinstance(instance, Sanic):
             return instance
+
         elif isinstance(instance, Blueprint):
             if app is not None:
                 return app
+
         raise exceptions.InitializationFailure
 
     @staticmethod
     def __get_bp(instance):
         if isinstance(instance, Sanic):
-            return Blueprint('auth_bp')
+            return Blueprint("auth_bp")
+
         elif isinstance(instance, Blueprint):
             return instance
+
         raise exceptions.InitializationFailure
 
     def protected(self, *args, **kwargs):
@@ -248,7 +278,7 @@ class Initialize:
         return protected(*args, **kwargs)
 
     def scoped(self, scopes, **kwargs):
-        kwargs.update({'initialized_on': self.instance})
+        kwargs.update({"initialized_on": self.instance})
         return scoped(scopes, **kwargs)
 
     @property

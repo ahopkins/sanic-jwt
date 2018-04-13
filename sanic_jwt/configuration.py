@@ -44,8 +44,7 @@ defaults = {
 }
 
 aliases = {
-    "cookie_access_token_name": "cookie_token_name",
-    "secret": "public_key"
+    "cookie_access_token_name": "cookie_token_name", "secret": "public_key"
 }
 
 ignore_keys = (
@@ -64,14 +63,20 @@ logger = logging.getLogger(__name__)
 def _warn_key(key):
     if key not in ignore_keys:
         logger.warning(
-            "Configuration key '%s' found is not valid for sanic-jwt",
-            key,
+            "Configuration key '%s' found is not valid for sanic-jwt", key
         )
 
 
 class ConfigItem:
 
-    def __init__(self, value, item_name=None, config=None, inject_request=True, aliases=[]):
+    def __init__(
+        self,
+        value,
+        item_name=None,
+        config=None,
+        inject_request=True,
+        aliases=[],
+    ):
         self._value = value
         self._item_name = item_name
         self._config = config
@@ -99,6 +104,7 @@ class ConfigItem:
     def _get_from_config(self):
         if hasattr(self._config, self._get_fn):
             return getattr(self._config, self._get_fn)
+
         return None
 
     @property
@@ -115,6 +121,7 @@ class Configuration:
     def __iter__(self):  # noqa
         for key in self.config_keys:
             yield getattr(self, key)
+
         for key in self.aliases_keys:
             yield getattr(self, key)
 
@@ -140,24 +147,49 @@ class Configuration:
                 item_aliases = [aliases.get(key)]
 
             # check if a configuration key is set and is an instance of ConfigItem
-            if hasattr(instance, key) and isinstance(getattr(instance, key), ConfigItem):
+            if (
+                hasattr(instance, key)
+                and isinstance(getattr(instance, key), ConfigItem)
+            ):
                 getattr(instance, key)._item_name = key
                 getattr(instance, key)._aliases = item_aliases
                 getattr(instance, key)._config = instance
             # check if a configuration key is set with a value
             elif hasattr(instance, key):
                 val = getattr(instance, key)
-                setattr(instance, key, ConfigItem(val, item_name=key, config=instance, aliases=item_aliases))
+                setattr(
+                    instance,
+                    key,
+                    ConfigItem(
+                        val,
+                        item_name=key,
+                        config=instance,
+                        aliases=item_aliases,
+                    ),
+                )
             else:
-                setattr(instance, key, ConfigItem(value, item_name=key, config=instance, aliases=item_aliases))
+                setattr(
+                    instance,
+                    key,
+                    ConfigItem(
+                        value,
+                        item_name=key,
+                        config=instance,
+                        aliases=item_aliases,
+                    ),
+                )
 
             # check if a setter is available on config class
-            fn_name = 'set_{}'.format(key)
+            fn_name = "set_{}".format(key)
             if hasattr(instance, fn_name):
                 set_fn = getattr(instance, fn_name)
                 if not callable(set_fn):
-                    logger.warning('variable "%s" set in Configuration is not callable', fn_name)
+                    logger.warning(
+                        'variable "%s" set in Configuration is not callable',
+                        fn_name,
+                    )
                     continue
+
                 val = set_fn.__call__()
                 if isinstance(val, ConfigItem):
                     val._item_name = key
@@ -168,7 +200,12 @@ class Configuration:
                     setattr(
                         instance,
                         key,
-                        ConfigItem(val, item_name=key, config=instance, aliases=item_aliases),
+                        ConfigItem(
+                            val,
+                            item_name=key,
+                            config=instance,
+                            aliases=item_aliases,
+                        ),
                     )
 
             # 'reference' aliases
@@ -177,8 +214,8 @@ class Configuration:
 
             _config_keys.append(key)
 
-        setattr(instance, '_config_keys', _config_keys)
-        setattr(instance, '_config_aliases', _aliases)
+        setattr(instance, "_config_keys", _config_keys)
+        setattr(instance, "_config_aliases", _aliases)
 
         return instance
 
@@ -218,25 +255,33 @@ class Configuration:
                 if key == v:
                     correct_key = key
                     break
+
             if hasattr(self, correct_key):
                 getattr(self, correct_key).update(value)
         else:
             _warn_key(key)
 
     def _validate_secret(self):
-        logger.debug('validating provided secret')
-        if self.secret() is None or (
-                isinstance(self.secret(), str) and self.secret().strip() == ""):
+        logger.debug("validating provided secret")
+        if (
+            self.secret() is None
+            or (isinstance(self.secret(), str) and self.secret().strip() == "")
+        ):
             raise exceptions.InvalidConfiguration(
                 "the SANIC_JWT_SECRET parameter cannot be None nor an empty "
-                "string")
+                "string"
+            )
 
     def _validate_keys(self):
         logger.debug("validating keys (if needed)")
-        if utils.algorithm_is_asymmetric(self.algorithm()) and (
-            self.private_key() is None or (
-                isinstance(self.private_key(), str) and
-                self.private_key().strip() == ''
+        if (
+            utils.algorithm_is_asymmetric(self.algorithm())
+            and (
+                self.private_key() is None
+                or (
+                    isinstance(self.private_key(), str)
+                    and self.private_key().strip() == ""
+                )
             )
         ):
             raise exceptions.RequiredKeysNotFound
@@ -246,10 +291,13 @@ class Configuration:
         try:
             self.secret.update(utils.load_file_or_str(self.secret()))
             if utils.algorithm_is_asymmetric(self.algorithm()):
-                self.private_key.update(utils.load_file_or_str(self.private_key()))
+                self.private_key.update(
+                    utils.load_file_or_str(self.private_key())
+                )
         except exceptions.ProvidedPathNotFound as exc:
             if utils.algorithm_is_asymmetric(self.algorithm()):
                 raise exceptions.RequiredKeysNotFound
+
             raise exc
 
     @staticmethod
@@ -259,5 +307,5 @@ class Configuration:
         """
         return {
             x.lower()[10:]: app_config.get(x)
-            for x in filter(lambda x: x.startswith('SANIC_JWT'), app_config)
+            for x in filter(lambda x: x.startswith("SANIC_JWT"), app_config)
         }

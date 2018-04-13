@@ -7,6 +7,7 @@ from sanic_jwt.decorators import scoped
 
 
 class User(object):
+
     def __init__(self, id, username, password, scopes):
         self.user_id = id
         self.username = username
@@ -17,17 +18,14 @@ class User(object):
         return "User(id='{}')".format(self.user_id)
 
     def to_dict(self):
-        return {
-            'user_id': self.user_id,
-            'username': self.username,
-        }
+        return {"user_id": self.user_id, "username": self.username}
 
 
 users = [
-    User(1, 'user1', 'abcxyz', ['user']),
-    User(2, 'user2', 'abcxyz', ['user', 'admin']),
-    User(3, 'user3', 'abcxyz', ['user:read']),
-    User(4, 'user4', 'abcxyz', ['client1']),
+    User(1, "user1", "abcxyz", ["user"]),
+    User(2, "user2", "abcxyz", ["user", "admin"]),
+    User(3, "user3", "abcxyz", ["user:read"]),
+    User(4, "user4", "abcxyz", ["client1"]),
 ]
 
 username_table = {u.username: u for u in users}
@@ -35,8 +33,8 @@ userid_table = {u.user_id: u for u in users}
 
 
 async def authenticate(request, *args, **kwargs):
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
 
     if not username or not password:
         raise exceptions.AuthenticationFailed("Missing username or password.")
@@ -53,9 +51,10 @@ async def authenticate(request, *args, **kwargs):
 
 async def retrieve_user(request, payload, *args, **kwargs):
     if payload:
-        user_id = payload.get('user_id', None)
+        user_id = payload.get("user_id", None)
         if user_id is not None:
-            return userid_table.get('user_id')
+            return userid_table.get("user_id")
+
     else:
         return None
 
@@ -83,46 +82,46 @@ async def protected_route(request):
 
 @app.route("/protected/scoped/1")
 @protected()
-@scoped('user')
+@scoped("user")
 async def protected_route1(request):
     return json({"protected": True, "scoped": True})
 
 
 @app.route("/protected/scoped/2")
 @protected()
-@scoped('user:read')
+@scoped("user:read")
 async def protected_route2(request):
     return json({"protected": True, "scoped": True})
 
 
 @app.route("/protected/scoped/3")
 @protected()
-@scoped(['user', 'admin'])
+@scoped(["user", "admin"])
 async def protected_route3(request):
     return json({"protected": True, "scoped": True})
 
 
 @app.route("/protected/scoped/4")
 @protected()
-@scoped(['user', 'admin'], False)
+@scoped(["user", "admin"], False)
 async def protected_route4(request):
     return json({"protected": True, "scoped": True})
 
 
 @app.route("/protected/scoped/5")
-@scoped('user')
+@scoped("user")
 async def protected_route5(request):
     return json({"protected": True, "scoped": True})
 
 
 @app.route("/protected/scoped/6/<id>")
-@scoped(lambda *args, **kwargs: 'user')
+@scoped(lambda *args, **kwargs: "user")
 async def protected_route6(request, id):
     return json({"protected": True, "scoped": True})
 
 
 def client_id_scope(request, *args, **kwargs):
-    return 'client' + kwargs.get('id')
+    return "client" + kwargs.get("id")
 
 
 @app.route("/protected/scoped/7/<id>")

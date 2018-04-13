@@ -15,19 +15,22 @@ logger = logging.getLogger(__name__)
 
 @contextmanager
 def instant_config(instance, **kwargs):
-    if kwargs and hasattr(instance, 'auth'):
-        to_cache('_request', kwargs.get('request'))
+    if kwargs and hasattr(instance, "auth"):
+        to_cache("_request", kwargs.get("request"))
         for key, val in kwargs.items():
             if key in instance.auth.config:
                 if callable(val):
                     val = val()
                 to_cache(key, val)
     yield
+
     clear_cache()
 
 
 def protected(initialized_on=None, **kw):
+
     def decorator(f):
+
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             if initialized_on and isinstance(initialized_on, Blueprint):
@@ -36,7 +39,7 @@ def protected(initialized_on=None, **kw):
                 instance = request.app
 
             with instant_config(instance, request=request, **kw):
-                if request.method == 'OPTIONS':
+                if request.method == "OPTIONS":
                     response = f(request, *args, **kwargs)
                     if isawaitable(response):
                         response = await response
@@ -44,27 +47,43 @@ def protected(initialized_on=None, **kw):
 
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(
-                        request, *args, **kwargs)
+                        request, *args, **kwargs
+                    )
                 except AttributeError:
-                    raise add_status_code(500)(exceptions.SanicJWTException(
-                        "Authentication instance not found. Perhaps you used "
-                        "@protected without passing in a blueprint? "
-                        "Try @protected(blueprint)"))
+                    raise add_status_code(500)(
+                        exceptions.SanicJWTException(
+                            "Authentication instance not found. Perhaps you used "
+                            "@protected without passing in a blueprint? "
+                            "Try @protected(blueprint)"
+                        )
+                    )
+
                 if is_authenticated:
                     response = f(request, *args, **kwargs)
                     if isawaitable(response):
                         response = await response
                     return response
+
                 else:
-                    raise add_status_code(status)(exceptions.Unauthorized(reasons))
+                    raise add_status_code(status)(
+                        exceptions.Unauthorized(reasons)
+                    )
+
         return decorated_function
+
     return decorator
 
 
-def scoped(scopes, require_all=True,
-           require_all_actions=True,
-           initialized_on=None, **kw):
+def scoped(
+    scopes,
+    require_all=True,
+    require_all_actions=True,
+    initialized_on=None,
+    **kw
+):
+
     def decorator(f):
+
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             if initialized_on and isinstance(initialized_on, Blueprint):
@@ -76,12 +95,17 @@ def scoped(scopes, require_all=True,
 
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(
-                        request, *args, **kwargs)
+                        request, *args, **kwargs
+                    )
                 except AttributeError:
-                    raise add_status_code(500)(exceptions.SanicJWTException(
-                        "Authentication instance not found. Perhaps you used "
-                        "@scoped without passing in a blueprint? "
-                        "Try @scoped(..., initialized_on=blueprint)"))
+                    raise add_status_code(500)(
+                        exceptions.SanicJWTException(
+                            "Authentication instance not found. Perhaps you used "
+                            "@scoped without passing in a blueprint? "
+                            "Try @scoped(..., initialized_on=blueprint)"
+                        )
+                    )
+
                 if is_authenticated:
                     # Retrieve the scopes from the payload
                     user_scopes = instance.auth.retrieve_scopes(request)
@@ -93,8 +117,14 @@ def scoped(scopes, require_all=True,
                         reasons = "Invalid scope"
                     else:
                         is_authorized = await validate_scopes(
-                            request, scopes, user_scopes, require_all,
-                            require_all_actions, *args, **kwargs)
+                            request,
+                            scopes,
+                            user_scopes,
+                            require_all,
+                            require_all_actions,
+                            *args,
+                            **kwargs
+                        )
                         if not is_authorized:
                             status = 403
                             reasons = "Invalid scope"
@@ -108,8 +138,13 @@ def scoped(scopes, require_all=True,
                     if isawaitable(response):
                         response = await response
                     return response
+
                 else:
-                    raise add_status_code(status)(exceptions.Unauthorized(reasons))
-                # return response
+                    raise add_status_code(status)(
+                        exceptions.Unauthorized(reasons)
+                    )
+
+        # return response
         return decorated_function
+
     return decorator

@@ -1,4 +1,3 @@
-# import copy
 import logging
 import inspect
 from datetime import datetime, timedelta
@@ -8,48 +7,39 @@ import jwt
 from . import exceptions, utils
 
 logger = logging.getLogger(__name__)
-claim_label = {
-    'iss': 'issuer',
-    'iat': 'iat',
-    'nbf': 'nbf',
-    'aud': 'audience',
-}
+claim_label = {"iss": "issuer", "iat": "iat", "nbf": "nbf", "aud": "audience"}
 
 
 class BaseAuthentication:
+
     def __init__(self, app, config):
         self.app = app
-        self.claims = ['exp']
-        # self.config = copy.deepcopy(config)
+        self.claims = ["exp"]
         self.config = config
 
     async def build_payload(self, user, *args, **kwargs):
         uid = self.config.user_id()
         if isinstance(user, dict):
             user_id = user.get(uid)
-        elif hasattr(user, 'to_dict'):
+        elif hasattr(user, "to_dict"):
             _to_dict = await utils.call(user.to_dict)
             user_id = _to_dict.get(uid)
         else:
             raise exceptions.InvalidRetrieveUserObject()
 
-        return {
-            uid: user_id,
-        }
+        return {uid: user_id}
 
     async def add_claims(self, payload, *args, **kwargs):
         delta = timedelta(seconds=self.config.expiration_delta())
         exp = datetime.utcnow() + delta
-        additional = {
-            'exp': exp
-        }
+        additional = {"exp": exp}
 
-        for option in ['iss', 'iat', 'nbf', 'aud', ]:
-            setting = 'claim_{}'.format(option.lower())
+        for option in ["iss", "iat", "nbf", "aud"]:
+            setting = "claim_{}".format(option.lower())
             if setting in self.config:
                 attr = getattr(self.config, setting)()
                 if attr:
-                    method_name = 'build_claim_{}'.format(option)
+                    method_name = "build_claim_{}".format(option)
                     method = getattr(utils, method_name)
                     additional.update({option: method(attr, self.config)})
 
@@ -81,25 +71,23 @@ class Authentication(BaseAuthentication):
         kwargs = {}
 
         for claim in self.claims:
-            if claim != 'exp':
-                setting = 'claim_{}'.format(claim.upper())
+            if claim != "exp":
+                setting = "claim_{}".format(claim.upper())
                 if setting in self.config:
                     value = getattr(self.config, setting)
                     kwargs.update({claim_label[claim]: value()})
 
-        kwargs['leeway'] = int(self.config.leeway())
+        kwargs["leeway"] = int(self.config.leeway())
         if "claim_aud" in self.config:
-            kwargs['audience'] = self.config.claim_aud()
+            kwargs["audience"] = self.config.claim_aud()
         if "claim_iss" in self.config:
-            kwargs['issuer'] = self.config.claim_iss()
+            kwargs["issuer"] = self.config.claim_iss()
         return jwt.decode(
             token,
             secret,
             algorithms=[algorithm],
             verify=verify,
-            options={
-                'verify_exp': self.config.verify_exp()
-            },
+            options={"verify_exp": self.config.verify_exp()},
             **kwargs
         )
 
@@ -107,25 +95,24 @@ class Authentication(BaseAuthentication):
         return self.config.algorithm()
 
     async def _get_payload(self, user):
-        payload = await utils.call(
-            self.build_payload, user)
+        payload = await utils.call(self.build_payload, user)
 
-        if not isinstance(payload, dict) or self.config.user_id() not in payload:
+        if (
+            not isinstance(payload, dict)
+            or self.config.user_id() not in payload
+        ):
             raise exceptions.InvalidPayload
 
-        payload = await utils.call(
-            self.add_claims, payload)
+        payload = await utils.call(self.add_claims, payload)
 
         extend_payload_args = inspect.getargspec(self.extend_payload)
         args = [payload]
-        if 'user' in extend_payload_args.args:
+        if "user" in extend_payload_args.args:
             args.append(user)
-        payload = await utils.call(
-            self.extend_payload, *args)
+        payload = await utils.call(self.extend_payload, *args)
 
         if self.config.scopes_enabled():
-            scopes = await utils.call(
-                self.add_scopes_to_payload, user)
+            scopes = await utils.call(self.add_scopes_to_payload, user)
             if not isinstance(scopes, (tuple, list)):
                 scopes = [scopes]
             payload[self.config.scopes_name()] = scopes
@@ -139,42 +126,42 @@ class Authentication(BaseAuthentication):
     def _get_secret(self, encode=False):
         # TODO:
         # - Ability to have per user secrets
-        if not hasattr(self, '_is_asymmetric'):
+        if not hasattr(self, "_is_asymmetric"):
             self._is_asymmetric = utils.algorithm_is_asymmetric(
-                self._get_algorithm())
+                self._get_algorithm()
+            )
         if self._is_asymmetric and encode:
             return self.config.private_key()
+
         return self.config.secret()
 
     def _get_token(self, request, refresh_token=False):
         if self.config.cookie_set():
-            cookie_token_name_key = 'cookie_access_token_name' \
-                if refresh_token is False else \
-                'cookie_refresh_token_name'
+            cookie_token_name_key = "cookie_access_token_name" if refresh_token is False else "cookie_refresh_token_name"
             cookie_token_name = getattr(self.config, cookie_token_name_key)
             token = request.cookies.get(cookie_token_name(), None)
             if token:
                 return token
+
             else:
                 if self.config.cookie_strict():
                     raise exceptions.MissingAuthorizationCookie()
 
-        header = request.headers.get(
-            self.config.authorization_header(), None)
+        header = request.headers.get(self.config.authorization_header(), None)
 
         if header:
-            header_prefix_key = 'authorization_header_prefix'
+            header_prefix_key = "authorization_header_prefix"
             header_prefix = getattr(self.config, header_prefix_key)
             try:
-                prefix, token = header.split(' ')
+                prefix, token = header.split(" ")
                 if prefix != header_prefix():
                     raise Exception
+
             except Exception:
                 raise exceptions.InvalidAuthorizationHeader()
 
             if refresh_token:
-                token = request.json.get(
-                    self.config.refresh_token_name())
+                token = request.json.get(self.config.refresh_token_name())
 
             return token
 
@@ -187,11 +174,12 @@ class Authentication(BaseAuthentication):
         uid = self.config.user_id()
         if isinstance(user, dict):
             user_id = user.get(uid)
-        elif hasattr(user, 'to_dict'):
+        elif hasattr(user, "to_dict"):
             _to_dict = await utils.call(user.to_dict)
             user_id = _to_dict.get(uid)
         else:
             raise exceptions.InvalidRetrieveUserObject()
+
         return user_id
 
     async def get_access_token(self, user):
@@ -199,16 +187,17 @@ class Authentication(BaseAuthentication):
         secret = self._get_secret(True)
         algorithm = self._get_algorithm()
 
-        return jwt.encode(payload, secret, algorithm=algorithm).decode('utf-8')
+        return jwt.encode(payload, secret, algorithm=algorithm).decode("utf-8")
 
     async def get_refresh_token(self, request, user):
-        refresh_token = self.config.generate_refresh_token()()  # TODO is there a better way?
+        refresh_token = await utils.call(self.config.generate_refresh_token())
         user_id = await self._get_user_id(user)
         await utils.call(
             self.store_refresh_token,
             user_id=user_id,
             refresh_token=refresh_token,
-            request=request)
+            request=request,
+        )
         return refresh_token
 
     def is_authenticated(self, request, *args, **kwargs):
@@ -217,13 +206,15 @@ class Authentication(BaseAuthentication):
         except Exception as e:
             if self.config.debug():
                 raise Exception(e)
+
             else:
                 raise exceptions.Unauthorized()
 
         return is_valid, status, reasons
 
-    def verify(self, request, return_payload=False, verify=True, *args,
-               **kwargs):
+    def verify(
+        self, request, return_payload=False, verify=True, *args, **kwargs
+    ):
         token = self._get_token(request)
         is_valid = True
         reason = None
@@ -258,6 +249,7 @@ class Authentication(BaseAuthentication):
         return payload.get(scopes_attribute, None)
 
     def extract_payload(self, request, verify=True, *args, **kwargs):
-        payload = self.verify(request, return_payload=True, verify=verify,
-                              *args, **kwargs)
+        payload = self.verify(
+            request, return_payload=True, verify=verify, *args, **kwargs
+        )
         return payload

@@ -37,7 +37,9 @@ def app_full_auth_cls(users):
 
             return user
 
-        async def store_refresh_token(self, user_id, refresh_token, *args, **kwargs):
+        async def store_refresh_token(
+            self, user_id, refresh_token, *args, **kwargs
+        ):
             key = "refresh_token_{user_id}".format(user_id=user_id)
             cache[key] = refresh_token
 
@@ -57,14 +59,14 @@ def app_full_auth_cls(users):
                 return None
 
         async def extend_payload(self, payload, user=None, *args, **kwargs):
-            payload.update({'foo': 'bar'})
+            payload.update({"foo": "bar"})
             return payload
 
     sanic_app = Sanic()
     sanicjwt = Initialize(
         sanic_app,
         authentication_class=MyAuthentication,
-        refresh_token_enabled=True
+        refresh_token_enabled=True,
     )
 
     @sanic_app.route("/")
@@ -92,7 +94,9 @@ def test_authentication_all_methods(app_full_auth_cls):
     assert sanicjwt.config.refresh_token_name() in response.json
 
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
-    refresh_token = response.json.get(sanicjwt.config.refresh_token_name(), None)
+    refresh_token = response.json.get(
+        sanicjwt.config.refresh_token_name(), None
+    )
 
     assert access_token is not None
     assert refresh_token is not None
@@ -100,7 +104,7 @@ def test_authentication_all_methods(app_full_auth_cls):
     payload = jwt.decode(access_token, sanicjwt.config.secret())
 
     assert "foo" in payload
-    assert payload.get('foo') == 'bar'
+    assert payload.get("foo") == "bar"
 
     _, response = app.test_client.get(
         "/protected",
@@ -118,12 +122,11 @@ def test_authentication_all_methods(app_full_auth_cls):
     assert response.status == 200
 
     _, response = app.test_client.get(
-        "/auth/me",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 200
-    assert 'me' in response.json
+    assert "me" in response.json
 
     _, response = app.test_client.post(
         "/auth/refresh",

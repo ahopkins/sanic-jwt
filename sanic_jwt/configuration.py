@@ -72,7 +72,9 @@ def _create_or_overwrite_config_item(value, key, item_aliases, instance):
     setattr(
         instance,
         key,
-        ConfigItem(value, item_name=key, config=instance, aliases=item_aliases),
+        ConfigItem(
+            value, item_name=key, config=instance, aliases=item_aliases
+        ),
     )
 
 
@@ -170,9 +172,13 @@ class Configuration:
             # check if a configuration key is set with a value
             elif hasattr(instance, key):
                 val = getattr(instance, key)
-                _create_or_overwrite_config_item(val, key, item_aliases, instance)
+                _create_or_overwrite_config_item(
+                    val, key, item_aliases, instance
+                )
             else:
-                _create_or_overwrite_config_item(value, key, item_aliases, instance)
+                _create_or_overwrite_config_item(
+                    value, key, item_aliases, instance
+                )
 
             # check if a setter is available on config class
             fn_name = "set_{}".format(key)
@@ -190,7 +196,9 @@ class Configuration:
                     setattr(instance, key, val)
                     _update_config_item(key, item_aliases, instance)
                 else:
-                    _create_or_overwrite_config_item(val, key, item_aliases, instance)
+                    _create_or_overwrite_config_item(
+                        val, key, item_aliases, instance
+                    )
 
             # 'reference' aliases
             for alias in item_aliases:
@@ -201,7 +209,11 @@ class Configuration:
         setattr(instance, "_config_keys", _config_keys)
         setattr(instance, "_config_aliases", _aliases)
         setattr(instance, "_config_aliases_keys", _aliases.values())
-        setattr(instance, "_all_config_keys", _config_keys + list(_aliases.values()))
+        setattr(
+            instance,
+            "_all_config_keys",
+            _config_keys + list(_aliases.values()),
+        )
 
         return instance
 

@@ -20,10 +20,22 @@ def initialize(*args, **kwargs):
 
 handlers = (
     _Handler("authenticate", None, exceptions.AuthenticateNotImplemented),
-    _Handler("store_refresh_token", ["refresh_token_enabled"], exceptions.RefreshTokenNotImplemented),
-    _Handler("retrieve_refresh_token", ["refresh_token_enabled"], exceptions.RefreshTokenNotImplemented),
+    _Handler(
+        "store_refresh_token",
+        ["refresh_token_enabled"],
+        exceptions.RefreshTokenNotImplemented,
+    ),
+    _Handler(
+        "retrieve_refresh_token",
+        ["refresh_token_enabled"],
+        exceptions.RefreshTokenNotImplemented,
+    ),
     _Handler("retrieve_user", None, None),
-    _Handler("add_scopes_to_payload", ["scopes_enabled"], exceptions.ScopesNotImplemented),
+    _Handler(
+        "add_scopes_to_payload",
+        ["scopes_enabled"],
+        exceptions.ScopesNotImplemented,
+    ),
     _Handler("extend_payload", None, None),
 )
 
@@ -147,8 +159,7 @@ class Initialize:
         and / or `Responses`) have been overwitten and if they're still valid
         """
         # msg took from BaseAuthentication
-        msg = "Sanic JWT was not initialized properly. It did not " \
-              "received an instance of {}"
+        msg = "Sanic JWT was not initialized properly. It did not " "received an instance of {}"
         if not issubclass(self.authentication_class, Authentication):
             raise exceptions.InitializationFailure(
                 message=msg.format("Authentication")
@@ -179,10 +190,14 @@ class Initialize:
 
             for handler in handlers:
                 if handler.keys is None:
-                    self.__check_method_in_auth(handler.name, handler.exception)
+                    self.__check_method_in_auth(
+                        handler.name, handler.exception
+                    )
                 else:
                     if all(map(lambda k: config.get(k), handler.keys)):
-                        self.__check_method_in_auth(handler.name, handler.exception)
+                        self.__check_method_in_auth(
+                            handler.name, handler.exception
+                        )
 
             for handler in handlers:
                 if handler.name in self.kwargs:
@@ -211,9 +226,7 @@ class Initialize:
         for handler in handler_to_enable:
             if handler.name in self.kwargs:
                 for k in handler.keys:
-                    self.kwargs.update({
-                        k: True
-                    })
+                    self.kwargs.update({k: True})
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
 

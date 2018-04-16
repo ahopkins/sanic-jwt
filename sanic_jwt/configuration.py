@@ -212,12 +212,6 @@ class Configuration:
             item = getattr(self, item)
             return item()
 
-    def update(self, item, value):
-        """Helper method to avoid calling getattr(...).update(value)
-        """
-        if item in self:
-            getattr(self, item).update(value)
-
     @property
     def config_keys(self):
         return self._config_keys

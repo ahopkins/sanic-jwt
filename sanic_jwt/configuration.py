@@ -68,6 +68,20 @@ def _warn_key(key):
         )
 
 
+def _create_or_overwrite_config_item(value, key, item_aliases, instance):
+    setattr(
+        instance,
+        key,
+        ConfigItem(value, item_name=key, config=instance, aliases=item_aliases),
+    )
+
+
+def _update_config_item(key, item_aliases, instance):
+    getattr(instance, key)._item_name = key
+    getattr(instance, key)._aliases = item_aliases
+    getattr(instance, key)._config = instance
+
+
 class ConfigItem:
 
     def __init__(
@@ -152,33 +166,13 @@ class Configuration:
                 hasattr(instance, key)
                 and isinstance(getattr(instance, key), ConfigItem)
             ):
-                getattr(instance, key)._item_name = key
-                getattr(instance, key)._aliases = item_aliases
-                getattr(instance, key)._config = instance
+                _update_config_item(key, item_aliases, instance)
             # check if a configuration key is set with a value
             elif hasattr(instance, key):
                 val = getattr(instance, key)
-                setattr(
-                    instance,
-                    key,
-                    ConfigItem(
-                        val,
-                        item_name=key,
-                        config=instance,
-                        aliases=item_aliases,
-                    ),
-                )
+                _create_or_overwrite_config_item(val, key, item_aliases, instance)
             else:
-                setattr(
-                    instance,
-                    key,
-                    ConfigItem(
-                        value,
-                        item_name=key,
-                        config=instance,
-                        aliases=item_aliases,
-                    ),
-                )
+                _create_or_overwrite_config_item(value, key, item_aliases, instance)
 
             # check if a setter is available on config class
             fn_name = "set_{}".format(key)
@@ -193,21 +187,10 @@ class Configuration:
 
                 val = set_fn.__call__()
                 if isinstance(val, ConfigItem):
-                    val._item_name = key
-                    val._aliases = item_aliases
-                    val._config = instance
                     setattr(instance, key, val)
+                    _update_config_item(key, item_aliases, instance)
                 else:
-                    setattr(
-                        instance,
-                        key,
-                        ConfigItem(
-                            val,
-                            item_name=key,
-                            config=instance,
-                            aliases=item_aliases,
-                        ),
-                    )
+                    _create_or_overwrite_config_item(val, key, item_aliases, instance)
 
             # 'reference' aliases
             for alias in item_aliases:
@@ -217,8 +200,23 @@ class Configuration:
 
         setattr(instance, "_config_keys", _config_keys)
         setattr(instance, "_config_aliases", _aliases)
+        setattr(instance, "_config_aliases_keys", _aliases.values())
+        setattr(instance, "_all_config_keys", _config_keys + list(_aliases.values()))
 
         return instance
+
+    def get(self, item):
+        """Helper method to avoid calling getattr
+        """
+        if item in self:
+            item = getattr(self, item)
+            return item()
+
+    def update(self, item, value):
+        """Helper method to avoid calling getattr(...).update(value)
+        """
+        if item in self:
+            getattr(self, item).update(value)
 
     @property
     def config_keys(self):
@@ -230,11 +228,11 @@ class Configuration:
 
     @property
     def all_config_keys(self):
-        return self.config_keys + self.config_aliases_keys
+        return self._all_config_keys
 
     @property
     def config_aliases_keys(self):
-        return list(self.config_aliases.values())
+        return self._config_aliases_keys
 
     def __init__(self, app_config, **kwargs):
         for key, value in kwargs.items():

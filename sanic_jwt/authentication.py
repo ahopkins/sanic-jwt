@@ -62,6 +62,9 @@ class BaseAuthentication:
     async def add_scopes_to_payload(self, *args, **kwargs):
         raise exceptions.ScopesNotImplemented()  # noqa
 
+    async def retrieve_user(self, *args, **kwargs):
+        raise exceptions.MeEndpointNotSetup()  # noqa
+
 
 class Authentication(BaseAuthentication):
 

@@ -194,7 +194,6 @@ class Initialize:
                         handler.name, handler.exception
                     )
                 else:
-                    # if all(map(lambda k: config.get(k), handler.keys)):
                     if all(map(config.get, handler.keys)):
                         self.__check_method_in_auth(
                             handler.name, handler.exception

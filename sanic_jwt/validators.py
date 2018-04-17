@@ -2,11 +2,12 @@ from sanic_jwt import utils
 
 
 def validate_single_scope(required, user_scopes, require_all_actions=True):
+
     def normalize(scope):
         """
         Normalizes and returns tuple consisting of namespace, and action(s)
         """
-        parts = scope.split(':')
+        parts = scope.split(":")
         return (parts[0], parts[1:])
 
     required = normalize(required)
@@ -54,8 +55,7 @@ async def validate_scopes(
     method = all if require_all else any
     return method(
         validate_single_scope(
-            x,
-            user_scopes,
-            require_all_actions=require_all_actions
-        ) for x in scopes
+            x, user_scopes, require_all_actions=require_all_actions
+        )
+        for x in scopes
     )

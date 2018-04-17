@@ -10,13 +10,16 @@ help:
 	@echo "test - run tests with coverage"
 	@echo "release - package and upload a release"
 
-.PHONY: help Makefile
+.PHONY: black help Makefile
 
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 test:
 	python setup.py test
+
+black:
+	black ./ -l 79 --safe
 
 release: clean
 	python setup.py sdist upload

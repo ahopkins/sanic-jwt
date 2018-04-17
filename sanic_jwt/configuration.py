@@ -92,13 +92,17 @@ class ConfigItem:
         item_name=None,
         config=None,
         inject_request=True,
-        aliases=[],
+        aliases=None,
     ):
         self._value = value
         self._item_name = item_name
         self._config = config
         self._inject_request = inject_request
-        self._aliases = aliases
+
+        if aliases is not None and isinstance(aliases, (list, tuple, set)):
+            self._aliases = aliases
+        else:
+            self._aliases = []
 
     def update(self, value):
         self._value = value
@@ -110,7 +114,7 @@ class ConfigItem:
 
                 if self._inject_request and is_cached("_request"):
                     args.append(get_cached("_request"))
-                return self._get_from_config(*args)
+                return self._get_from_config.__call__(*args)
 
             if is_cached(self._item_name):
                 return get_cached(self._item_name)
@@ -256,7 +260,7 @@ class Configuration:
                 self._merge(alias, value)
         elif key in self.config_aliases_keys:
             correct_key = None
-            for k, v in self.config_aliases.items():
+            for _, v in self.config_aliases.items():
                 if key == v:
                     correct_key = key
                     break

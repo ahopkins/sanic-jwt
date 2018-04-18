@@ -3,7 +3,7 @@ import copy
 import logging
 
 from . import exceptions, utils
-from .cache import get_cached, is_cached
+from .cache import get_cached, is_cached, to_cache
 
 
 defaults = {
@@ -109,15 +109,17 @@ class ConfigItem:
 
     def __call__(self, **kwargs):
         if asyncio.get_event_loop().is_running():
+            if is_cached(self._item_name):
+                return get_cached(self._item_name)
+
             if self._get_from_config is not None:
                 args = []
 
                 if self._inject_request and is_cached("_request"):
                     args.append(get_cached("_request"))
-                return self._get_from_config.__call__(*args)
-
-            if is_cached(self._item_name):
-                return get_cached(self._item_name)
+                val = self._get_from_config.__call__(*args)
+                to_cache(self._item_name, val)
+                return val
 
         return self._value
 

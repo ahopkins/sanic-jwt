@@ -132,11 +132,11 @@ def test_tricky_debug_option(app):
             {"protected": True, "is_debug": request.app.auth.config.debug()}
         )
 
-    @sanic_app.exception(Exception)
-    def in_case_of_exception(request, exception):
-        exc_name = exception.args[0].__class__.__name__
-        status_code = exception.args[0].status_code
-        return json({"exception": exc_name}, status=status_code)
+    # @sanic_app.exception(Exception)
+    # def in_case_of_exception(request, exception):
+    #     exc_name = exception.args[0].__class__.__name__
+    #     status_code = exception.args[0].status_code
+    #     return json({"exception": exc_name}, status=status_code)
 
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -158,13 +158,13 @@ def test_tricky_debug_option(app):
 
     _, response = sanic_app.test_client.get("/another_protected")
 
-    assert response.json.get("exception") == "MissingAuthorizationHeader"
-    assert response.status == 400
+    assert response.json.get("exception") == "Unauthorized"
+    assert response.status == 401
 
     _, response = sanic_app.test_client.get(
         "/another_protected",
         headers={"Authorization": "Foobar {}".format(access_token)},
     )
 
-    assert response.json.get("exception") == "InvalidAuthorizationHeader"
-    assert response.status == 400
+    assert response.json.get("exception") == "Unauthorized"
+    assert response.status == 401

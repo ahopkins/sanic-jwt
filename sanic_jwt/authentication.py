@@ -207,11 +207,8 @@ class Authentication(BaseAuthentication):
         try:
             is_valid, status, reasons = self.verify(request, *args, **kwargs)
         except Exception as e:
-            if self.config.debug():
-                raise Exception(e)
-
-            else:
-                raise exceptions.Unauthorized()
+            logger.debug(e.args)
+            raise exceptions.Unauthorized()
 
         return is_valid, status, reasons
 

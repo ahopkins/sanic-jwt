@@ -58,7 +58,8 @@ def test_custom_endpoints_as_args():
         authentication_class=MyAuthentication,
         refresh_token_enabled=True,
         auth_mode=False,
-        class_views=custom_endpoints)
+        class_views=custom_endpoints,
+    )
 
     @app.route("/protected")
     @sanicjwt.protected()

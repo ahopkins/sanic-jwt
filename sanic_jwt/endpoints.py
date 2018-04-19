@@ -80,7 +80,10 @@ class RetrieveUserEndpoint(BaseEndpoint):
             elif hasattr(user, "to_dict"):
                 me = await utils.call(user.to_dict)
             else:
-                raise exceptions.InvalidRetrieveUserObject
+                # implementations ago I did got an error that "me" was
+                # being used before assignment, so I raised this exception.
+                # i'll leave it for now, with a noqa flag
+                raise exceptions.InvalidRetrieveUserObject  # noqa
 
         output = {"me": me}
 

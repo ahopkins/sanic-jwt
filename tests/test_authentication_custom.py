@@ -6,7 +6,9 @@ from sanic_jwt import Authentication, Initialize
 
 @pytest.yield_fixture
 def app1():
+
     class MyAuthentication(Authentication):
+
         async def store_refresh_token(self, *args, **kwargs):
             return
 
@@ -24,16 +26,17 @@ def app1():
 
     app = Sanic()
     Initialize(
-        app,
-        authentication_class=MyAuthentication,
-        refresh_token_enabled=True)
+        app, authentication_class=MyAuthentication, refresh_token_enabled=True
+    )
 
     yield app
 
 
 @pytest.yield_fixture
 def app2():
+
     class MyAuthentication(Authentication):
+
         async def store_refresh_token(self, *args, **kwargs):
             return
 
@@ -51,9 +54,8 @@ def app2():
 
     app = Sanic()
     Initialize(
-        app,
-        authentication_class=MyAuthentication,
-        refresh_token_enabled=True)
+        app, authentication_class=MyAuthentication, refresh_token_enabled=True
+    )
 
     yield app
 
@@ -96,14 +98,18 @@ def test_verify_no_auth_header(app1):
 
 
 def test_refresh_no_valid_object(app1):
-    _, response = app1.test_client.post("/auth/refresh", json={"not": "important"})
+    _, response = app1.test_client.post(
+        "/auth/refresh", json={"not": "important"}
+    )
 
     assert response.status == 500
     assert response.json.get("exception") == "InvalidRetrieveUserObject"
 
 
 def test_refresh_no_valid_dict(app2):
-    _, response = app2.test_client.post("/auth/refresh", json={"not": "important"})
+    _, response = app2.test_client.post(
+        "/auth/refresh", json={"not": "important"}
+    )
 
     assert response.status == 400
     assert response.json.get("exception") == "MissingAuthorizationHeader"

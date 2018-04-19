@@ -31,6 +31,7 @@ class RefreshEndpoint(BaseEndpoint):
 
 
 class MyAuthentication(Authentication):
+
     async def store_refresh_token(self, *args, **kwargs):
         return
 
@@ -52,7 +53,12 @@ endpoints = {
 def test_custom_endpoints_as_args():
 
     app = Sanic()
-    sanicjwt = Initialize(app, authentication_class=MyAuthentication, refresh_token_enabled=True, **endpoints)
+    sanicjwt = Initialize(
+        app,
+        authentication_class=MyAuthentication,
+        refresh_token_enabled=True,
+        **endpoints
+    )
 
     @app.route("/protected")
     @sanicjwt.protected()
@@ -77,7 +83,9 @@ def test_custom_endpoints_as_args():
     assert response.status == 200
     assert response.json.get("hello") == msg.format("verify")
 
-    _, response = app.test_client.post("/auth/refresh", json={"not": "important"})
+    _, response = app.test_client.post(
+        "/auth/refresh", json={"not": "important"}
+    )
 
     assert response.status == 200
     assert response.json.get("hello") == msg.format("refresh")

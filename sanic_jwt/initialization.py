@@ -21,10 +21,18 @@ def initialize(*args, **kwargs):
 
 
 endpoint_mappings = (
-    _EndpointMapping(endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"]),
-    _EndpointMapping(endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"]),
+    _EndpointMapping(
+        endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"]
+    ),
+    _EndpointMapping(
+        endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"]
+    ),
     _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"]),
-    _EndpointMapping(endpoints.RefreshEndpoint, "refresh", ["auth_mode", "refresh_token_enabled"]),
+    _EndpointMapping(
+        endpoints.RefreshEndpoint,
+        "refresh",
+        ["auth_mode", "refresh_token_enabled"],
+    ),
 )
 
 handlers = (

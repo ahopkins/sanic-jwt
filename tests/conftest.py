@@ -88,7 +88,8 @@ def app_with_refresh_token(username_table, authenticate):
         authenticate=authenticate,
         refresh_token_enabled=True,
         store_refresh_token=lambda: True,
-        retrieve_refresh_token=lambda: True)
+        retrieve_refresh_token=lambda: True,
+    )
 
     yield (sanic_app, sanic_jwt)
 

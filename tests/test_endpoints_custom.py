@@ -42,12 +42,12 @@ class MyAuthentication(Authentication):
         return
 
 
-endpoints = {
-    "authenticate_endpoint": MyAuthenticateEndpoint,
-    "refresh_endpoint": RefreshEndpoint,
-    "retrieve_user_endpoint": RetrieveUserEndpoint,
-    "verify_endpoint": VerifyEndpoint,
-}
+custom_endpoints = [
+    ("/", MyAuthenticateEndpoint),
+    ("/refresh", RefreshEndpoint),
+    ("/me", RetrieveUserEndpoint),
+    ("/verify", VerifyEndpoint),
+]
 
 
 def test_custom_endpoints_as_args():
@@ -57,8 +57,8 @@ def test_custom_endpoints_as_args():
         app,
         authentication_class=MyAuthentication,
         refresh_token_enabled=True,
-        **endpoints
-    )
+        auth_mode=False,
+        class_views=custom_endpoints)
 
     @app.route("/protected")
     @sanicjwt.protected()
@@ -94,21 +94,3 @@ def test_custom_endpoints_as_args():
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
-
-
-# def test_custom_endpoints_as_config_args():
-
-
-# def test_add_invalid_endpoint_mapping_in_config():
-
-#     class MyAythenticationEndpoint(HTTPMethodView):
-
-#         async def post(self, request, *args, **kwargs):
-#             return json({'hello': 'world'})
-
-#     class MyConfig(Configuration):
-#         authenticate_endpoint = MyAythenticationEndpoint
-
-#     app = Sanic()
-#     with pytest.raises(exceptions.InvalidEndpointFormat):
-#         Initialize(app, configuration_class=MyConfig, authenticate=lambda: True)

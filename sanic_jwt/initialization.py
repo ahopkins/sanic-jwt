@@ -7,7 +7,6 @@ from sanic_jwt import endpoints, exceptions
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
 from sanic_jwt.decorators import protected, scoped
-from sanic_jwt.endpoints import BaseEndpoint
 from sanic_jwt.responses import Responses
 
 _Handler = namedtuple("_Handler", ["name", "keys", "exception"])
@@ -127,14 +126,7 @@ class Initialize:
         """
         for mapping in endpoint_mappings:
             if all(map(self.config.get, mapping.keys)):
-                cfg_key = "{}_endpoint".format(mapping.endpoint)
-                endpoint_cls = self.config.get(cfg_key)
-                if endpoint_cls is None:
-                    endpoint_cls = mapping.cls
-                if not issubclass(endpoint_cls, BaseEndpoint):
-                    raise exceptions.InvalidEndpointFormat
-
-                self.__add_single_endpoint(endpoint_cls, mapping.endpoint)
+                self.__add_single_endpoint(mapping.cls, mapping.endpoint)
 
         self.bp.exception(exceptions.SanicJWTException)(
             self.responses.exception_response

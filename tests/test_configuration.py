@@ -1,7 +1,6 @@
 import pytest
 from sanic import Sanic
 from sanic.response import json
-from sanic.views import HTTPMethodView
 
 from sanic_jwt import Configuration, exceptions, initialize, Initialize
 from sanic_jwt.configuration import ConfigItem
@@ -247,55 +246,3 @@ def test_deprecated_handler_payload_extend():
 
     with pytest.raises(exceptions.InvalidConfiguration):
         Initialize(app, authenticate=lambda: True)
-
-
-def test_add_invalid_endpoint_mapping_as_initialize_args():
-
-    class MyAythenticationEndpoint(HTTPMethodView):
-
-        async def post(self, request, *args, **kwargs):
-            return json({"hello": "world"})
-
-    app = Sanic()
-    with pytest.raises(exceptions.InvalidEndpointFormat):
-        Initialize(
-            app,
-            authenticate_endpoint=MyAythenticationEndpoint,
-            authenticate=lambda: True,
-        )
-
-
-def test_add_invalid_endpoint_mapping_in_config():
-
-    class MyAythenticationEndpoint(HTTPMethodView):
-
-        async def post(self, request, *args, **kwargs):
-            return json({"hello": "world"})
-
-    class MyConfig(Configuration):
-        authenticate_endpoint = MyAythenticationEndpoint
-
-    app = Sanic()
-    with pytest.raises(exceptions.InvalidEndpointFormat):
-        Initialize(
-            app, configuration_class=MyConfig, authenticate=lambda: True
-        )
-
-
-def test_add_invalid_endpoint_mapping_as_config_method():
-
-    class MyAythenticationEndpoint(HTTPMethodView):
-
-        async def post(self, request, *args, **kwargs):
-            return json({"hello": "world"})
-
-    class MyConfig(Configuration):
-
-        def set_authenticate_endpoint(self):
-            return MyAythenticationEndpoint
-
-    app = Sanic()
-    with pytest.raises(exceptions.InvalidEndpointFormat):
-        Initialize(
-            app, configuration_class=MyConfig, authenticate=lambda: True
-        )

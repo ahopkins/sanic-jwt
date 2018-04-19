@@ -10,6 +10,7 @@ defaults = {
     "access_token_name": "access_token",
     "algorithm": "HS256",
     "auth_mode": True,
+    "authenticate_endpoint": None,
     "authorization_header": "authorization",
     "authorization_header_prefix": "Bearer",
     "authorization_header_refresh_prefix": "Refresh",
@@ -28,8 +29,10 @@ defaults = {
     "expiration_delta": 60 * 5 * 6,
     "generate_refresh_token": utils.generate_token,
     "leeway": 60 * 3,
+    "refresh_endpoint": None,
     "refresh_token_enabled": False,
     "refresh_token_name": "refresh_token",
+    "retrieve_user_endpoint": None,
     "path_to_authenticate": "/",
     "path_to_retrieve_user": "/me",
     "path_to_verify": "/verify",
@@ -41,6 +44,7 @@ defaults = {
     "strict_slashes": False,
     "url_prefix": "/auth",
     "user_id": "user_id",
+    "verify_endpoint": None,
     "verify_exp": True
 }
 
@@ -51,11 +55,15 @@ aliases = {
 ignore_keys = (
     "add_scopes_to_payload",
     "authenticate",
+    "authenticate_endpoint",
     "class_views",
     "extend_payload",
+    "refresh_endpoint",
     "retrieve_refresh_token",
+    "retrieve_user_endpoint",
     "retrieve_user",
     "store_refresh_token",
+    "verify_endpoint",
 )
 
 logger = logging.getLogger(__name__)

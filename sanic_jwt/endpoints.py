@@ -79,6 +79,8 @@ class RetrieveUserEndpoint(BaseEndpoint):
                 me = user
             elif hasattr(user, "to_dict"):
                 me = await utils.call(user.to_dict)
+            else:
+                raise exceptions.InvalidRetrieveUserObject
 
         output = {"me": me}
 

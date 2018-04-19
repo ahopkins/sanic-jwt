@@ -136,6 +136,17 @@ class InvalidClassViewsFormat(SanicJWTException):
         super().__init__(message, **kwargs)
 
 
+class InvalidEndpointFormat(SanicJWTException):
+
+    def __init__(
+        self,
+        message="endpoint mappings must be a subclass of "
+        "sanic_jwt.endpoints.BaseEndpoint",
+        **kwargs
+    ):
+        super().__init__(message, **kwargs)
+
+
 class InvalidConfiguration(SanicJWTException):
 
     def __init__(self, message="", **kwargs):

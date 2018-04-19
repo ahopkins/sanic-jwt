@@ -56,4 +56,4 @@ class TestEndpointsBasic:
     def test_auth_refresh_not_enabled(self, app):
         sanic_app, _ = app
         _, response = sanic_app.test_client.post("/auth/refresh")
-        assert response.status == 400
+        assert response.status == 404  # since refresh_token_enabled is False

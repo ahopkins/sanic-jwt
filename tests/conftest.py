@@ -80,6 +80,20 @@ def app(username_table, authenticate):
 
 
 @pytest.yield_fixture
+def app_with_refresh_token(username_table, authenticate):
+
+    sanic_app = Sanic()
+    sanic_jwt = Initialize(
+        sanic_app,
+        authenticate=authenticate,
+        refresh_token_enabled=True,
+        store_refresh_token=lambda: True,
+        retrieve_refresh_token=lambda: True)
+
+    yield (sanic_app, sanic_jwt)
+
+
+@pytest.yield_fixture
 def app_with_url_prefix(username_table, authenticate):
 
     sanic_app = Sanic()

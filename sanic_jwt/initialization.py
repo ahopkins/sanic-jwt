@@ -7,9 +7,11 @@ from sanic_jwt import endpoints, exceptions
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
 from sanic_jwt.decorators import protected, scoped
+from sanic_jwt.endpoints import BaseEndpoint
 from sanic_jwt.responses import Responses
 
 _Handler = namedtuple("_Handler", ["name", "keys", "exception"])
+_EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys"])
 
 
 def initialize(*args, **kwargs):
@@ -17,6 +19,13 @@ def initialize(*args, **kwargs):
         kwargs.update({"authenticate": args[1]})
     return Initialize(args[0], **kwargs)
 
+
+endpoint_mappings = (
+    _EndpointMapping(endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"]),
+    _EndpointMapping(endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"]),
+    _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"]),
+    _EndpointMapping(endpoints.RefreshEndpoint, "refresh", ["auth_mode", "refresh_token_enabled"]),
+)
 
 handlers = (
     _Handler("authenticate", None, exceptions.AuthenticateNotImplemented),
@@ -69,16 +78,14 @@ class Initialize:
         self.bp = bp
         self.kwargs = kwargs
         self.instance = instance
+        self.config = None
 
         self.__check_deprecated()
         self.__check_classes()
         self.__load_configuration()
         self.__load_responses()
-
-        if self.config.auth_mode():
-            self.__add_class_views()
-            self.__add_endpoints()
-
+        self.__add_class_views()
+        self.__add_endpoints()
         self.__initialize_instance()
 
     def __check_deprecated(self):
@@ -110,15 +117,16 @@ class Initialize:
         """
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
-        endpoint_mappings = (
-            ("AuthenticateEndpoint", "authenticate"),
-            ("RetrieveUserEndpoint", "retrieve_user"),
-            ("VerifyEndpoint", "verify"),
-            ("RefreshEndpoint", "refresh"),
-        )
+        for mapping in endpoint_mappings:
+            if all(map(self.config.get, mapping.keys)):
+                cfg_key = "{}_endpoint".format(mapping.endpoint)
+                endpoint_cls = self.config.get(cfg_key)
+                if endpoint_cls is None:
+                    endpoint_cls = mapping.cls
+                if not issubclass(endpoint_cls, BaseEndpoint):
+                    raise exceptions.InvalidEndpointFormat
 
-        for endpoint in endpoint_mappings:
-            self.__add_single_endpoint(*endpoint)
+                self.__add_single_endpoint(endpoint_cls, mapping.endpoint)
 
         self.bp.exception(exceptions.SanicJWTException)(
             self.responses.exception_response
@@ -233,13 +241,12 @@ class Initialize:
     def __load_responses(self):
         self.responses = self.responses_class(self.config, self.instance)
 
-    def __add_single_endpoint(self, class_name, path_name):
-        view = getattr(endpoints, class_name)
+    def __add_single_endpoint(self, endpoint_cls, path_name):
         path_name = getattr(self.config, "path_to_{}".format(path_name))()
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
             self.instance.add_route(
-                view.as_view(
+                endpoint_cls.as_view(
                     config=self.config,
                     instance=self.instance,
                     responses=self.responses,
@@ -248,7 +255,7 @@ class Initialize:
             )
         else:
             self.bp.add_route(
-                view.as_view(
+                endpoint_cls.as_view(
                     config=self.config,
                     instance=self.instance,
                     responses=self.responses,

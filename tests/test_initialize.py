@@ -38,7 +38,7 @@ def test_retrieve_refresh_token_ommitted():
         )
 
 
-def test_store_refresh_token_and_retrieve_refresh_token_drfined():
+def test_store_refresh_token_and_retrieve_refresh_token_defined():
     app = Sanic()
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 

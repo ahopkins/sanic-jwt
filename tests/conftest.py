@@ -76,6 +76,14 @@ def app(username_table, authenticate):
     async def protected_request_options(request):
         return text("", status=204)
 
+    @sanic_app.route("/protected/<verify:int>")
+    @protected()
+    def protected_regression_verify(request, verify):
+        """
+        for regression test see https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
+        """
+        return json({"protected": True})
+
     yield (sanic_app, sanic_jwt)
 
 

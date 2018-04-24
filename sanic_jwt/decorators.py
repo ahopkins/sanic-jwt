@@ -93,6 +93,12 @@ def scoped(
                 instance = request.app
 
             with instant_config(instance, request=request, **kw):
+                if request.method == "OPTIONS":
+                    response = f(request, *args, **kwargs)
+                    if isawaitable(response):
+                        response = await response
+                    return response
+
                 try:
                     is_authenticated, status, reasons = instance.auth.is_authenticated(
                         request, *args, **kwargs

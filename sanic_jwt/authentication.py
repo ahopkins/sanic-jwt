@@ -62,6 +62,9 @@ class BaseAuthentication:
     async def add_scopes_to_payload(self, *args, **kwargs):
         raise exceptions.ScopesNotImplemented()  # noqa
 
+    async def retrieve_user(self, *args, **kwargs):
+        raise exceptions.MeEndpointNotSetup()  # noqa
+
 
 class Authentication(BaseAuthentication):
 
@@ -221,21 +224,17 @@ class Authentication(BaseAuthentication):
         )
         return refresh_token
 
-    def is_authenticated(self, request, *args, **kwargs):
+    def is_authenticated(self, request, request_args, request_kwargs):
         try:
-            is_valid, status, reasons = self.verify(request, *args, **kwargs)
+            is_valid, status, reasons = self.verify(request, request_args=request_args, request_kwargs=request_kwargs)
         except Exception as e:
-            if self.config.debug():
-                raise Exception(e)
-
-            else:
-                raise exceptions.Unauthorized()
+            logger.debug(e.args)
+            raise exceptions.Unauthorized()
 
         return is_valid, status, reasons
 
-    def verify(
-        self, request, return_payload=False, verify=True, *args, **kwargs
-    ):
+    def verify(self, request, return_payload=False, verify=True,
+               request_args=None, request_kwargs=None, *args, **kwargs):
         """
         Verify that a request object is authenticated.
         """

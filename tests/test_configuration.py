@@ -1,7 +1,8 @@
 import pytest
 from sanic import Sanic
 from sanic.response import json
-from sanic_jwt import initialize, Initialize, Configuration, exceptions
+
+from sanic_jwt import Configuration, exceptions, initialize, Initialize
 from sanic_jwt.configuration import ConfigItem
 
 

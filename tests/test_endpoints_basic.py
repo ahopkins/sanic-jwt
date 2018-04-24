@@ -53,7 +53,12 @@ class TestEndpointsBasic:
         _, response = sanic_app.test_client.get("/auth/verify")
         assert response.status == 400
 
-    def test_auth_refresh_not_enabled(self, app):
+    def test_auth_refresh_not_found(self, app):
         sanic_app, _ = app
+        _, response = sanic_app.test_client.post("/auth/refresh")
+        assert response.status == 404  # since refresh_token_enabled is False
+
+    def test_auth_refresh_not_enabled(self, app_with_refresh_token):
+        sanic_app, _ = app_with_refresh_token
         _, response = sanic_app.test_client.post("/auth/refresh")
         assert response.status == 400

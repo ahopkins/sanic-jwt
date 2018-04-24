@@ -3,7 +3,7 @@ import copy
 import logging
 
 from . import exceptions, utils
-from .cache import get_cached, is_cached
+from .cache import get_cached, is_cached, to_cache
 
 
 defaults = {
@@ -68,6 +68,22 @@ def _warn_key(key):
         )
 
 
+def _create_or_overwrite_config_item(value, key, item_aliases, instance):
+    setattr(
+        instance,
+        key,
+        ConfigItem(
+            value, item_name=key, config=instance, aliases=item_aliases
+        ),
+    )
+
+
+def _update_config_item(key, item_aliases, instance):
+    getattr(instance, key)._item_name = key
+    getattr(instance, key)._aliases = item_aliases
+    getattr(instance, key)._config = instance
+
+
 class ConfigItem:
 
     def __init__(
@@ -76,28 +92,34 @@ class ConfigItem:
         item_name=None,
         config=None,
         inject_request=True,
-        aliases=[],
+        aliases=None,
     ):
         self._value = value
         self._item_name = item_name
         self._config = config
         self._inject_request = inject_request
-        self._aliases = aliases
+
+        if aliases is not None and isinstance(aliases, (list, tuple, set)):
+            self._aliases = aliases
+        else:
+            self._aliases = []
 
     def update(self, value):
         self._value = value
 
     def __call__(self, **kwargs):
         if asyncio.get_event_loop().is_running():
+            if is_cached(self._item_name):
+                return get_cached(self._item_name)
+
             if self._get_from_config is not None:
                 args = []
 
                 if self._inject_request and is_cached("_request"):
                     args.append(get_cached("_request"))
-                return self._get_from_config(*args)
-
-            if is_cached(self._item_name):
-                return get_cached(self._item_name)
+                val = self._get_from_config.__call__(*args)
+                to_cache(self._item_name, val)
+                return val
 
         return self._value
 
@@ -152,32 +174,16 @@ class Configuration:
                 hasattr(instance, key)
                 and isinstance(getattr(instance, key), ConfigItem)
             ):
-                getattr(instance, key)._item_name = key
-                getattr(instance, key)._aliases = item_aliases
-                getattr(instance, key)._config = instance
+                _update_config_item(key, item_aliases, instance)
             # check if a configuration key is set with a value
             elif hasattr(instance, key):
                 val = getattr(instance, key)
-                setattr(
-                    instance,
-                    key,
-                    ConfigItem(
-                        val,
-                        item_name=key,
-                        config=instance,
-                        aliases=item_aliases,
-                    ),
+                _create_or_overwrite_config_item(
+                    val, key, item_aliases, instance
                 )
             else:
-                setattr(
-                    instance,
-                    key,
-                    ConfigItem(
-                        value,
-                        item_name=key,
-                        config=instance,
-                        aliases=item_aliases,
-                    ),
+                _create_or_overwrite_config_item(
+                    value, key, item_aliases, instance
                 )
 
             # check if a setter is available on config class
@@ -193,20 +199,11 @@ class Configuration:
 
                 val = set_fn.__call__()
                 if isinstance(val, ConfigItem):
-                    val._item_name = key
-                    val._aliases = item_aliases
-                    val._config = instance
                     setattr(instance, key, val)
+                    _update_config_item(key, item_aliases, instance)
                 else:
-                    setattr(
-                        instance,
-                        key,
-                        ConfigItem(
-                            val,
-                            item_name=key,
-                            config=instance,
-                            aliases=item_aliases,
-                        ),
+                    _create_or_overwrite_config_item(
+                        val, key, item_aliases, instance
                     )
 
             # 'reference' aliases
@@ -217,8 +214,21 @@ class Configuration:
 
         setattr(instance, "_config_keys", _config_keys)
         setattr(instance, "_config_aliases", _aliases)
+        setattr(instance, "_config_aliases_keys", _aliases.values())
+        setattr(
+            instance,
+            "_all_config_keys",
+            _config_keys + list(_aliases.values()),
+        )
 
         return instance
+
+    def get(self, item):
+        """Helper method to avoid calling getattr
+        """
+        if item in self:
+            item = getattr(self, item)
+            return item()
 
     @property
     def config_keys(self):
@@ -230,11 +240,11 @@ class Configuration:
 
     @property
     def all_config_keys(self):
-        return self.config_keys + self.config_aliases_keys
+        return self._all_config_keys
 
     @property
     def config_aliases_keys(self):
-        return list(self.config_aliases.values())
+        return self._config_aliases_keys
 
     def __init__(self, app_config, **kwargs):
         for key, value in kwargs.items():
@@ -252,7 +262,7 @@ class Configuration:
                 self._merge(alias, value)
         elif key in self.config_aliases_keys:
             correct_key = None
-            for k, v in self.config_aliases.items():
+            for _, v in self.config_aliases.items():
                 if key == v:
                     correct_key = key
                     break

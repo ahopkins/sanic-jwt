@@ -73,7 +73,7 @@ class MissingRegisteredClaim(SanicJWTException):
     def __init__(
         self,
         message="One or more claims have been registered, but your "
-        "SANIC_JWT_HANDLER_PAYLOAD_EXTEND does not supply them. ",
+        "extend_payload() method does not supply them. ",
         missing=None,
         **kwargs
     ):

@@ -39,6 +39,7 @@ class BaseAuthentication:
             if setting in self.config:
                 attr = getattr(self.config, setting)()
                 if attr:
+                    self.claims.append(option)
                     method_name = "build_claim_{}".format(option)
                     method = getattr(utils, method_name)
                     additional.update({option: method(attr, self.config)})
@@ -67,6 +68,28 @@ class BaseAuthentication:
 
 
 class Authentication(BaseAuthentication):
+
+    def _check_authentication(self, request, request_args, request_kwargs):
+        """
+        Checks a request object to determine if that request contains a valid,
+        and authenticated JWT.
+
+        It returns a tuple:
+        1. Boolean whether the request is authenticated with a valid JWT
+        2. HTTP status code
+        3. Reasons (if any) for a potential authentication failure
+        """
+        try:
+            is_valid, status, reasons = self._verify(
+                request,
+                request_args=request_args,
+                request_kwargs=request_kwargs,
+            )
+        except Exception as e:
+            logger.debug(e.args)
+            raise exceptions.Unauthorized()
+
+        return is_valid, status, reasons
 
     def _decode(self, token, verify=True):
         """
@@ -131,9 +154,16 @@ class Authentication(BaseAuthentication):
 
         missing = [x for x in self.claims if x not in payload]
         if missing:
+            logger.debug('')
             raise exceptions.MissingRegisteredClaim(missing=missing)
 
         return payload
+
+    async def _get_refresh_token(self, request):
+        """
+        Extract a refresh token from a request object.
+        """
+        return self._get_token(request, refresh_token=True)
 
     def _get_secret(self, encode=False):
         # TODO:
@@ -152,7 +182,11 @@ class Authentication(BaseAuthentication):
         Extract a token from a request object.
         """
         if self.config.cookie_set():
-            cookie_token_name_key = "cookie_access_token_name" if refresh_token is False else "cookie_refresh_token_name"
+            cookie_token_name_key = (
+                "cookie_access_token_name"
+                if refresh_token is False
+                else "cookie_refresh_token_name"
+            )
             cookie_token_name = getattr(self.config, cookie_token_name_key)
             token = request.cookies.get(cookie_token_name(), None)
             if token is not None:
@@ -182,13 +216,10 @@ class Authentication(BaseAuthentication):
 
         raise exceptions.MissingAuthorizationHeader()
 
-    async def _get_refresh_token(self, request):
-        """
-        Extract a refresh token from a request object.
-        """
-        return self._get_token(request, refresh_token=True)
-
     async def _get_user_id(self, user):
+        """
+        Get a user_id from a user object.
+        """
         uid = self.config.user_id()
         if isinstance(user, dict):
             user_id = user.get(uid)
@@ -200,41 +231,16 @@ class Authentication(BaseAuthentication):
 
         return user_id
 
-    async def get_access_token(self, user):
-        """
-        Generate an access token for a given user.
-        """
-        payload = await self._get_payload(user)
-        secret = self._get_secret(True)
-        algorithm = self._get_algorithm()
-
-        return jwt.encode(payload, secret, algorithm=algorithm).decode("utf-8")
-
-    async def get_refresh_token(self, request, user):
-        """
-        Generate a refresh token for a given user.
-        """
-        refresh_token = await utils.call(self.config.generate_refresh_token())
-        user_id = await self._get_user_id(user)
-        await utils.call(
-            self.store_refresh_token,
-            user_id=user_id,
-            refresh_token=refresh_token,
-            request=request,
-        )
-        return refresh_token
-
-    def is_authenticated(self, request, request_args, request_kwargs):
-        try:
-            is_valid, status, reasons = self.verify(request, request_args=request_args, request_kwargs=request_kwargs)
-        except Exception as e:
-            logger.debug(e.args)
-            raise exceptions.Unauthorized()
-
-        return is_valid, status, reasons
-
-    def verify(self, request, return_payload=False, verify=True,
-               request_args=None, request_kwargs=None, *args, **kwargs):
+    def _verify(
+        self,
+        request,
+        return_payload=False,
+        verify=True,
+        request_args=None,
+        request_kwargs=None,
+        *args,
+        **kwargs
+    ):
         """
         Verify that a request object is authenticated.
         """
@@ -263,6 +269,52 @@ class Authentication(BaseAuthentication):
 
         return is_valid, status, reason
 
+    def extract_payload(self, request, verify=True, *args, **kwargs):
+        """
+        Extract a payload from a request object.
+        """
+        payload = self._verify(
+            request, return_payload=True, verify=verify, *args, **kwargs
+        )
+        return payload
+
+    async def get_access_token(self, user):
+        """
+        Generate an access token for a given user.
+        """
+        payload = await self._get_payload(user)
+        secret = self._get_secret(True)
+        algorithm = self._get_algorithm()
+
+        return jwt.encode(payload, secret, algorithm=algorithm).decode("utf-8")
+
+    async def get_refresh_token(self, request, user):
+        """
+        Generate a refresh token for a given user.
+        """
+        refresh_token = await utils.call(self.config.generate_refresh_token())
+        user_id = await self._get_user_id(user)
+        await utils.call(
+            self.store_refresh_token,
+            user_id=user_id,
+            refresh_token=refresh_token,
+            request=request,
+        )
+        return refresh_token
+
+    def is_authenticated(self, request):
+        """
+        Checks a request object to determine if that request contains a valid,
+        and authenticated JWT.
+        """
+        try:
+            is_valid, _, __ = self._verify(request)
+        except Exception as e:
+            logger.debug(e.args)
+            is_valid = False
+
+        return is_valid
+
     async def retrieve_refresh_token_from_request(self, request):
         return await self._get_refresh_token(request)
 
@@ -273,12 +325,3 @@ class Authentication(BaseAuthentication):
         payload = self.extract_payload(request)
         scopes_attribute = self.config.scopes_name()
         return payload.get(scopes_attribute, None)
-
-    def extract_payload(self, request, verify=True, *args, **kwargs):
-        """
-        Extract a payload from a request object.
-        """
-        payload = self.verify(
-            request, return_payload=True, verify=verify, *args, **kwargs
-        )
-        return payload

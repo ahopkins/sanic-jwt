@@ -45,7 +45,7 @@ def protected(initialized_on=None, **kw):
                     return response
 
                 try:
-                    is_authenticated, status, reasons = instance.auth.is_authenticated(
+                    is_authenticated, status, reasons = instance.auth._check_authentication(
                         request, request_args=args, request_kwargs=kwargs
                     )
                 except AttributeError:
@@ -69,6 +69,7 @@ def protected(initialized_on=None, **kw):
 
                 else:
                     raise exceptions.Unauthorized(reasons, status_code=status)
+
         return decorated_function
 
     return decorator
@@ -99,7 +100,7 @@ def scoped(
                     return response
 
                 try:
-                    is_authenticated, status, reasons = instance.auth.is_authenticated(
+                    is_authenticated, status, reasons = instance.auth._check_authentication(
                         request, request_args=args, request_kwargs=kwargs
                     )
                 except AttributeError:

@@ -15,10 +15,21 @@ class BaseEndpoint(BaseDerivative, HTTPMethodView):
     async def options(self, request, *args, **kwargs):
         return text("", status=204)
 
+    async def do_incoming(self, request, args, kwargs):
+        return request, args, kwargs
+
+    async def do_output(self, output):
+        return output
+
+    async def do_response(self, response):
+        return response
+
 
 class AuthenticateEndpoint(BaseEndpoint):
 
     async def post(self, request, *args, **kwargs):
+        request, args, kwargs = await self.do_incoming(request, args, kwargs)
+
         config = self.config
         user = await utils.call(
             self.instance.auth.authenticate, request, *args, **kwargs
@@ -45,6 +56,8 @@ class AuthenticateEndpoint(BaseEndpoint):
             )
         )
 
+        output = await self.do_output(output)
+
         resp = self.responses.get_token_reponse(
             request,
             access_token,
@@ -53,12 +66,14 @@ class AuthenticateEndpoint(BaseEndpoint):
             config=self.config,
         )
 
-        return resp
+        return await self.do_response(resp)
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
 
     async def get(self, request, *args, **kwargs):
+        request, args, kwargs = await self.do_incoming(request, args, kwargs)
+
         config = self.config
         if not hasattr(self.instance.auth, "retrieve_user"):
             raise exceptions.MeEndpointNotSetup()
@@ -93,19 +108,23 @@ class RetrieveUserEndpoint(BaseEndpoint):
             )
         )
 
+        output = await self.do_output(output)
+
         resp = json(output)
 
         if payload is None and config.cookie_set():
             key = config.cookie_access_token_name()
             del resp.cookies[key]
 
-        return resp
+        return await self.do_response(resp)
 
 
 class VerifyEndpoint(BaseEndpoint):
 
     async def get(self, request, *args, **kwargs):
-        is_valid, status, reason = self.instance.auth.verify(
+        request, args, kwargs = await self.do_incoming(request, args, kwargs)
+
+        is_valid, status, reason = self.instance.auth._verify(
             request, *args, **kwargs
         )
 
@@ -115,12 +134,17 @@ class VerifyEndpoint(BaseEndpoint):
             output.update({"reason": reason})
 
         output.update(self.responses.extend_verify(request))
-        return json(output, status=status)
+        output = await self.do_output(output)
+        resp = json(output, status=status)
+
+        return await self.do_response(resp)
 
 
 class RefreshEndpoint(BaseEndpoint):
 
     async def post(self, request, *args, **kwargs):
+        request, args, kwargs = await self.do_incoming(request, args, kwargs)
+
         # TODO:
         # - Add more exceptions
         payload = self.instance.auth.extract_payload(request, verify=False)
@@ -136,9 +160,10 @@ class RefreshEndpoint(BaseEndpoint):
         if isinstance(refresh_token, bytes):
             refresh_token = refresh_token.decode("utf-8")
         refresh_token = str(refresh_token)
-        purported_token = await self.instance.auth.retrieve_refresh_token_from_request(
-            request
-        )
+        purported_token = await self.instance.auth. \
+            retrieve_refresh_token_from_request(
+                request
+            )
 
         if refresh_token != purported_token:
             raise exceptions.AuthenticationFailed()
@@ -157,9 +182,10 @@ class RefreshEndpoint(BaseEndpoint):
                 payload=payload,
             )
         )
+        output = await self.do_output(output)
 
         resp = self.responses.get_token_reponse(
             request, access_token, output, config=self.config
         )
 
-        return resp
+        return await self.do_response(resp)

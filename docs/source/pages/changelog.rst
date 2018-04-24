@@ -4,6 +4,17 @@ Changelog
 
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
++++++++++++++++++++++++++
+Version 1.1 - 2018-XX-XX
++++++++++++++++++++++++++
+
+| **Changed**
+| - ``Authentication.is_authenticated`` to ``Authentication._check_authentication``
+| - ``Authentication.verify`` to ``Authentication._verify``
+
+| **Fixed**
+| - Verification that a custom payload extender supplies all of the enabled claims
+
 
 ++++++++++++++++++++++++++
 Version 1.0.2 - 2018-03-04

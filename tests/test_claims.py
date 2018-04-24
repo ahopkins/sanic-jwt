@@ -57,14 +57,13 @@ class TestClaimsExp:
             )
 
             assert response.status == 403
-            assert 'Signature has expired' in response.json.get('reasons')
+            assert "Signature has expired" in response.json.get("reasons")
 
             # regression test see https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
             _, response = sanic_app.test_client.get(
-                '/protected/0/',
-                headers={
-                    'Authorization': 'Bearer {}'.format(access_token)
-                })
+                "/protected/0/",
+                headers={"Authorization": "Bearer {}".format(access_token)},
+            )
 
             assert response.status == 403
             assert "Signature has expired" in response.json.get("reasons")

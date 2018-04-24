@@ -7,7 +7,9 @@ def test_wrong_token(app):
     payload = {"foo": "bar"}
 
     access_token = jwt.encode(
-        payload, sanic_jwt.config.secret(), algorithm=sanic_jwt.config.algorithm()
+        payload,
+        sanic_jwt.config.secret(),
+        algorithm=sanic_jwt.config.algorithm(),
     ).decode(
         "utf-8"
     )

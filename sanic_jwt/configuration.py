@@ -267,7 +267,7 @@ class Configuration:
                     correct_key = key
                     break
 
-            if correct_key in self:
+            if hasattr(self, correct_key):
                 getattr(self, correct_key).update(value)
         else:
             _warn_key(key)

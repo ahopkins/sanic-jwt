@@ -5,7 +5,7 @@ from inspect import isawaitable
 
 from sanic import Blueprint
 
-from . import exceptions
+from . import exceptions, utils
 from .cache import clear_cache, to_cache
 from .validators import validate_scopes
 
@@ -39,10 +39,7 @@ def protected(initialized_on=None, **kw):
 
             with instant_config(instance, request=request, **kw):
                 if request.method == "OPTIONS":
-                    response = f(request, *args, **kwargs)
-                    if isawaitable(response):
-                        response = await response
-                    return response
+                    return await utils.call(f, request, *args, **kwargs)
 
                 try:
                     is_authenticated, status, reasons = instance.auth._check_authentication(
@@ -94,10 +91,7 @@ def scoped(
 
             with instant_config(instance, request=request, **kw):
                 if request.method == "OPTIONS":
-                    response = f(request, *args, **kwargs)
-                    if isawaitable(response):
-                        response = await response
-                    return response
+                    return await utils.call(f, request, *args, **kwargs)
 
                 try:
                     is_authenticated, status, reasons = instance.auth._check_authentication(

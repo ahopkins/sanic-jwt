@@ -954,3 +954,28 @@ def test_scoped_option(app_with_scopes):
     _, response = sanic_app.test_client.options("/protected/scoped/1")
 
     assert response.status == 204
+
+
+def test_scoped_sync_method(app_with_scopes):
+
+    sanic_app, sanicjwt = app_with_scopes
+
+    @sanic_app.route("/protected/scoped_sync")
+    @sanicjwt.scoped("user")
+    def scoped_sync_route(request):
+        return json({"async": False})
+
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+
+    _, response = sanic_app.test_client.get(
+        "/protected/scoped_sync",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 200
+    assert response.json.get("async") is False

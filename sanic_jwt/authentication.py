@@ -48,7 +48,7 @@ class BaseAuthentication:
         for option in ["iss", "iat", "nbf", "aud"]:
             setting = "claim_{}".format(option.lower())
             if setting in self.config:
-                attr = getattr(self.config, setting)()
+                attr = self.config.get(setting)
                 if attr:
                     self.claims.append(option)
                     method_name = "build_claim_{}".format(option)
@@ -115,8 +115,8 @@ class Authentication(BaseAuthentication):
             if claim != "exp":
                 setting = "claim_{}".format(claim.lower())
                 if setting in self.config:
-                    value = getattr(self.config, setting)
-                    kwargs.update({claim_label[claim]: value()})
+                    value = self.config.get(setting)
+                    kwargs.update({claim_label[claim]: value})
 
         kwargs["leeway"] = int(self.config.leeway())
         if "claim_aud" in self.config:

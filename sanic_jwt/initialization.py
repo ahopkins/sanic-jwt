@@ -35,22 +35,22 @@ endpoint_mappings = (
 )
 
 handlers = (
-    _Handler("authenticate", None, exceptions.AuthenticateNotImplemented),
+    _Handler("authenticate", None, exceptions.AuthenticateNotImplemented()),
     _Handler(
         "store_refresh_token",
         ["refresh_token_enabled"],
-        exceptions.RefreshTokenNotImplemented,
+        exceptions.RefreshTokenNotImplemented(),
     ),
     _Handler(
         "retrieve_refresh_token",
         ["refresh_token_enabled"],
-        exceptions.RefreshTokenNotImplemented,
+        exceptions.RefreshTokenNotImplemented(),
     ),
     _Handler("retrieve_user", None, None),
     _Handler(
         "add_scopes_to_payload",
         ["scopes_enabled"],
-        exceptions.ScopesNotImplemented,
+        exceptions.ScopesNotImplemented(),
     ),
     _Handler("extend_payload", None, None),
 )
@@ -288,7 +288,9 @@ class Initialize:
         elif isinstance(instance, Blueprint):
             return instance
 
-        raise exceptions.InitializationFailure
+        # I think this will never get here because `__get_app` get's called
+        # first and does the same check
+        raise exceptions.InitializationFailure  # noqa see line above
 
     def protected(self, *args, **kwargs):
         args = list(args)

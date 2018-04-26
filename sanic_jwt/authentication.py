@@ -1,5 +1,5 @@
-import logging
 import inspect
+import logging
 from datetime import datetime, timedelta
 
 import jwt
@@ -17,7 +17,12 @@ class BaseAuthentication:
         self.claims = ["exp"]
         self.config = config
 
-    async def build_payload(self, user, *args, **kwargs):
+    async def _get_user_id(self, user, *, asdict=False):
+        """
+        Get a user_id from a user object. If `asdict` is True, will return
+        it as a dict with `config.user_id` as key. The `asdict` keyword
+        defaults to `False`.
+        """
         uid = self.config.user_id()
         if isinstance(user, dict):
             user_id = user.get(uid)
@@ -27,7 +32,13 @@ class BaseAuthentication:
         else:
             raise exceptions.InvalidRetrieveUserObject()
 
-        return {uid: user_id}
+        if asdict:
+            return {uid: user_id}
+
+        return user_id
+
+    async def build_payload(self, user, *args, **kwargs):
+        return await self._get_user_id(user, asdict=True)
 
     async def add_claims(self, payload, *args, **kwargs):
         delta = timedelta(seconds=self.config.expiration_delta())
@@ -154,7 +165,7 @@ class Authentication(BaseAuthentication):
 
         missing = [x for x in self.claims if x not in payload]
         if missing:
-            logger.debug('')
+            logger.debug("")
             raise exceptions.MissingRegisteredClaim(missing=missing)
 
         return payload
@@ -177,28 +188,27 @@ class Authentication(BaseAuthentication):
 
         return self.config.secret()
 
-    def _get_token(self, request, refresh_token=False):
+    def _get_token_from_cookies(self, request, refresh_token):
         """
-        Extract a token from a request object.
+        Extract the token if present inside the request cookies.
         """
-        if self.config.cookie_set():
-            cookie_token_name_key = (
-                "cookie_access_token_name"
-                if refresh_token is False
-                else "cookie_refresh_token_name"
-            )
-            cookie_token_name = getattr(self.config, cookie_token_name_key)
-            token = request.cookies.get(cookie_token_name(), None)
-            if token is not None:
-                return token
+        if refresh_token:
+            cookie_token_name_key = "cookie_refresh_token_name"
+        else:
+            cookie_token_name_key = "cookie_access_token_name"
+        cookie_token_name = getattr(self.config, cookie_token_name_key)
+        return request.cookies.get(cookie_token_name(), None)
 
-            else:
-                if self.config.cookie_strict():
-                    raise exceptions.MissingAuthorizationCookie()
-
+    def _get_token_from_headers(self, request, refresh_token):
+        """
+        Extract the token if present inside the headers of a request.
+        """
         header = request.headers.get(self.config.authorization_header(), None)
 
-        if header is not None:
+        if header is None:
+            return None
+
+        else:
             header_prefix_key = "authorization_header_prefix"
             header_prefix = getattr(self.config, header_prefix_key)
             try:
@@ -214,22 +224,24 @@ class Authentication(BaseAuthentication):
 
             return token
 
+    def _get_token(self, request, refresh_token=False):
+        """
+        Extract a token from a request object.
+        """
+        if self.config.cookie_set():
+            token = self._get_token_from_cookies(request, refresh_token)
+            if token is not None:
+                return token
+
+            else:
+                if self.config.cookie_strict():
+                    raise exceptions.MissingAuthorizationCookie()
+
+        token = self._get_token_from_headers(request, refresh_token)
+        if token is not None:
+            return token
+
         raise exceptions.MissingAuthorizationHeader()
-
-    async def _get_user_id(self, user):
-        """
-        Get a user_id from a user object.
-        """
-        uid = self.config.user_id()
-        if isinstance(user, dict):
-            user_id = user.get(uid)
-        elif hasattr(user, "to_dict"):
-            _to_dict = await utils.call(user.to_dict)
-            user_id = _to_dict.get(uid)
-        else:
-            raise exceptions.InvalidRetrieveUserObject()
-
-        return user_id
 
     def _verify(
         self,
@@ -308,7 +320,7 @@ class Authentication(BaseAuthentication):
         and authenticated JWT.
         """
         try:
-            is_valid, _, __ = self._verify(request)
+            is_valid, *_ = self._verify(request)
         except Exception as e:
             logger.debug(e.args)
             is_valid = False

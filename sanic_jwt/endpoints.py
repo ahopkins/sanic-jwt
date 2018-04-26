@@ -1,9 +1,8 @@
-from . import exceptions
-from . import utils
-from .base import BaseDerivative
+from sanic.response import json, text
 from sanic.views import HTTPMethodView
-from sanic.response import json
-from sanic.response import text
+
+from . import exceptions, utils
+from .base import BaseDerivative
 
 
 class BaseEndpoint(BaseDerivative, HTTPMethodView):
@@ -76,7 +75,9 @@ class RetrieveUserEndpoint(BaseEndpoint):
 
         config = self.config
         if not hasattr(self.instance.auth, "retrieve_user"):
-            raise exceptions.MeEndpointNotSetup()
+            # NOTE: this condition is only true if `retrieve_user` is wipped
+            # out of the `Authentication` class, so it won't happen "easily".
+            raise exceptions.MeEndpointNotSetup()  # noqa
 
         try:
             payload = self.instance.auth.extract_payload(request)
@@ -95,9 +96,9 @@ class RetrieveUserEndpoint(BaseEndpoint):
             elif hasattr(user, "to_dict"):
                 me = await utils.call(user.to_dict)
             else:
-                # implementations ago I did got an error that "me" was
-                # being used before assignment, so I raised this exception.
-                # i'll leave it for now, with a noqa flag
+                # implementations ago there was an error where "me" was
+                # being used before assignment, so this exception is raised.
+                # it'll stay here for now, with a noqa flag
                 raise exceptions.InvalidRetrieveUserObject  # noqa
 
         output = {"me": me}
@@ -159,11 +160,9 @@ class RefreshEndpoint(BaseEndpoint):
         )
         if isinstance(refresh_token, bytes):
             refresh_token = refresh_token.decode("utf-8")
-        refresh_token = str(refresh_token)
-        purported_token = await self.instance.auth. \
-            retrieve_refresh_token_from_request(
-                request
-            )
+        purported_token = await self.instance.auth.retrieve_refresh_token_from_request(
+            request
+        )
 
         if refresh_token != purported_token:
             raise exceptions.AuthenticationFailed()

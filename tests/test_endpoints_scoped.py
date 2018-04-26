@@ -1,6 +1,6 @@
 import pytest
 from sanic import Sanic
-from sanic.response import json
+from sanic.response import json, text
 
 from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected, scoped
@@ -807,105 +807,150 @@ class TestEndpointsSync(object):
 
         assert response.status == 403
 
-        def test_scopes_user6(self, app_with_scopes, user6):
-            sanic_app, sanicjwt = app_with_scopes
-            access_token = user6.json.get(
-                sanicjwt.config.access_token_name(), None
-            )
+    def test_scopes_user6(self, app_with_scopes, user6):
+        sanic_app, sanicjwt = app_with_scopes
+        access_token = user6.json.get(
+            sanicjwt.config.access_token_name(), None
+        )
 
-            _, response = sanic_app.test_client.get("/")
-            assert response.status == 200
-            assert response.json.get("hello") == "world"
+        _, response = sanic_app.test_client.get("/")
+        assert response.status == 200
+        assert response.json.get("hello") == "world"
 
-            _, response = sanic_app.test_client.get(
-                "/auth/me",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/auth/me",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 200
-            assert response.json.get("me").get("user_id") == 5
-            assert response.json.get("me").get("username") == "user5"
-            assert response.json.get("me").get("scopes") is None
+        assert response.status == 200
+        assert response.json.get("me").get("user_id") == 6
+        assert response.json.get("me").get("username") == "user6"
+        assert response.json.get("me").get("scopes") is None
 
-            _, response = sanic_app.test_client.get(
-                "/protected",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 200
-            assert response.json.get("protected") is True
-            assert response.json.get("scoped") is False
+        assert response.status == 200
+        assert response.json.get("protected") is True
+        assert response.json.get("scoped") is False
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/1",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/1",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/2",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/2",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/3",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/3",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/4",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/4",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 200
-            assert response.json.get("protected") is True
-            assert response.json.get("scoped") is True
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/5",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/5",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/6/1",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/6/1",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/6/foo",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/6/foo",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/7/1",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/7/1",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/8",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/8",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 200
-            assert response.json.get("protected") is True
-            assert response.json.get("scoped") is True
+        assert response.status == 403
 
-            _, response = sanic_app.test_client.get(
-                "/protected/scoped/9/1",
-                headers={"Authorization": "Bearer {}".format(access_token)},
-            )
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/9/1",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
 
-            assert response.status == 403
+        assert response.status == 403
+
+
+def test_no_user_scopes(app_with_scopes):
+    sanic_app, sanicjwt = app_with_scopes
+
+    sanicjwt.config.scopes_enabled.update(False)
+
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+
+    sanicjwt.config.scopes_enabled.update(True)
+
+    _, response = sanic_app.test_client.get(
+        "/protected/scoped/1",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 403
+
+
+def test_scoped_option(app_with_scopes):
+    sanic_app, sanicjwt = app_with_scopes
+
+    @sanic_app.route("/protected/scoped/1", methods=["OPTIONS"])
+    @scoped("user")
+    async def scoped_optoin_route(request):
+        return text("", status=204)
+
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+
+    _, response = sanic_app.test_client.options(
+        "/protected/scoped/1",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 204
+
+    _, response = sanic_app.test_client.options("/protected/scoped/1")
+
+    assert response.status == 204

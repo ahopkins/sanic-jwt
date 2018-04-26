@@ -3,6 +3,7 @@ from sanic_jwt import Initialize
 from sanic_jwt import Authentication
 from sanic_jwt import exceptions
 import jwt
+
 # import pytest
 
 
@@ -119,13 +120,16 @@ def test_extend_with_username_as_subclass():
 def test_extend_with_mising_claim():
 
     def my_extender(payload, user):
-        del payload['nbf']
+        del payload["nbf"]
         return payload
 
     app = Sanic()
     Initialize(
-        app, authenticate=authenticate, extend_payload=my_extender,
-        claim_nbf=True, claim_nbf_delta=(60 * 5),
+        app,
+        authenticate=authenticate,
+        extend_payload=my_extender,
+        claim_nbf=True,
+        claim_nbf_delta=(60 * 5),
     )
 
     # with pytest.raises(exceptions.MissingRegisteredClaim):
@@ -133,5 +137,5 @@ def test_extend_with_mising_claim():
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    assert response.json.get('exception') == 'MissingRegisteredClaim'
+    assert response.json.get("exception") == "MissingRegisteredClaim"
     assert response.status == 500

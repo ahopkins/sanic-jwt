@@ -3,6 +3,15 @@ from sanic_jwt import utils
 
 def validate_single_scope(required, user_scopes, require_all_actions=True):
 
+    if not user_scopes:
+        return False
+
+    elif user_scopes.count(None) > 0:
+        if user_scopes.count(None) == len(user_scopes):
+            return False
+
+        user_scopes = list(filter(lambda v: v is not None, user_scopes))
+
     def normalize(scope):
         """
         Normalizes and returns tuple consisting of namespace, and action(s)

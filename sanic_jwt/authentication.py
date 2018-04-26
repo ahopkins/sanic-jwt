@@ -113,7 +113,7 @@ class Authentication(BaseAuthentication):
 
         for claim in self.claims:
             if claim != "exp":
-                setting = "claim_{}".format(claim.upper())
+                setting = "claim_{}".format(claim.lower())
                 if setting in self.config:
                     value = getattr(self.config, setting)
                     kwargs.update({claim_label[claim]: value()})

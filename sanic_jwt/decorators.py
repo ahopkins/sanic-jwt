@@ -138,6 +138,9 @@ def scoped(
                 if is_authorized:
                     # the user is authorized.
                     # run the handler method and return the response
+                    # NOTE: it's possible to use return await.utils(f, ...) in
+                    # here, but inside the @protected decorator it wont work,
+                    # so this is left as is for now
                     response = f(request, *args, **kwargs)
                     if isawaitable(response):
                         response = await response
@@ -146,7 +149,6 @@ def scoped(
                 else:
                     raise exceptions.Unauthorized(reasons, status_code=status)
 
-        # return response
         return decorated_function
 
     return decorator

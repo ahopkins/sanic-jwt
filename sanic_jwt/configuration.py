@@ -262,12 +262,12 @@ class Configuration:
                 self._merge(alias, value)
         elif key in self.config_aliases_keys:
             correct_key = None
-            for _, v in self.config_aliases.items():
+            for v in self.config_aliases.values():
                 if key == v:
                     correct_key = key
                     break
 
-            if hasattr(self, correct_key):
+            if correct_key in self:
                 getattr(self, correct_key).update(value)
         else:
             _warn_key(key)

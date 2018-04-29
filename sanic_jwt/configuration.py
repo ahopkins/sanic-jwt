@@ -169,7 +169,8 @@ class Configuration:
             if key in _aliases:
                 item_aliases = [aliases.get(key)]
 
-            # check if a configuration key is set and is an instance of ConfigItem
+            # check if a configuration key is set
+            # and is an instance of ConfigItem
             if (
                 hasattr(instance, key)
                 and isinstance(getattr(instance, key), ConfigItem)

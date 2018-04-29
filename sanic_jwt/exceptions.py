@@ -77,7 +77,7 @@ class MissingRegisteredClaim(SanicJWTException):
         missing=None,
         **kwargs
     ):
-        if missing:
+        if missing:  # noqa
             message += str(missing)
         super().__init__(message, **kwargs)
 

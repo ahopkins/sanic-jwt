@@ -26,57 +26,65 @@ class User(object):
         raise Exception("you shall not call me")
 
 
+users = [
+    User(1, "user1", "abcxyz", ["user"]),
+    User(2, "user2", "abcxyz", ["user", "admin"]),
+    User(3, "user3", "abcxyz", ["user:read"]),
+    User(4, "user4", "abcxyz", ["client1"]),
+    User(5, "user5", "abcxyz", ["admin"]),
+    User(6, "user6", "abcxyz", None),
+    User(7, "user7", "abcxyz", ["foo:bar"]),
+]
+
+username_table = {u.username: u for u in users}
+userid_table = {u.id: u for u in users}
+
+
+async def authenticate(request, *args, **kwargs):
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+
+    if not username or not password:
+        raise exceptions.AuthenticationFailed(
+            "Missing username or password."
+        )
+
+    user = username_table.get(username, None)
+    if user is None:
+        raise exceptions.AuthenticationFailed("User not found.")
+
+    if password != user.password:
+        raise exceptions.AuthenticationFailed("Password is incorrect.")
+
+    return user
+
+
+async def retrieve_user(request, payload, *args, **kwargs):
+    if payload:
+        user_id = payload.get("user_id", None)
+        if user_id is not None:
+            return userid_table.get(user_id)
+
+    else:
+        return None
+
+
+async def my_scope_extender(user, *args, **kwargs):
+    return user.scopes
+
+
+def my_scope_override(*args, **kwargs):
+    return False
+
+
+def my_destructure_scopes(scopes, *args, **kwargs):
+    return scopes.replace('|', ':')
+
+
 @pytest.yield_fixture
-def app_with_scopes():
-    users = [
-        User(1, "user1", "abcxyz", ["user"]),
-        User(2, "user2", "abcxyz", ["user", "admin"]),
-        User(3, "user3", "abcxyz", ["user:read"]),
-        User(4, "user4", "abcxyz", ["client1"]),
-        User(5, "user5", "abcxyz", ["admin"]),
-        User(6, "user6", "abcxyz", None),
-    ]
-
-    username_table = {u.username: u for u in users}
-    userid_table = {u.id: u for u in users}
-
-    async def authenticate(request, *args, **kwargs):
-        username = request.json.get("username", None)
-        password = request.json.get("password", None)
-
-        if not username or not password:
-            raise exceptions.AuthenticationFailed(
-                "Missing username or password."
-            )
-
-        user = username_table.get(username, None)
-        if user is None:
-            raise exceptions.AuthenticationFailed("User not found.")
-
-        if password != user.password:
-            raise exceptions.AuthenticationFailed("Password is incorrect.")
-
-        return user
-
-    async def retrieve_user(request, payload, *args, **kwargs):
-        if payload:
-            user_id = payload.get("user_id", None)
-            if user_id is not None:
-                return userid_table.get(user_id)
-
-        else:
-            return None
-
-    async def my_scope_extender(user, *args, **kwargs):
-        return user.scopes
+def app_with_scopes_base():
 
     sanic_app = Sanic()
-    sanicjwt = Initialize(
-        sanic_app,
-        authenticate=authenticate,
-        retrieve_user=retrieve_user,
-        add_scopes_to_payload=my_scope_extender,
-    )
 
     @sanic_app.route("/")
     async def test(request):
@@ -143,7 +151,42 @@ def app_with_scopes():
     async def protected_route9(request, id):
         return json({"protected": True, "scoped": True, "id": id})
 
-    yield (sanic_app, sanicjwt)
+    yield sanic_app
+
+
+@pytest.yield_fixture
+def app_with_scopes(app_with_scopes_base):
+    sanicjwt = Initialize(
+        app_with_scopes_base,
+        authenticate=authenticate,
+        retrieve_user=retrieve_user,
+        add_scopes_to_payload=my_scope_extender,
+    )
+    yield (app_with_scopes_base, sanicjwt)
+
+
+@pytest.yield_fixture
+def app_with_scopes_override(app_with_scopes_base):
+    sanicjwt = Initialize(
+        app_with_scopes_base,
+        authenticate=authenticate,
+        retrieve_user=retrieve_user,
+        add_scopes_to_payload=my_scope_extender,
+        override_scope_validator=my_scope_override,
+    )
+    yield (app_with_scopes_base, sanicjwt)
+
+
+@pytest.yield_fixture
+def app_with_scopes_destructure(app_with_scopes_base):
+    sanicjwt = Initialize(
+        app_with_scopes_base,
+        authenticate=authenticate,
+        retrieve_user=retrieve_user,
+        add_scopes_to_payload=my_scope_extender,
+        destructure_scopes=my_destructure_scopes,
+    )
+    yield (app_with_scopes_base, sanicjwt)
 
 
 class TestEndpointsSync(object):
@@ -979,3 +1022,47 @@ def test_scoped_sync_method(app_with_scopes):
 
     assert response.status == 200
     assert response.json.get("async") is False
+
+
+def test_scoped_with_override(app_with_scopes_override):
+
+    sanic_app, sanicjwt = app_with_scopes_override
+
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+
+    _, response = sanic_app.test_client.get(
+        "/protected/scoped/1",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 403
+    assert response.json.get("reasons") == 'Invalid scope'
+
+
+def test_scoped_with_destructure(app_with_scopes_destructure):
+
+    sanic_app, sanicjwt = app_with_scopes_destructure
+
+    @sanic_app.route("/protected/compiled_scopes")
+    @sanicjwt.scoped("foo|bar")
+    def scoped_sync_route(request):
+        return json({"async": False})
+
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user7", "password": "abcxyz"}
+    )
+    assert response.status == 200
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+
+    _, response = sanic_app.test_client.get(
+        "/protected/compiled_scopes",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 200

@@ -52,6 +52,8 @@ handlers = (
         ["scopes_enabled"],
         exceptions.ScopesNotImplemented(),
     ),
+    _Handler("override_scope_validator", None, None),
+    _Handler("destructure_scopes", None, None),
     _Handler("extend_payload", None, None),
 )
 

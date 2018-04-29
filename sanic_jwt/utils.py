@@ -50,7 +50,7 @@ def load_file_or_str(path_or_str):
         else:
             raise exceptions.ProvidedPathNotFound
 
-    elif isinstance(path_or_str, str):
+    elif isinstance(path_or_str, str):  # noqa
         if os.path.isfile(path_or_str):
             return Path(path_or_str).read_text()
 

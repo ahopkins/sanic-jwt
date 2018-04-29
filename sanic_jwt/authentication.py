@@ -74,6 +74,20 @@ class BaseAuthentication:
     async def add_scopes_to_payload(self, *args, **kwargs):
         raise exceptions.ScopesNotImplemented()  # noqa
 
+    def override_scope_validator(
+        self,
+        is_valid,
+        required,
+        user_scopes,
+        require_all_actions,
+        *args,
+        **kwargs
+    ):
+        return is_valid
+
+    def destructure_scopes(self, scopes, *args, **kwargs):
+        return scopes
+
     async def retrieve_user(self, *args, **kwargs):
         raise exceptions.MeEndpointNotSetup()  # noqa
 

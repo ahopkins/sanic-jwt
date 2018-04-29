@@ -8,6 +8,10 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 Version 1.1 - 2018-XX-XX
 +++++++++++++++++++++++++
 
+| **Added**
+| - New handler method: ``override_scope_validator``
+| - New handler method: ``destructure_scopes``
+
 | **Changed**
 | - ``Authentication.is_authenticated`` to ``Authentication._check_authentication``
 | - ``Authentication.verify`` to ``Authentication._verify``

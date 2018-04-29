@@ -11,11 +11,10 @@ def access_token(app):
 
 
 def test_me(app, access_token):
-    with pytest.raises(Exception):
-        sanic_app, _ = app
-        _, response = sanic_app.test_client.get(
-            "/auth/me",
-            headers={"Authorization": "Bearer {}".format(access_token)},
-        )
+    sanic_app, _ = app
+    _, response = sanic_app.test_client.get(
+        "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
+    )
 
-        assert response.status == 200
+    assert response.status == 500
+    assert response.json.get("exception") == "MeEndpointNotSetup"

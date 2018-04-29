@@ -144,3 +144,41 @@ def test_authentication_all_methods(app_full_auth_cls):
         sanicjwt.config.refresh_token_name(), None
     ) is None  # there is no new refresh token
     assert sanicjwt.config.refresh_token_name() not in response.json
+
+
+def test_authentication_cross_tokens(app_full_auth_cls):
+
+    app, sanicjwt = app_full_auth_cls
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    assert response.status == 200
+    assert sanicjwt.config.access_token_name() in response.json
+    assert sanicjwt.config.refresh_token_name() in response.json
+
+    access_token_u1 = response.json.get(
+        sanicjwt.config.access_token_name(), None
+    )
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user2", "password": "abcxyz"}
+    )
+
+    assert response.status == 200
+    assert sanicjwt.config.access_token_name() in response.json
+    assert sanicjwt.config.refresh_token_name() in response.json
+
+    refresh_token_u2 = response.json.get(
+        sanicjwt.config.refresh_token_name(), None
+    )
+
+    _, response = app.test_client.post(
+        "/auth/refresh",
+        headers={"Authorization": "Bearer {}".format(access_token_u1)},
+        json={sanicjwt.config.refresh_token_name(): refresh_token_u2},
+    )
+
+    assert response.status == 401
+    assert response.json.get("exception") == "AuthenticationFailed"

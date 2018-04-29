@@ -2,7 +2,7 @@ import pytest
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import Authentication, Initialize, exceptions
+from sanic_jwt import Authentication, exceptions, Initialize
 
 
 class WrongAuthentication(Authentication):

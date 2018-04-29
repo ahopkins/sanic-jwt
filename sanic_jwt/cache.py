@@ -37,6 +37,6 @@ def clear_cache():
     _check_event_loop()
     loop = asyncio.get_event_loop()
     try:
-        asyncio.Task.current_task(loop=loop)._sanicjwt = None
+        asyncio.Task.current_task(loop=loop)._sanicjwt = {}
     except AttributeError:  # noqa
         pass

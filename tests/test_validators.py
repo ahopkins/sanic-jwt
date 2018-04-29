@@ -19,3 +19,6 @@ def test_validate_single_scope():
     assert validate_single_scope("user:read", ["user:read", "something:else"])
     assert validate_single_scope(":read", [":read"])
     assert validate_single_scope(":read", ["admin"])
+    assert validate_single_scope("user", []) is False
+    assert validate_single_scope("user", [None]) is False
+    assert validate_single_scope("user", [None, "user"])

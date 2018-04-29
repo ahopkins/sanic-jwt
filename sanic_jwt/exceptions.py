@@ -1,5 +1,5 @@
-from sanic.exceptions import SanicException
 from sanic.exceptions import Unauthorized as SanicUnauthorized
+from sanic.exceptions import SanicException
 
 
 class SanicJWTException(SanicException):
@@ -73,7 +73,7 @@ class MissingRegisteredClaim(SanicJWTException):
     def __init__(
         self,
         message="One or more claims have been registered, but your "
-        "SANIC_JWT_HANDLER_PAYLOAD_EXTEND does not supply them. ",
+        "extend_payload() method does not supply them. ",
         missing=None,
         **kwargs
     ):

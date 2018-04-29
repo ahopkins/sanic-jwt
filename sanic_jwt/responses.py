@@ -1,4 +1,5 @@
 from sanic.response import json
+
 from .base import BaseDerivative
 
 

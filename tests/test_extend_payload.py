@@ -4,6 +4,8 @@ from sanic_jwt import Authentication
 from sanic_jwt import exceptions
 import jwt
 
+# import pytest
+
 
 class User:
 
@@ -113,3 +115,27 @@ def test_extend_with_username_as_subclass():
 
     assert "username" in payload
     assert payload.get("username") == "user1"
+
+
+def test_extend_with_mising_claim():
+
+    def my_extender(payload, user):
+        del payload["nbf"]
+        return payload
+
+    app = Sanic()
+    Initialize(
+        app,
+        authenticate=authenticate,
+        extend_payload=my_extender,
+        claim_nbf=True,
+        claim_nbf_delta=(60 * 5),
+    )
+
+    # with pytest.raises(exceptions.MissingRegisteredClaim):
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    assert response.json.get("exception") == "MissingRegisteredClaim"
+    assert response.status == 500

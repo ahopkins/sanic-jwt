@@ -10,6 +10,7 @@ from sanic_jwt.decorators import protected, scoped
 from sanic_jwt.responses import Responses
 
 _Handler = namedtuple("_Handler", ["name", "keys", "exception"])
+_EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys"])
 
 
 def initialize(*args, **kwargs):
@@ -18,23 +19,38 @@ def initialize(*args, **kwargs):
     return Initialize(args[0], **kwargs)
 
 
+endpoint_mappings = (
+    _EndpointMapping(
+        endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"]
+    ),
+    _EndpointMapping(
+        endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"]
+    ),
+    _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"]),
+    _EndpointMapping(
+        endpoints.RefreshEndpoint,
+        "refresh",
+        ["auth_mode", "refresh_token_enabled"],
+    ),
+)
+
 handlers = (
-    _Handler("authenticate", None, exceptions.AuthenticateNotImplemented),
+    _Handler("authenticate", None, exceptions.AuthenticateNotImplemented()),
     _Handler(
         "store_refresh_token",
         ["refresh_token_enabled"],
-        exceptions.RefreshTokenNotImplemented,
+        exceptions.RefreshTokenNotImplemented(),
     ),
     _Handler(
         "retrieve_refresh_token",
         ["refresh_token_enabled"],
-        exceptions.RefreshTokenNotImplemented,
+        exceptions.RefreshTokenNotImplemented(),
     ),
     _Handler("retrieve_user", None, None),
     _Handler(
         "add_scopes_to_payload",
         ["scopes_enabled"],
-        exceptions.ScopesNotImplemented,
+        exceptions.ScopesNotImplemented(),
     ),
     _Handler("extend_payload", None, None),
 )
@@ -69,16 +85,14 @@ class Initialize:
         self.bp = bp
         self.kwargs = kwargs
         self.instance = instance
+        self.config = None
 
         self.__check_deprecated()
         self.__check_classes()
         self.__load_configuration()
         self.__load_responses()
-
-        if self.config.auth_mode():
-            self.__add_class_views()
-            self.__add_endpoints()
-
+        self.__add_class_views()
+        self.__add_endpoints()
         self.__initialize_instance()
 
     def __check_deprecated(self):
@@ -110,15 +124,9 @@ class Initialize:
         """
         Initialize the Sanic JWT Blueprint and add to the instance initialized
         """
-        endpoint_mappings = (
-            ("AuthenticateEndpoint", "authenticate"),
-            ("RetrieveUserEndpoint", "retrieve_user"),
-            ("VerifyEndpoint", "verify"),
-            ("RefreshEndpoint", "refresh"),
-        )
-
-        for endpoint in endpoint_mappings:
-            self.__add_single_endpoint(*endpoint)
+        for mapping in endpoint_mappings:
+            if all(map(self.config.get, mapping.keys)):
+                self.__add_single_endpoint(mapping.cls, mapping.endpoint)
 
         self.bp.exception(exceptions.SanicJWTException)(
             self.responses.exception_response
@@ -233,13 +241,12 @@ class Initialize:
     def __load_responses(self):
         self.responses = self.responses_class(self.config, self.instance)
 
-    def __add_single_endpoint(self, class_name, path_name):
-        view = getattr(endpoints, class_name)
+    def __add_single_endpoint(self, endpoint_cls, path_name):
         path_name = getattr(self.config, "path_to_{}".format(path_name))()
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
             self.instance.add_route(
-                view.as_view(
+                endpoint_cls.as_view(
                     config=self.config,
                     instance=self.instance,
                     responses=self.responses,
@@ -248,7 +255,7 @@ class Initialize:
             )
         else:
             self.bp.add_route(
-                view.as_view(
+                endpoint_cls.as_view(
                     config=self.config,
                     instance=self.instance,
                     responses=self.responses,
@@ -281,7 +288,9 @@ class Initialize:
         elif isinstance(instance, Blueprint):
             return instance
 
-        raise exceptions.InitializationFailure
+        # I think this will never get here because `__get_app` get's called
+        # first and does the same check
+        raise exceptions.InitializationFailure  # noqa see line above
 
     def protected(self, *args, **kwargs):
         args = list(args)

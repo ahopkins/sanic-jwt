@@ -262,7 +262,7 @@ class Configuration:
                 self._merge(alias, value)
         elif key in self.config_aliases_keys:
             correct_key = None
-            for _, v in self.config_aliases.items():
+            for v in self.config_aliases.values():
                 if key == v:
                     correct_key = key
                     break

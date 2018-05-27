@@ -7,7 +7,7 @@ class Responses(BaseDerivative):
 
     @staticmethod
     async def get_access_token_output(request, user, config, instance):
-        access_token = await instance.auth.get_access_token(user)
+        access_token = await instance.auth.generate_access_token(user)
 
         output = {config.access_token_name(): access_token}
 

@@ -47,8 +47,11 @@ def validate_single_scope(
         if is_valid:
             break
 
-    outcome = override(is_valid, required, user_scopes, require_all_actions) \
-        if callable(override) else is_valid
+    outcome = override(
+        is_valid, required, user_scopes, require_all_actions
+    ) if callable(
+        override
+    ) else is_valid
     return outcome
 
 
@@ -62,7 +65,8 @@ async def validate_scopes(
     require_all_actions=True,
     # request_args=[],
     # request_kwargs={},
-    *args, **kwargs
+    *args,
+    **kwargs
 ):
     scopes = await utils.call(destructure, scopes)
     scopes = await utils.call(scopes, request, *args, **kwargs)

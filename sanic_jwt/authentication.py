@@ -1,7 +1,7 @@
 import inspect
 import logging
 from datetime import datetime, timedelta
-
+import warnings
 import jwt
 
 from . import exceptions, utils
@@ -233,6 +233,7 @@ class Authentication(BaseAuthentication):
 
                 except Exception:
                     raise exceptions.InvalidAuthorizationHeader()
+
             else:
                 token = header
 
@@ -307,7 +308,23 @@ class Authentication(BaseAuthentication):
         )
         return payload
 
-    async def get_access_token(self, user):
+    def extract_scopes(self, request):
+        """
+        Extract scopes from a request object.
+        """
+        payload = self.extract_payload(request)
+        scopes_attribute = self.config.scopes_name()
+        return payload.get(scopes_attribute, None)
+
+    def extract_user_id(self, request):
+        """
+        Extract a user id from a request object.
+        """
+        payload = self.extract_payload(request)
+        user_id_attribute = self.config.user_id()
+        return payload.get(user_id_attribute, None)
+
+    async def generate_access_token(self, user):
         """
         Generate an access token for a given user.
         """
@@ -317,7 +334,7 @@ class Authentication(BaseAuthentication):
 
         return jwt.encode(payload, secret, algorithm=algorithm).decode("utf-8")
 
-    async def get_refresh_token(self, request, user):
+    async def generate_refresh_token(self, request, user):
         """
         Generate a refresh token for a given user.
         """
@@ -330,6 +347,22 @@ class Authentication(BaseAuthentication):
             request=request,
         )
         return refresh_token
+
+    async def get_access_token(self, user):  # noqa
+        warnings.warn(
+            "Using sanic_jwt.Authentication.get_access_token(), "
+            "which will be depracated in the future. Switch to "
+            "sanic_jwt.Authentication.generate_access_token()."
+        )
+        return await self.generate_access_token(user)
+
+    async def get_refresh_token(self, request, user):  # noqa
+        warnings.warn(
+            "Using sanic_jwt.Authentication.get_refresh_token(), "
+            "which will be depracated in the future. Switch to "
+            "sanic_jwt.Authentication.generate_refresh_token()."
+        )
+        return await self.generate_refresh_token(request, user)
 
     def is_authenticated(self, request):
         """
@@ -347,10 +380,10 @@ class Authentication(BaseAuthentication):
     async def retrieve_refresh_token_from_request(self, request):
         return await self._get_refresh_token(request)
 
-    def retrieve_scopes(self, request):
-        """
-        Extract scopes from a request object.
-        """
-        payload = self.extract_payload(request)
-        scopes_attribute = self.config.scopes_name()
-        return payload.get(scopes_attribute, None)
+    def retrieve_scopes(self, request):  # noqa
+        warnings.warn(
+            "Using sanic_jwt.Authentication.retrieve_scopes(), "
+            "which will be depracated in the future. Switch to "
+            "sanic_jwt.Authentication.extract_scopes()."
+        )
+        return self.extract_scopes(request)

@@ -45,9 +45,7 @@ async def authenticate(request, *args, **kwargs):
     password = request.json.get("password", None)
 
     if not username or not password:
-        raise exceptions.AuthenticationFailed(
-            "Missing username or password."
-        )
+        raise exceptions.AuthenticationFailed("Missing username or password.")
 
     user = username_table.get(username, None)
     if user is None:
@@ -78,7 +76,7 @@ def my_scope_override(*args, **kwargs):
 
 
 def my_destructure_scopes(scopes, *args, **kwargs):
-    return scopes.replace('|', ':')
+    return scopes.replace("|", ":")
 
 
 @pytest.yield_fixture
@@ -1041,7 +1039,7 @@ def test_scoped_with_override(app_with_scopes_override):
     )
 
     assert response.status == 403
-    assert response.json.get("reasons") == 'Invalid scope'
+    assert response.json.get("reasons") == "Invalid scope"
 
 
 def test_scoped_with_destructure(app_with_scopes_destructure):

@@ -260,7 +260,7 @@ def test_empty_string_authorization_prefix():
         app,
         authenticate=authenticate,
         authorization_header=authorization_header,
-        authorization_header_prefix=authorization_header_prefix
+        authorization_header_prefix=authorization_header_prefix,
     )
 
     @app.route("/protected")
@@ -276,10 +276,7 @@ def test_empty_string_authorization_prefix():
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected",
-        headers={
-            authorization_header: access_token,
-        },
+        "/protected", headers={authorization_header: access_token}
     )
 
     assert response.status == 200
@@ -287,9 +284,7 @@ def test_empty_string_authorization_prefix():
 
     _, response = app.test_client.get(
         "/protected",
-        headers={
-            sanicjwt.config.authorization_header(): access_token
-        },
+        headers={sanicjwt.config.authorization_header(): access_token},
     )
 
     assert response.status == 200

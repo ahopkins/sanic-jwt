@@ -40,7 +40,7 @@ class AuthenticateEndpoint(BaseEndpoint):
 
         if config.refresh_token_enabled():
             refresh_token = await utils.call(
-                self.instance.auth.get_refresh_token, request, user
+                self.instance.auth.generate_refresh_token, request, user
             )
             output.update({config.refresh_token_name(): refresh_token})
         else:

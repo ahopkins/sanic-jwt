@@ -112,7 +112,7 @@ def scoped(
 
                 if is_authenticated:
                     # Retrieve the scopes from the payload
-                    user_scopes = instance.auth.retrieve_scopes(request)
+                    user_scopes = instance.auth.extract_scopes(request)
                     override = instance.auth.override_scope_validator
                     destructure = instance.auth.destructure_scopes
                     if user_scopes is None:

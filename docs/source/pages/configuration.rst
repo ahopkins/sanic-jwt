@@ -345,7 +345,7 @@ Alias for ``secret``
 --------------
 
 | **Purpose**: The url prefix used for all URL endpoints. Note, the placement of ``/``.
-| **Default**: ``'/'``
+| **Default**: ``'/auth'``
 |
 
 -----------

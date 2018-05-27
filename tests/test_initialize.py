@@ -224,3 +224,22 @@ def test_invalid_initialization_object():
 
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(object, app=app, authenticate=lambda: True)
+
+
+def test_initialize_app_and_bp():
+
+    app = Sanic()
+    bp = Blueprint('bp', url_prefix='/api')
+    Initialize(
+        instance=bp,
+        app=app,
+        authenticate=lambda: True
+    )
+
+    app.blueprint(bp)
+    print('app', app.router.routes_all.keys())
+    print('bp', [x.uri for x in bp.routes])
+
+    # Result:
+
+    assert False

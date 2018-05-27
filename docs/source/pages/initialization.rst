@@ -271,6 +271,34 @@ You should now have an endpoint at ``/auth/me`` that will return a serialized fo
         authenticate=lambda: True,
         add_scopes_to_payload=add_scopes_to_payload)
 
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``override_scope_validator`` - Optional \*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Default**: ``None``
+
+**Purpose**: It is a handler to add scopes to an access token. See :doc:`scoped` for more information.
+
+**Note**: Above, we said "Each of them can be either a method or an awaitable. You decide." What we forgot to mention was that ``override_scope_validator`` needs to be a regular ``callable`` and not an ``awaitable``. No async programming here.
+
+**Example**:
+
+.. code-block:: python
+
+    def my_scope_override(is_valid,
+        required,
+        user_scopes,
+        require_all_actions,
+        *args,
+        **kwargs):
+        return await user.get_scopes()
+
+    Initialize(
+        app,
+        authenticate=lambda: True,
+        override_scope_validator=my_scope_override)
+
 ---------------------
 Runtime Configuration
 ---------------------

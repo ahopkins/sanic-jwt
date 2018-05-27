@@ -4,6 +4,7 @@ from sanic.response import json, text
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
 from sanic_jwt.decorators import scoped
+from sanic_jwt.decorators import inject_user
 
 
 def test_forgotten_initialized_on_protected():
@@ -59,3 +60,69 @@ def test_option_method_on_protected(app):
     _, response = sanic_app.test_client.options("/protected/options")
 
     assert response.status == 204
+
+
+def test_inject_user_regular(app_with_retrieve_user):
+    sanic_app, sanic_jwt = app_with_retrieve_user
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    @sanic_app.route("/protected/user")
+    @inject_user()
+    @protected()
+    async def my_protected_user(request, user):
+        return json({
+            'user_id': user.user_id
+        })
+
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
+
+    _, response = sanic_app.test_client.get(
+        "/auth/me",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.json.get('me').get('user_id') == 1
+
+    _, response = sanic_app.test_client.get(
+        "/protected/user",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+    assert response.status == 200
+    assert response.json.get('user_id') == 1
+
+
+def test_inject_user_on_instance(app_with_retrieve_user):
+    sanic_app, sanic_jwt = app_with_retrieve_user
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    @sanic_app.route("/protected/user")
+    @sanic_jwt.inject_user()
+    @sanic_jwt.protected()
+    async def my_protected_user(request, user):
+        return json({
+            'user_id': user.user_id
+        })
+
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
+
+    _, response = sanic_app.test_client.get(
+        "/auth/me",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.json.get('me').get('user_id') == 1
+
+    _, response = sanic_app.test_client.get(
+        "/protected/user",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+    assert response.status == 200
+    assert response.json.get('user_id') == 1

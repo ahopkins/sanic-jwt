@@ -6,7 +6,7 @@ from sanic_jwt.decorators import protected
 from sanic.views import HTTPMethodView
 
 
-class User(object):
+class User:
 
     def __init__(self, id, username, password):
         self.user_id = id

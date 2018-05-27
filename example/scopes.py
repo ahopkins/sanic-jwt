@@ -6,7 +6,7 @@ from sanic_jwt.decorators import protected
 from sanic_jwt.decorators import scoped
 
 
-class User(object):
+class User:
 
     def __init__(self, id, username, password, scopes):
         self.user_id = id

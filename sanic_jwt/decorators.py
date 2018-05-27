@@ -156,3 +156,25 @@ def scoped(
         return decorated_function
 
     return decorator
+
+
+def inject_user(initialized_on=None, **kw):
+
+    def decorator(f):
+
+        @wraps(f)
+        async def decorated_function(request, *args, **kwargs):
+            if initialized_on and isinstance(initialized_on, Blueprint):
+                instance = initialized_on
+            else:
+                instance = request.app
+
+            with instant_config(instance, request=request, **kw):
+                payload = instance.auth.extract_payload(request, verify=False)
+                user = await instance.auth.retrieve_user(request, payload)
+                response = f(request, user=user, *args, **kwargs)
+                return await response
+
+        return decorated_function
+
+    return decorator

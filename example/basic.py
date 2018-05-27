@@ -3,7 +3,7 @@ from sanic_jwt import exceptions
 from sanic_jwt import initialize
 
 
-class User(object):
+class User:
 
     def __init__(self, id, username, password):
         self.user_id = id

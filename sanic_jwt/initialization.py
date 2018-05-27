@@ -6,7 +6,7 @@ from sanic import Blueprint, Sanic
 from sanic_jwt import endpoints, exceptions
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
-from sanic_jwt.decorators import protected, scoped
+from sanic_jwt.decorators import protected, scoped, inject_user
 from sanic_jwt.responses import Responses
 
 _Handler = namedtuple("_Handler", ["name", "keys", "exception"])
@@ -304,6 +304,11 @@ class Initialize:
     def scoped(self, scopes, **kwargs):
         kwargs.update({"initialized_on": self.instance})
         return scoped(scopes, **kwargs)
+
+    def inject_user(self, *args, **kwargs):
+        args = list(args)
+        args.insert(0, self.instance)
+        return inject_user(*args, **kwargs)
 
     @property
     def instance_is_blueprint(self):

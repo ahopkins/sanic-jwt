@@ -10,7 +10,7 @@ from sanic_jwt import exceptions
 from sanic_jwt.decorators import protected
 
 
-class User(object):
+class User:
 
     def __init__(self, id, username, password):
         self.user_id = id
@@ -30,6 +30,11 @@ def users():
 @pytest.yield_fixture
 def username_table(users):
     yield {u.username: u for u in users}
+
+
+@pytest.yield_fixture
+def userid_table(users):
+    yield {u.user_id: u for u in users}
 
 
 @pytest.yield_fixture
@@ -54,6 +59,20 @@ def authenticate(username_table):
         return user
 
     yield authenticate
+
+
+@pytest.yield_fixture
+def retrieve_user(userid_table):
+    async def retrieve_user(request, payload, *args, **kwargs):
+        if payload:
+            user_id = payload.get("user_id", None)
+            if user_id is not None:
+                return userid_table.get(user_id)
+
+        else:
+            return None
+
+    yield retrieve_user
 
 
 @pytest.yield_fixture
@@ -143,9 +162,6 @@ def app_with_bp(username_table, authenticate):
     sanic_jwt_init_bp = Initialize(
         sanic_bp, app=sanic_app, authenticate=authenticate
     )
-    print("sanic_bp", sanic_bp.url_prefix)
-    print("sanic_jwt_init_bp", sanic_jwt_init_bp._get_url_prefix())
-    print("sanic_bp", sanic_bp.routes)
 
     @sanic_bp.route("/")
     async def bp_helloworld(request):
@@ -268,6 +284,26 @@ def app_with_aud(username_table, authenticate):
     sanic_app = Sanic()
     sanic_jwt = Initialize(
         sanic_app, authenticate=authenticate, claim_aud="clientserver"
+    )
+
+    @sanic_app.route("/")
+    async def helloworld(request):
+        return json({"hello": "world"})
+
+    @sanic_app.route("/protected")
+    @protected()
+    async def protected_request(request):
+        return json({"protected": True})
+
+    yield (sanic_app, sanic_jwt)
+
+
+@pytest.yield_fixture
+def app_with_retrieve_user(retrieve_user, authenticate):
+
+    sanic_app = Sanic()
+    sanic_jwt = Initialize(
+        sanic_app, authenticate=authenticate, retrieve_user=retrieve_user
     )
 
     @sanic_app.route("/")

@@ -4,7 +4,7 @@ from sanic_jwt import Authentication
 from sanic_jwt import Initialize
 
 
-class User(object):
+class User:
 
     def __init__(self, id, username, password):
         self.user_id = id

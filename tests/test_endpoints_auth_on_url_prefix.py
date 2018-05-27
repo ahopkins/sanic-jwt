@@ -11,7 +11,7 @@ def access_token(app_with_url_prefix):
     return response.json.get(sanic_jwt.config.access_token_name(), None)
 
 
-class TestEndpointsAuth(object):
+class TestEndpointsAuth:
 
     def dispatch(self, path, method, app_with_url_prefix, access_token):
         sanic_app, sanic_jwt = app_with_url_prefix

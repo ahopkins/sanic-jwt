@@ -60,11 +60,12 @@ async def validate_scopes(
     destructure,
     require_all=True,
     require_all_actions=True,
-    request_args=[],
-    request_kwargs={}
+    # request_args=[],
+    # request_kwargs={},
+    *args, **kwargs
 ):
     scopes = await utils.call(destructure, scopes)
-    scopes = await utils.call(scopes, request, *request_args, **request_kwargs)
+    scopes = await utils.call(scopes, request, *args, **kwargs)
 
     if not isinstance(scopes, (list, tuple)):
         scopes = [scopes]

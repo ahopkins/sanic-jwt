@@ -246,3 +246,51 @@ def test_deprecated_handler_payload_extend():
 
     with pytest.raises(exceptions.InvalidConfiguration):
         Initialize(app, authenticate=lambda: True)
+
+
+def test_empty_string_authorization_prefix():
+    app = Sanic()
+    authorization_header = "custom-authorization-header"
+    authorization_header_prefix = ""
+
+    async def authenticate(request, *args, **kwargs):
+        return {"user_id": 1}
+
+    sanicjwt = Initialize(
+        app,
+        authenticate=authenticate,
+        authorization_header=authorization_header,
+        authorization_header_prefix=authorization_header_prefix
+    )
+
+    @app.route("/protected")
+    @sanicjwt.protected()
+    def protected_route(request):
+        return json({"protected": "yes"})
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+    assert access_token is not None
+
+    _, response = app.test_client.get(
+        "/protected",
+        headers={
+            authorization_header: access_token,
+        },
+    )
+
+    assert response.status == 200
+    assert response.json.get("protected") == "yes"
+
+    _, response = app.test_client.get(
+        "/protected",
+        headers={
+            sanicjwt.config.authorization_header(): access_token
+        },
+    )
+
+    assert response.status == 200
+    assert response.json.get("protected") == "yes"

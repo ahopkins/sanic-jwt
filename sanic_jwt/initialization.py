@@ -247,6 +247,8 @@ class Initialize:
         path_name = getattr(self.config, "path_to_{}".format(path_name))()
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
+            if self.instance.url_prefix:
+                path_name = path_name.replace(self.instance.url_prefix, '')
             self.instance.add_route(
                 endpoint_cls.as_view(
                     config=self.config,

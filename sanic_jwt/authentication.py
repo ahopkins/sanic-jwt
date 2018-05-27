@@ -225,13 +225,16 @@ class Authentication(BaseAuthentication):
         else:
             header_prefix_key = "authorization_header_prefix"
             header_prefix = getattr(self.config, header_prefix_key)
-            try:
-                prefix, token = header.split(" ")
-                if prefix != header_prefix():
-                    raise Exception
+            if header_prefix():
+                try:
+                    prefix, token = header.split(" ")
+                    if prefix != header_prefix():
+                        raise Exception
 
-            except Exception:
-                raise exceptions.InvalidAuthorizationHeader()
+                except Exception:
+                    raise exceptions.InvalidAuthorizationHeader()
+            else:
+                token = header
 
             if refresh_token:
                 token = request.json.get(self.config.refresh_token_name())

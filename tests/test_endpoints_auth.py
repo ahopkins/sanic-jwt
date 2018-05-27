@@ -17,7 +17,7 @@ def payload(app, access_token):
     return jwt.decode(access_token, sanic_jwt.config.secret())
 
 
-class TestEndpointsAuth(object):
+class TestEndpointsAuth:
 
     def dispatch(self, path, method, app, access_token):
         sanic_app, sanic_jwt = app

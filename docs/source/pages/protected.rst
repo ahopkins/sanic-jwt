@@ -36,7 +36,7 @@ If you have initialized Sanic JWT on a ``Blueprint``, then you will need to pass
 .. code-block:: python
 
     bp = Blueprint('Users')
-    Initialize(bp)
+    Initialize(bp, app=app)
 
     @bp.get('/users/<id>')
     @protected(bp)
@@ -141,4 +141,52 @@ Is such cases, change ``cookie_strict`` to ``False``.
 Per view declaration
 ~~~~~~~~~~~~~~~~~~~~
 
-`Coming soon` - the ability to decide at the view level which token to accept
+Perhaps you realize that you would like to make the declaration on a single view? Most of your views will operate using a cookie, but one particular endpoint (for whatever reason) will best be served to accept headers. Not a problem. You can simply pass in the configuration parameters right into the decorator!
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        cookie_set=True,
+        cookie_strict=False,)
+
+    @app.route("/protected_by_header")
+    @protected(cookie_set=False)
+    async def protected_by_header_route(request):
+        ...
+
+Learn more about configuration overrides.
+
+------------
+
++++++++++++++++++++
+Advanced Decorators
++++++++++++++++++++
+
+Want to have a greater level of control? Instead of just importing the decorators from the ``sanic_jwt.decorators`` module, you can also use the decorator directly off your initialized Sanic JWT instance!
+
+.. code-block:: python
+
+    sanicjwt = Initialize(app)
+
+    @app.route("/protected")
+    @sanicjwt.protected()
+    async def protected_route(request):
+        ...
+
+This also works for blueprints (and has the added advantage that you no longer need to pass the `bp` instance in.
+
+
+.. code-block:: python
+
+    bp = Blueprint('Users')
+    Initialize(bp, app=app)
+
+    @bp.get('/users/<id>')
+    @bp.protected()
+    async def users(request, id):
+        ...
+
+.. note::
+
+    This concept of having instance based decorators also works for the ``scoped`` decorator: ``bp.scopes('foobar')``.

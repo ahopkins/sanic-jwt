@@ -6,7 +6,7 @@ Let's take a look at a real simple example on how to use Sanic JWT to see the co
 
 .. code-block:: python
 
-    class User(object):
+    class User:
         def __init__(self, id, username, password):
             self.user_id = id
             self.username = username

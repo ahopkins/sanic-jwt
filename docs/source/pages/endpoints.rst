@@ -143,6 +143,8 @@ Modify Responses
 
 The responses for each of the default endpoints is extendable by subclassing the ``Responses`` class, and hooking into the appropriate method. Just make sure you return a ``dict``.
 
+Your custom ``Responses`` should be hooked up to Sanic JWT using the ``responses_class`` keyword argument on the ``Initialize`` instance.
+
 .. code-block:: python
 
     from sanic_jwt import Responses
@@ -172,7 +174,7 @@ The responses for each of the default endpoints is extendable by subclassing the
                            payload=None):
             return {}
 
-    Initialize(app, response_class=MyResponses)
+    Initialize(app, responses_class=MyResponses)
 
 ------------
 

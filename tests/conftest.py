@@ -63,6 +63,7 @@ def authenticate(username_table):
 
 @pytest.yield_fixture
 def retrieve_user(userid_table):
+
     async def retrieve_user(request, payload, *args, **kwargs):
         if payload:
             user_id = payload.get("user_id", None)

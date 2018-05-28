@@ -42,7 +42,9 @@ def protected(initialized_on=None, **kw):
                     return await utils.call(f, request, *args, **kwargs)
 
                 try:
-                    is_authenticated, status, reasons = instance.auth._check_authentication(
+                    (
+                        is_authenticated, status, reasons
+                    ) = instance.auth._check_authentication(
                         request, request_args=args, request_kwargs=kwargs
                     )
                 except AttributeError:

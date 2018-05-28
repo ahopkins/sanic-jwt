@@ -99,17 +99,14 @@ def app_full_auth_cls(sanic_app, my_authentication_class):
 
 @pytest.yield_fixture
 def app_full_bytes_refresh_token(
-    users,
-    sanic_app,
-    my_authentication_class,
-    cache
+    users, sanic_app, my_authentication_class, cache
 ):
 
     class MyAuthentication(my_authentication_class):
 
         async def retrieve_refresh_token(self, user_id, *args, **kwargs):
             key = "refresh_token_{user_id}".format(user_id=user_id)
-            token = cache.get(key, None).encode('utf-8')
+            token = cache.get(key, None).encode("utf-8")
             print(token, type(token))
             return token
 
@@ -185,7 +182,9 @@ def test_authentication_all_methods(app_full_auth_cls):
         sanicjwt.config.refresh_token_name(), None
     ) is None  # there is no new refresh token
     assert sanicjwt.config.refresh_token_name() not in response.json
-    # assert False
+
+
+# assert False
 
 
 def test_authentication_cross_tokens(app_full_auth_cls):

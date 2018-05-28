@@ -72,27 +72,24 @@ def test_inject_user_regular(app_with_retrieve_user):
     @inject_user()
     @protected()
     async def my_protected_user(request, user):
-        return json({
-            'user_id': user.user_id
-        })
+        return json({"user_id": user.user_id})
 
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
 
     _, response = sanic_app.test_client.get(
-        "/auth/me",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
-    assert response.json.get('me').get('user_id') == 1
+    assert response.json.get("me").get("user_id") == 1
 
     _, response = sanic_app.test_client.get(
         "/protected/user",
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
     assert response.status == 200
-    assert response.json.get('user_id') == 1
+    assert response.json.get("user_id") == 1
 
 
 def test_inject_user_on_instance(app_with_retrieve_user):
@@ -105,24 +102,51 @@ def test_inject_user_on_instance(app_with_retrieve_user):
     @sanic_jwt.inject_user()
     @sanic_jwt.protected()
     async def my_protected_user(request, user):
-        return json({
-            'user_id': user.user_id
-        })
+        return json({"user_id": user.user_id})
 
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
 
     _, response = sanic_app.test_client.get(
-        "/auth/me",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
-    assert response.json.get('me').get('user_id') == 1
+    assert response.json.get("me").get("user_id") == 1
 
     _, response = sanic_app.test_client.get(
         "/protected/user",
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
     assert response.status == 200
-    assert response.json.get('user_id') == 1
+    assert response.json.get("user_id") == 1
+
+
+def test_inject_user_on_instance_bp(app_with_retrieve_user):
+    sanic_app, sanic_jwt = app_with_retrieve_user
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    @sanic_app.route("/protected/user")
+    @sanic_jwt.inject_user()
+    @sanic_jwt.protected()
+    async def my_protected_user(request, user):
+        return json({"user_id": user.user_id})
+
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
+
+    _, response = sanic_app.test_client.get(
+        "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
+    )
+
+    assert response.json.get("me").get("user_id") == 1
+
+    _, response = sanic_app.test_client.get(
+        "/protected/user",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+    assert response.status == 200
+    assert response.json.get("user_id") == 1

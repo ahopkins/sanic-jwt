@@ -32,6 +32,8 @@ Expires - ``exp``
 
         Initialize(app, verify_exp=False)
 
+    Okay, great. You know what you are doing. It is still revommended that you **NOT** do this. Are you sure you know what you are doing?
+
 
 ------------------
 Audience - ``aud``

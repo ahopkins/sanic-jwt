@@ -7,6 +7,7 @@ Let's take a look at a real simple example on how to use Sanic JWT to see the co
 .. code-block:: python
 
     class User:
+
         def __init__(self, id, username, password):
             self.user_id = id
             self.username = username
@@ -16,19 +17,10 @@ Let's take a look at a real simple example on how to use Sanic JWT to see the co
             return "User(id='{}')".format(self.user_id)
 
         def to_dict(self):
-            return {
-                'user_id': self.user_id,
-                'username': self.username,
-            }
+            return {"user_id": self.user_id, "username": self.username}
 
 
-    users = [
-        User(1, 'user1', 'abcxyz'),
-        User(2, 'user2', 'abcxyz'),
-    ]
-
-    username_table = {u.username: u for u in users}
-    userid_table = {u.user_id: u for u in users}
+    users = [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
 
 We want to be able to pass in a **username** and a **password** to authenticate our user, and then receive back an **access token** that can be used later on to access protected (aka private) data.
 
@@ -41,8 +33,8 @@ Very simple. Since we want to pass a **username** and a **password** to authenti
     from sanic_jwt import exceptions
 
     async def authenticate(request, *args, **kwargs):
-        username = request.json.get('username', None)
-        password = request.json.get('password', None)
+        username = request.json.get("username", None)
+        password = request.json.get("password", None)
 
         if not username or not password:
             raise exceptions.AuthenticationFailed("Missing username or password.")
@@ -64,10 +56,11 @@ Our whole application now looks like this:
 
     from sanic import Sanic
     from sanic_jwt import exceptions
-    from sanic_jwt import Initialize
+    from sanic_jwt import initialize
 
 
-    class User(object):
+    class User:
+
         def __init__(self, id, username, password):
             self.user_id = id
             self.username = username
@@ -77,24 +70,18 @@ Our whole application now looks like this:
             return "User(id='{}')".format(self.user_id)
 
         def to_dict(self):
-            return {
-                'user_id': self.user_id,
-                'username': self.username,
-            }
+            return {"user_id": self.user_id, "username": self.username}
 
 
-    users = [
-        User(1, 'user1', 'abcxyz'),
-        User(2, 'user2', 'abcxyz'),
-    ]
+    users = [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
 
     username_table = {u.username: u for u in users}
     userid_table = {u.user_id: u for u in users}
 
 
     async def authenticate(request, *args, **kwargs):
-        username = request.json.get('username', None)
-        password = request.json.get('password', None)
+        username = request.json.get("username", None)
+        password = request.json.get("password", None)
 
         if not username or not password:
             raise exceptions.AuthenticationFailed("Missing username or password.")
@@ -110,9 +97,7 @@ Our whole application now looks like this:
 
 
     app = Sanic()
-    Initialize(
-        app,
-        authenticate=authenticate,)
+    initialize(app, authenticate=authenticate)
 
 
     if __name__ == "__main__":
@@ -148,7 +133,7 @@ Here is our response: ::
 
     <
     * Connection #0 to host localhost left intact
-    Password is incorrect.
+    {"reasons":"Password is incorrect.","exception":"AuthenticationFailed"}
 
 Oops! Looks like we entered the wrong password. Let's try again: ::
 

@@ -1,3 +1,8 @@
+"""
+This is taken from "Simple Usage" page in the docs:
+http://sanic-jwt.readthedocs.io/en/latest/pages/simpleusage.html
+"""
+
 from sanic import Sanic
 from sanic_jwt import exceptions
 from sanic_jwt import initialize

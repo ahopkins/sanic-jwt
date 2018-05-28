@@ -4,9 +4,10 @@ Endpoints and Responses
 
 Sanic JWT sets itself up to run as a `Sanic Blueprint <http://sanic.readthedocs.io/en/latest/sanic/blueprints.html>`_ at the ``/auth`` path. ::
 
+    # Default
     http://localhost:8000/auth
 
-This is can be changed via the ``url_prefix`` setting. :doc:`See settings for more <settings>`.
+This is can be changed via the ``url_prefix`` setting. :doc:`See settings for more <configuration>`.
 
 .. code-block:: python
 
@@ -14,6 +15,7 @@ This is can be changed via the ``url_prefix`` setting. :doc:`See settings for mo
 
 All Sanic JWT endpoints will now be available at: ::
 
+    # Custom
     http://localhost:8000/api/authentication
 
 ------------
@@ -53,6 +55,7 @@ Response ::
     200 Response
     {
         "access_token": "<JWT>"
+    }
 
 
 ------------
@@ -102,9 +105,10 @@ Response ::
 
     200 Response
     {
-        "user_id": 123456
+        "me": {
+            user_id": 123456
+        }
     }
-
 
 .. note::
 

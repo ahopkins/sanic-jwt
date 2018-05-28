@@ -12,6 +12,8 @@ It is both **easy** to get up and running, and **extensible** for the developer.
 
 Pick your favorite user management system, run :doc:`a single class to initialize <pages/initialization>`, and you are all set.
 
+`Open source code on GitHub<https://github.com/ahopkins/sanic-jwt>`_
+
 ------------
 
 .. toctree::

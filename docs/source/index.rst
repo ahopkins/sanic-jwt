@@ -37,6 +37,16 @@ Pick your favorite user management system, run :doc:`a single class to initializ
 ------------
 
 +++++++++++++++++++++++++++
+What is new in Version 1.1?
++++++++++++++++++++++++++++
+
+The biggest changes are under the hood relating to how configuration settings are implemented. They are now fully dynamic allowing you to not only dynamically set them at run time, but also have them evaluated at the last minute to give you flexibility when needed.
+
+Flexibility is really the name of the game for v. 1.1. Most of the features are to enable the developer that wants to dig deeper and gain more control. For example, the ``Authentication`` now has a number of new renamed methods. Checkout the source code to see what they are (hint: they are the ones NOT with an ``_`` at the beginning.)
+
+Checkout the changelog for a more detailed description.
+
++++++++++++++++++++++++++++
 What is new in Version 1.0?
 +++++++++++++++++++++++++++
 

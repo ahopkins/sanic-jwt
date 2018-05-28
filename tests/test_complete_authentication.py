@@ -3,13 +3,16 @@ import pytest
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import Authentication, Initialize, exceptions
+from sanic_jwt import Authentication, Initialize, exceptions, protected
 
 
 @pytest.yield_fixture
-def app_full_auth_cls(users):
+def cache():
+    yield {}
 
-    cache = {}
+
+@pytest.yield_fixture
+def my_authentication_class(users, cache):
 
     class MyAuthentication(Authentication):
 
@@ -45,7 +48,8 @@ def app_full_auth_cls(users):
 
         async def retrieve_refresh_token(self, user_id, *args, **kwargs):
             key = "refresh_token_{user_id}".format(user_id=user_id)
-            return cache.get(key, None)
+            token = cache.get(key, None)
+            return token
 
         async def retrieve_user(self, request, payload, *args, **kwargs):
             if payload:
@@ -62,21 +66,58 @@ def app_full_auth_cls(users):
             payload.update({"foo": "bar"})
             return payload
 
+    yield MyAuthentication
+
+
+@pytest.yield_fixture
+def sanic_app(users, my_authentication_class, cache):
     sanic_app = Sanic()
-    sanicjwt = Initialize(
-        sanic_app,
-        authentication_class=MyAuthentication,
-        refresh_token_enabled=True,
-    )
 
     @sanic_app.route("/")
     async def helloworld(request):
         return json({"hello": "world"})
 
     @sanic_app.route("/protected")
-    @sanicjwt.protected()
+    @protected()
     async def protected_request(request):
         return json({"protected": True})
+
+    yield sanic_app
+
+
+@pytest.yield_fixture
+def app_full_auth_cls(sanic_app, my_authentication_class):
+
+    sanicjwt = Initialize(
+        sanic_app,
+        authentication_class=my_authentication_class,
+        refresh_token_enabled=True,
+    )
+
+    yield (sanic_app, sanicjwt)
+
+
+@pytest.yield_fixture
+def app_full_bytes_refresh_token(
+    users,
+    sanic_app,
+    my_authentication_class,
+    cache
+):
+
+    class MyAuthentication(my_authentication_class):
+
+        async def retrieve_refresh_token(self, user_id, *args, **kwargs):
+            key = "refresh_token_{user_id}".format(user_id=user_id)
+            token = cache.get(key, None).encode('utf-8')
+            print(token, type(token))
+            return token
+
+    sanicjwt = Initialize(
+        sanic_app,
+        authentication_class=MyAuthentication,
+        refresh_token_enabled=True,
+    )
 
     yield (sanic_app, sanicjwt)
 
@@ -144,6 +185,7 @@ def test_authentication_all_methods(app_full_auth_cls):
         sanicjwt.config.refresh_token_name(), None
     ) is None  # there is no new refresh token
     assert sanicjwt.config.refresh_token_name() not in response.json
+    # assert False
 
 
 def test_authentication_cross_tokens(app_full_auth_cls):
@@ -182,3 +224,68 @@ def test_authentication_cross_tokens(app_full_auth_cls):
 
     assert response.status == 401
     assert response.json.get("exception") == "AuthenticationFailed"
+
+
+def test_authentication_with_bytes_refresh_token(app_full_bytes_refresh_token):
+
+    app, sanicjwt = app_full_bytes_refresh_token
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    assert response.status == 200
+    assert sanicjwt.config.access_token_name() in response.json
+    assert sanicjwt.config.refresh_token_name() in response.json
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+    refresh_token = response.json.get(
+        sanicjwt.config.refresh_token_name(), None
+    )
+
+    assert access_token is not None
+    assert refresh_token is not None
+
+    payload = jwt.decode(access_token, sanicjwt.config.secret())
+
+    assert "foo" in payload
+    assert payload.get("foo") == "bar"
+
+    _, response = app.test_client.get(
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 200
+    assert response.json.get("protected") is True
+
+    _, response = app.test_client.get(
+        "/auth/verify",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 200
+
+    _, response = app.test_client.get(
+        "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
+    )
+
+    assert response.status == 200
+    assert "me" in response.json
+
+    _, response = app.test_client.post(
+        "/auth/refresh",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+        json={sanicjwt.config.refresh_token_name(): refresh_token},
+    )
+
+    new_access_token = response.json.get(
+        sanicjwt.config.access_token_name(), None
+    )
+
+    assert response.status == 200
+    assert new_access_token is not None
+    assert response.json.get(
+        sanicjwt.config.refresh_token_name(), None
+    ) is None  # there is no new refresh token
+    assert sanicjwt.config.refresh_token_name() not in response.json

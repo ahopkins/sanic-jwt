@@ -14,6 +14,12 @@ _EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys"])
 
 
 def initialize(*args, **kwargs):
+    """
+    Functional approach to initializing Sanic JWT. This was the original
+    method, but was replaced by the Initialize class. It is recommended to use
+    the class because it is more flexible. There is no current plan to remove
+    this method, but it may be depracated in the future.
+    """
     if len(args) > 1:
         kwargs.update({"authenticate": args[1]})
     return Initialize(args[0], **kwargs)

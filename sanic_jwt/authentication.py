@@ -41,6 +41,9 @@ class BaseAuthentication:
         return await self._get_user_id(user, asdict=True)
 
     async def add_claims(self, payload, *args, **kwargs):
+        """
+        Injects standard claims into the payload for: exp, iss, iat, nbf, aud.
+        """
         delta = timedelta(seconds=self.config.expiration_delta())
         exp = datetime.utcnow() + delta
         additional = {"exp": exp}

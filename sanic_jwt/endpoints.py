@@ -160,9 +160,11 @@ class RefreshEndpoint(BaseEndpoint):
         )
         if isinstance(refresh_token, bytes):
             refresh_token = refresh_token.decode("utf-8")
-        purported_token = await self.instance.auth.retrieve_refresh_token_from_request(
-            request
-        )
+
+        purported_token = await self.instance.auth. \
+            retrieve_refresh_token_from_request(
+                request
+            )
 
         if refresh_token != purported_token:
             raise exceptions.AuthenticationFailed()

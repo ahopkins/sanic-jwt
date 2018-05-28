@@ -11,13 +11,23 @@ Version 1.1 - 2018-XX-XX
 | **Added**
 | - New handler method: ``override_scope_validator``
 | - New handler method: ``destructure_scopes``
+| - New decorator method: ``inject_user``
+| - Decorator methods copied to ``Initialize`` class for convenience
+| - New convenience method for extracting ``user_id`` from request
+| - Feature for decoupling authentication mode for microservices
+| - Ability to have custom generated refresh tokens
 
 | **Changed**
 | - ``Authentication.is_authenticated`` to ``Authentication._check_authentication``
 | - ``Authentication.verify`` to ``Authentication._verify``
+| - ``Authentication.get_access_token`` to ``Authentication.generate_access_token``
+| - ``Authentication.get_refresh_token`` to ``Authentication.generate_refresh_token``
+| - ``Authentication.retrieve_scopes`` to ``Authentication.extract_scopes``
+| - Method for getting and setting configurations made dynamic
 
 | **Fixed**
 | - Verification that a custom payload extender supplies all of the enabled claims
+| - ``abort`` bug when using Sanic's convenience method for exceptions
 
 
 ++++++++++++++++++++++++++

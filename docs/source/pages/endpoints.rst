@@ -282,3 +282,41 @@ You can customize how Sanic JWT handles responses on an exception by subclassing
         }, status=exception.status_code)
 
     Initialize(app, response_class=MyResponses)
+
+
+------------
+
++++++++++++++
+Microservices
++++++++++++++
+
+One of the benefits of a lightweight framework like Sanic is that it makes building microservice architectures simple, and flexible. If you are building a microservice application, likely you do not want all of your services to have the ``/auth`` endpoints!
+
+.. code-block
+
+    http://app1.mymicroserviceapp.com/auth
+    http://app2.mymicroserviceapp.com/auth
+    http://app3.mymicroserviceapp.com/auth
+
+Instead, you probably only want to authenticate against a single service, and use the token generated there among all yout services. This can be easily accomplished with the ``auth_mode=True`` :doc:`configuration`. Set it to ``True`` on your authentication service, and ``False`` everywhere else. All the decorators will still work as expected.
+
+.. code-block:: python
+
+    # Authentication service
+    Initialize(app, authenticate=lambda: True)
+
+    # Every other service
+    Initialize(app, auth_mode=False)
+
+Now, the ``/auth`` endpoints are only on your authentication service, but the access token can be used on ANY of your other services.
+
+.. code-block
+
+    http://auth.mymicroserviceapp.com/auth
+    http://app1.mymicroserviceapp.com
+    http://app2.mymicroserviceapp.com
+    http://app3.mymicroserviceapp.com
+
+.. note::
+
+    This works **only** if each of the services has the same ``secret``.

@@ -1,3 +1,7 @@
+__version__ = '1.1'
+__author__ = 'Adam Hopkins'
+__credits__ = 'Richard Kuesters'
+
 import logging
 
 from .authentication import Authentication

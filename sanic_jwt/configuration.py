@@ -18,23 +18,23 @@ defaults = {
     "claim_iss": None,
     "claim_nbf": False,
     "claim_nbf_delta": 0,
+    "cookie_access_token_name": "access_token",
     "cookie_domain": "",
     "cookie_httponly": True,
     "cookie_refresh_token_name": "refresh_token",
     "cookie_set": False,
     "cookie_strict": True,
-    "cookie_access_token_name": "access_token",
     "debug": False,
     "expiration_delta": 60 * 5 * 6,
     "generate_refresh_token": utils.generate_token,
     "leeway": 60 * 3,
-    "refresh_token_enabled": False,
-    "refresh_token_name": "refresh_token",
     "path_to_authenticate": "/",
+    "path_to_refresh": "/refresh",
     "path_to_retrieve_user": "/me",
     "path_to_verify": "/verify",
-    "path_to_refresh": "/refresh",
     "private_key": None,
+    "refresh_token_enabled": False,
+    "refresh_token_name": "refresh_token",
     "scopes_enabled": False,
     "scopes_name": "scopes",
     "secret": "This is a big secret. Shhhhh",
@@ -310,7 +310,7 @@ class Configuration:
             if utils.algorithm_is_asymmetric(self.algorithm()):
                 raise exceptions.RequiredKeysNotFound
 
-            raise exc
+            raise exc  # noqa
 
     @staticmethod
     def extract_presets(app_config):

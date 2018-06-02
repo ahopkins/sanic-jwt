@@ -6,11 +6,13 @@ Refresh Tokens
 What is a refresh token?
 ++++++++++++++++++++++++
 
-Access tokens are disposable. Because they cannot be expired, they have a *short* lifespan. However, without a refresh token, the client would need to reauthenticate every time the access token expired. Access tokens are generated, and sent to the client. They are not persisted.
+Access tokens are disposable. Because they cannot be expired, they have a *short* lifespan. Every time an access token expires, the client needs to reauthenticate. Access tokens are generated, and sent to the client. They are not persisted. This means that they cannot be revoked.
 
-Refresh tokens solve this problem. It is a token that is stored by the server. At any time a client can send the refresh token to the server and ask for a new access token.
+Refresh tokens solve these two problems. It is a token that is stored by the server. At any time a client can send the refresh token to the server and ask for a new access token.
 
-The server takes the refresh token, looks up in its data store to see if it is acceptable. If yes, then a new access token is stored.
+The server takes the refresh token, looks up in its data store to see if it is acceptable. If yes, then a new access token is generated and sent to the client.
+
+In a best practices scenario, refresh tokens and access tokens work together to provide a user friendly, yet secure, authentication environment.
 
 ------------
 
@@ -18,7 +20,7 @@ The server takes the refresh token, looks up in its data store to see if it is a
 Configuration
 +++++++++++++
 
-Sanic JWT facilitates the creation and passing of refresh tokens. However, just like with authentication, the storage and retrieval of the tokens is left to the developer. This allows the you to decide how to persist the token, and allows you to deactivate a token at any time.
+Sanic JWT facilitates the creation and passing of refresh tokens. However, just like with authentication, the storage and retrieval of the tokens is left to the developer. Why? This allows the you to decide how to persist the token, and allows you to deactivate a token at any time.
 
 There are three steps needed:
 
@@ -28,16 +30,34 @@ There are three steps needed:
 
 ------------
 
++++++++++++++++++++++
+Enable refresh tokens
++++++++++++++++++++++
+
+Out of the box, Sanic JWT will **not** generate refresh tokens for you. If you want to make use of them, simply enable them as you would any other :doc:`configuration`. The easiest is probably just to pass ``refresh_token_enabled`` into ``Initialize``.
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        authenticate=lambda: True,
+        refresh_token_enabled=True,)
+
+------------
+
 ++++++++
 Handlers
 ++++++++
 
-``store_refresh_token``
-~~~~~~~~~~~~~~~~~~~~~~~
+As mentioned, there are two **required** handlers you must create if you would like to provide refresh tokens to users.
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. ``store_refresh_token``
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When running ``Initialize``, pass it an attribute that can go to your data store and persist a refresh token. The method is passed ``user_id`` (which comes from the user object returned from the ``authenticate`` method), and ``refresh_token``.
 
-It can be **either** a callable or an awaitable. Here are two different examples that all do the same thing: persist a ``refresh_token`` to Redis.
+It can be **either** a callable or an awaitable. Here are two different examples that do the same thing: persist a ``refresh_token`` to Redis.
 
 .. code-block:: python
 
@@ -60,8 +80,9 @@ Then you hook it up to the initialize script like this:
         authenticate=lambda: True,
         store_refresh_token=store_refresh_token)
 
-``retrieve_refresh_token``
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+2. ``retrieve_refresh_token``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 When running ``Initialize``, pass it an attribute that can go to your data store and retrieve a refresh token. The method is passed ``user_id`` (which comes from the user object returned from the ``authenticate`` method), and the ``request`` object to determine if it contains what is needed to retrieve a token.
 
@@ -110,4 +131,24 @@ Therefore, if you would like to expire the token, then this is something for you
 
 For more information on this, see `Issue #34 <https://github.com/ahopkins/sanic-jwt/issues/34>`_ and `Issue #66 <https://github.com/ahopkins/sanic-jwt/issues/66>`_.
 
-We agree. Having the control expire a token is wonderful. Having it be done automatically? Even better. But, this is something that seems better left to the individual developer to decide upon, rather than Sanic JWT making that choice for you.
+We agree. Having the control expire a token is wonderful. Having it be done automatically? Even better. But, this is something that seems better left to the individual developer to decide upon, rather than Sanic JWT making that choice for you. Our goal here is to enable the developer to build a more secure platform, not make decisions for them.
+
+~~~~~~~~~~~~~~~~~~~~~~~
+But, I really want one!
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Okay, fine. If you really would like to issue a JWT, or any kind of token, you can. Sanic JWT gives you the control to override our default method of generating refresh tokens. Something like this would work:
+
+.. code-block:: python
+
+    import uuid
+
+    def generate_refresh_token(*args, **kwargs):
+        return str(uuid.uuid4())
+
+    Initialize(
+        ...
+        generate_refresh_token=generate_refresh_token,
+    )
+
+You as the developer have the control to issue whatever you would like. If you want that refresh token to be a JWT, go for it! You will need to generate it, and then validate it in the ``retrieve_refresh_token`` handler. I'll let the exercise be up to you, but feel free to `post an issue and ask for help <https://github.com/ahopkins/sanic-jwt/issues>`_.

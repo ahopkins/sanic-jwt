@@ -4,9 +4,10 @@ Endpoints and Responses
 
 Sanic JWT sets itself up to run as a `Sanic Blueprint <http://sanic.readthedocs.io/en/latest/sanic/blueprints.html>`_ at the ``/auth`` path. ::
 
+    # Default
     http://localhost:8000/auth
 
-This is can be changed via the ``url_prefix`` setting. :doc:`See settings for more <settings>`.
+This is can be changed via the ``url_prefix`` setting. :doc:`See settings for more <configuration>`.
 
 .. code-block:: python
 
@@ -14,6 +15,7 @@ This is can be changed via the ``url_prefix`` setting. :doc:`See settings for mo
 
 All Sanic JWT endpoints will now be available at: ::
 
+    # Custom
     http://localhost:8000/api/authentication
 
 ------------
@@ -53,6 +55,7 @@ Response ::
     200 Response
     {
         "access_token": "<JWT>"
+    }
 
 
 ------------
@@ -102,9 +105,10 @@ Response ::
 
     200 Response
     {
-        "user_id": 123456
+        "me": {
+            user_id": 123456
+        }
     }
-
 
 .. note::
 
@@ -143,6 +147,8 @@ Modify Responses
 
 The responses for each of the default endpoints is extendable by subclassing the ``Responses`` class, and hooking into the appropriate method. Just make sure you return a ``dict``.
 
+Your custom ``Responses`` should be hooked up to Sanic JWT using the ``responses_class`` keyword argument on the ``Initialize`` instance.
+
 .. code-block:: python
 
     from sanic_jwt import Responses
@@ -172,7 +178,7 @@ The responses for each of the default endpoints is extendable by subclassing the
                            payload=None):
             return {}
 
-    Initialize(app, response_class=MyResponses)
+    Initialize(app, responses_class=MyResponses)
 
 ------------
 
@@ -276,3 +282,41 @@ You can customize how Sanic JWT handles responses on an exception by subclassing
         }, status=exception.status_code)
 
     Initialize(app, response_class=MyResponses)
+
+
+------------
+
++++++++++++++
+Microservices
++++++++++++++
+
+One of the benefits of a lightweight framework like Sanic is that it makes building microservice architectures simple, and flexible. If you are building a microservice application, likely you do not want all of your services to have the ``/auth`` endpoints!
+
+.. code-block
+
+    http://app1.mymicroserviceapp.com/auth
+    http://app2.mymicroserviceapp.com/auth
+    http://app3.mymicroserviceapp.com/auth
+
+Instead, you probably only want to authenticate against a single service, and use the token generated there among all yout services. This can be easily accomplished with the ``auth_mode=True`` :doc:`configuration`. Set it to ``True`` on your authentication service, and ``False`` everywhere else. All the decorators will still work as expected.
+
+.. code-block:: python
+
+    # Authentication service
+    Initialize(app, authenticate=lambda: True)
+
+    # Every other service
+    Initialize(app, auth_mode=False)
+
+Now, the ``/auth`` endpoints are only on your authentication service, but the access token can be used on ANY of your other services.
+
+.. code-block
+
+    http://auth.mymicroserviceapp.com/auth
+    http://app1.mymicroserviceapp.com
+    http://app2.mymicroserviceapp.com
+    http://app3.mymicroserviceapp.com
+
+.. note::
+
+    This works **only** if each of the services has the same ``secret``.

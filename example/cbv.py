@@ -6,7 +6,8 @@ from sanic_jwt.decorators import protected
 from sanic.views import HTTPMethodView
 
 
-class User(object):
+class User:
+
     def __init__(self, id, username, password):
         self.user_id = id
         self.username = username
@@ -16,23 +17,18 @@ class User(object):
         return "User(id='%s')" % self.id
 
     def to_dict(self):
-        return {
-            'user_id': self.user_id
-        }
+        return {"user_id": self.user_id}
 
 
-users = [
-    User(1, 'user1', 'abcxyz'),
-    User(2, 'user2', 'abcxyz'),
-]
+users = [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
 
 username_table = {u.username: u for u in users}
 userid_table = {u.user_id: u for u in users}
 
 
 async def authenticate(request, *args, **kwargs):
-    username = request.json.get('username', None)
-    password = request.json.get('password', None)
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
 
     if not username or not password:
         raise exceptions.AuthenticationFailed("Missing username or password.")
@@ -48,13 +44,11 @@ async def authenticate(request, *args, **kwargs):
 
 
 app = Sanic()
-initialize(
-    app,
-    authenticate=authenticate,
-)
+initialize(app, authenticate=authenticate)
 
 
 class PublicView(HTTPMethodView):
+
     def get(self, request):
         return json({"hello": "world"})
 
@@ -66,8 +60,8 @@ class ProtectedView(HTTPMethodView):
         return json({"protected": True})
 
 
-app.add_route(PublicView.as_view(), '/')
-app.add_route(ProtectedView.as_view(), '/protected')
+app.add_route(PublicView.as_view(), "/")
+app.add_route(ProtectedView.as_view(), "/protected")
 
 
 if __name__ == "__main__":

@@ -15,11 +15,17 @@
 Sanic JWT adds authentication protection and endpoints to [Sanic].
 
 It is both **easy** to get up and running, and **extensible** for the
-developer. It can act to protect endpoints and also provide authentication scoping, all wrapped into a nice [JWT].
+developer. It can act to **protect endpoints** and also provide **authentication scoping**, all wrapped into a nice [JWT].
 
-[Read the documentation](http://sanic-jwt.rtfd.io/)
+[Read the documentation](http://sanic-jwt.rtfd.io/) | [View the source code](https://github.com/ahopkins/sanic-jwt/)
 
-Install:
+------
+
+**What do I do?**
+
+It's easy: (1) install, (2) initialize, and (3) authenticate.
+
+**Install:**
 
 ```
 pip install sanic-jwt
@@ -28,7 +34,7 @@ pip install sanic-jwt
   [Sanic]: http://sanic.readthedocs.io
   [JWT]: https://jwt.io
 
-Initialize:
+**Initialize:**
 
 ```python
 from sanic import Sanic
@@ -44,6 +50,12 @@ Initialize(
 )
 ```
 
-Authenticate:
+**Authenticate:**
 
     http://localhost/auth
+
+------
+
+**Can I customize it?**
+
+Definitely! Sanic JWT is made to allow developers to customize the operation to fit their needs. [Check out the documentation](http://sanic-jwt.rtfd.io/) to learn how.

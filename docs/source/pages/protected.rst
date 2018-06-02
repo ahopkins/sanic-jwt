@@ -29,20 +29,34 @@ The ``@protected`` decorator
     async def protected_route(request):
         return json({"protected": True})
 
-Now, anyone can access the ``/`` route. But, only users that pass a valid access token can reach ``protected``.
+Now, anyone can access the ``/`` route. But, only users that pass a valid access token can reach ``/protected``.
 
 If you have initialized Sanic JWT on a ``Blueprint``, then you will need to pass the instance of that blueprint into the ``@protected`` decorator.
 
 .. code-block:: python
 
     bp = Blueprint('Users')
-    Initialize(bp)
+    Initialize(bp, app=app)
 
     @bp.get('/users/<id>')
     @protected(bp)
     async def users(request, id):
         ...
 
+Alternatively (and probably preferably), you can also access the decorator from the ``Initialize`` instance. This makes it easier if you forget to pass the ``Blueprint``.
+
+.. code-block:: python
+
+    bp = Blueprint('Users')
+    sanicjwt = Initialize(bp, app=app)
+
+    @bp.get('/users/<id>')
+    @sanicjwt.protected()
+    async def users(request, id):
+        ...
+
+
+~~~~~~~~~~~~~~~~~
 Class based views
 ~~~~~~~~~~~~~~~~~
 
@@ -74,6 +88,8 @@ There are two general methodologies for passing a token: cookie based, and heade
 
     curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/me
 
+
+~~~~~~~~~~~~~
 Header Tokens
 ~~~~~~~~~~~~~
 
@@ -82,7 +98,7 @@ Header tokens are passed by adding an ``Authorization`` header that consists of 
 1. the word ``Bearer``
 2. the JWT access token
 
-If you would like, you can modify this behavior by changing the :doc:`settings<settings>` for ``authorization_header`` and ``authorization_header_prefix``.
+If you would like, you can modify this behavior by changing the :doc:`configuration<configuration>` for ``authorization_header`` and ``authorization_header_prefix``.
 
 .. code-block:: python
 
@@ -95,6 +111,8 @@ If you would like, you can modify this behavior by changing the :doc:`settings<s
 
     curl -X GET -H "somecustomheader: MeFirst <JWT>" http://localhost:8000/auth/me
 
+
+~~~~~~~~~~~~~
 Cookie Tokens
 ~~~~~~~~~~~~~
 
@@ -122,8 +140,10 @@ Now, Sanic JWT will reject any request that does not have a valid access token i
 
 .. warning::
 
-    If you are using cookies to pass JWTs, then it is recommended that you do not disable ``cookie_httponly``. Doing so means that any javascript running on the client can access the token. Bad news.
+    If you are using cookies to pass JWTs, then it is recommended that you do **not** disable ``cookie_httponly``. Doing so means that any javascript running on the client can access the token. Bad news.
 
+
+~~~~~~~~~~~~~~~~~~~~~~
 Both Header and Cookie
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -138,7 +158,77 @@ Is such cases, change ``cookie_strict`` to ``False``.
         cookie_set=True,
         cookie_strict=False,)
 
+This will now tell Sanic JWT to look for the cookie first. If it is not present, before throwing an exception, it will fallback and look for an ``Authorization`` header.
+
+~~~~~~~~~~~~~~~~~~~~
 Per view declaration
 ~~~~~~~~~~~~~~~~~~~~
 
-`Coming soon` - the ability to decide at the view level which token to accept
+Perhaps you realize that you would like to make the declaration on a single view? Most of your views will operate using a cookie, but one particular endpoint (for whatever reason) will best be served to accept headers. Not a problem. You can simply pass in the configuration parameters right into the decorator!
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        cookie_set=True,
+        cookie_strict=False,)
+
+    @app.route("/protected_by_header")
+    @protected(cookie_set=False)
+    async def protected_by_header_route(request):
+        ...
+
+Learn more about :doc:`configuration overrides <configuration>`.
+
+.. note::
+
+    This paradigm works for all configurations. Feel free to experiment and change config settings at the lowest level you might need them.
+
+------------
+
++++++++++++++++++++
+Advanced Decorators
++++++++++++++++++++
+
+Want to have a greater level of control? Instead of just importing the decorators from the ``sanic_jwt.decorators`` module, you can also use the decorator directly off your initialized Sanic JWT instance!
+
+.. code-block:: python
+
+    sanicjwt = Initialize(app)
+
+    @app.route("/protected")
+    @sanicjwt.protected()
+    async def protected_route(request):
+        ...
+
+This also works for blueprints (and has the added advantage that you no longer need to pass the `bp` instance in.
+
+
+.. code-block:: python
+
+    bp = Blueprint('Users')
+    Initialize(bp, app=app)
+
+    @bp.get('/users/<id>')
+    @bp.protected()
+    async def users(request, id):
+        ...
+
+.. note::
+
+    This concept of having instance based decorators also works for the ``scoped`` decorator: ``bp.scoped('foobar')``; and the ``@inject_user`` decorator.
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+``@inject_user`` decorator
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You've gone thru the hard work and added a ``retrieve_user`` method. You might as well be able to reap the benefits by leveraging that method to inject your user data into your endpoints.
+
+.. code-block:: python
+
+    @app.route("/protected/user")
+    @inject_user()
+    @protected()
+    async def my_protected_user(request, user):
+        return json({"user_id": user.user_id})

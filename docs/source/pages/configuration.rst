@@ -66,6 +66,42 @@ What if you need to calculate a setting? No problem. Each of the settings can be
         app,
         configuration_class=MyConfiguration)
 
+But, it does not need to be a callable. This works too:
+
+.. code-block:: python
+
+    from sanic_jwt import Configuration
+
+    class MyConfiguration(Configuration):
+        set_access_token_name = 'jwt'
+
+    Initialize(
+        app,
+        configuration_class=MyConfiguration)
+
+Okay ... need to go even **further**? You can also have a setting evaluated on each request with the ``get_<setting>()`` method:
+
+.. code-block:: python
+
+    auth_header_key = "x-authorization-header"
+
+    class MyConfig(Configuration):
+
+        def get_authorization_header(self, request):
+            if auth_header_key in request.headers:
+                return request.headers.get(auth_header_key)
+
+            return "authorization"
+
+    Initialize(
+        app,
+        configuration_class=MyConfig
+    )
+
+This brings up an important point. If you go with the getter method, then in order to not waste resources, it will be evaluated only **one** time per request. The output of your getter will be cached for the lifespan of that request only.
+
+As you can see, the getter method is passed the ``request`` object as a parameter.
+
 ------------
 
 ++++++++
@@ -102,6 +138,15 @@ Settings
     PS256 - RSASSA-PSS signature using SHA-256 and MGF1 padding with SHA-256
     PS384 - RSASSA-PSS signature using SHA-384 and MGF1 padding with SHA-384
     PS512 - RSASSA-PSS signature using SHA-512 and MGF1 padding with SHA-512
+
+
+-------------
+``auth_mode``
+-------------
+
+| **Purpose**: Whether to enable the ``/auth`` endpoints or not. Helpful for microservice applications.
+| **Default**: ``True``
+|
 
 
 ------------------------
@@ -226,7 +271,7 @@ Alias for ``cookie_access_token_name``
 ``debug``
 ---------
 
-| **Purpose**: Used for development and testing of the package.
+| **Purpose**: Used for development and testing of the package. You will likely never need this.
 | **Default**: ``False``
 |
 
@@ -236,6 +281,14 @@ Alias for ``cookie_access_token_name``
 
 | **Purpose**: The length of time that the access token should be valid. `Since there is NO way to revoke an access token, it is recommended to keep this time period short, and to enable refresh tokens (which can be revoked) to retrieve new access tokens.`
 | **Default**: ``60 * 5 * 6``, aka 30 minutes
+|
+
+--------------------------
+``generate_refresh_token``
+--------------------------
+
+| **Purpose**: A method to create and return a refresh token.
+| **Default**: ``sanic_jwt.utils.generate_refresh_token``
 |
 
 ----------
@@ -345,7 +398,7 @@ Alias for ``secret``
 --------------
 
 | **Purpose**: The url prefix used for all URL endpoints. Note, the placement of ``/``.
-| **Default**: ``'/'``
+| **Default**: ``'/auth'``
 |
 
 -----------

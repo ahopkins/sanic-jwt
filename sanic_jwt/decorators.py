@@ -97,9 +97,7 @@ def scoped(
 
                 try:
                     (
-                        is_authenticated,
-                        status,
-                        reasons
+                        is_authenticated, status, reasons
                     ) = instance.auth._check_authentication(
                         request, request_args=args, request_kwargs=kwargs
                     )

@@ -38,7 +38,7 @@ install_requires = ["pyjwt"]
 
 setup(
     name="sanic-jwt",
-    version="1.1",
+    version="1.1.0",
     description="JWT oauth flow for Sanic",
     url="https://github.com/ahopkins/sanic-jwt",
     download_url="https://github.com/ahopkins/sanic-jwt/archive/master.zip",
@@ -59,6 +59,5 @@ setup(
     extras_require=extras_require,
     setup_requires=setup_requires,
     tests_require=tests_require,
-    package_data={
-    },
+    package_data={},
 )

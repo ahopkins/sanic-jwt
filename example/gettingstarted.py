@@ -3,7 +3,8 @@ from sanic_jwt import Initialize
 
 
 async def authenticate(request):
-    return dict(user_id='some_id')
+    return dict(user_id="some_id")
+
 
 app = Sanic()
 Initialize(app, authenticate=authenticate)

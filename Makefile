@@ -10,7 +10,7 @@ help:
 	@echo "test - run tests with coverage"
 	@echo "release - package and upload a release"
 
-.PHONY: black help Makefile
+.PHONY: black help  release Makefile
 
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

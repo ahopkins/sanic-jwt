@@ -4,6 +4,14 @@ Changelog
 
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
+++++++++++++++++++++++++++
+Version 1.1.1 - 2018-06-14
+++++++++++++++++++++++++++
+
+| **Changed**
+| - Method of passing rquest object ``args`` and ``kwargs`` to scope handler
+|
+
 +++++++++++++++++++++++++
 Version 1.1 - 2018-06-03
 +++++++++++++++++++++++++

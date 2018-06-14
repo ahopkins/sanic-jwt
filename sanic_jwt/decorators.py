@@ -135,7 +135,7 @@ def scoped(
                             override=override,
                             destructure=destructure,
                             request_args=args,
-                            request_kwargs=kwargs
+                            request_kwargs=kwargs,
                         )
                         if not is_authorized:
                             status = 403

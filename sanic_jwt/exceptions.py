@@ -27,6 +27,15 @@ class MissingAuthorizationCookie(SanicJWTException):
         super().__init__(message, **kwargs)
 
 
+class MissingAuthorizationQueryArg(SanicJWTException):
+    status_code = 400
+
+    def __init__(
+        self, message="Authorization query argument not present.", **kwargs
+    ):
+        super().__init__(message, **kwargs)
+
+
 class InvalidAuthorizationHeader(SanicJWTException):
     status_code = 400
 

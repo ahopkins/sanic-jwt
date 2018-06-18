@@ -126,7 +126,8 @@ Now, Sanic JWT will reject any request that does not have a valid access token i
 
 | ``cookie_domain`` - changes domain associated with a cooke (defaults to '')
 | ``cookie_httponly`` - whether to set an httponly flag on the cookie (defaults to ``True``)
-| ``cookie_access_token_name`` - the name where the cookie is stored
+| ``cookie_access_token_name`` - the name where the cookie is stored for access token
+| ``cookie_refresh_token_name`` - the name where the cookie is stored for refresh token
 |
 
 .. code-block:: python
@@ -141,6 +142,21 @@ Now, Sanic JWT will reject any request that does not have a valid access token i
 .. warning::
 
     If you are using cookies to pass JWTs, then it is recommended that you do **not** disable ``cookie_httponly``. Doing so means that any javascript running on the client can access the token. Bad news.
+
+
+~~~~~~~~~~~~~~~~~~~
+Query String Tokens
+~~~~~~~~~~~~~~~~~~~
+
+Sometimes, both header based authentication and cookie based authentication will not be enough. A third option is available to look for tokens inside query string arguments:
+
+    http://localhost?access_token=<JWT>
+
+This can be enabled with ``query_string_set=True``. One potential use for this would be authentication of a websocket endpoint where sending headers and cookies may be more challenging due to Javascript limitations.
+
+.. warning::
+
+    In most scenarios, it is advisable to **not** use query strings for authentication. One of the biggest reasons is that the tokens may be easily leaked if a URL is copied and pasted, or because the token may end up in server logs. However, the option is available if you need it and you feel comfortable that you can mitigate any risks.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~

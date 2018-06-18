@@ -249,7 +249,7 @@ Settings
 ``cookie_set``
 --------------
 
-| **Purpose**:  By default, the application will lookie for access tokens in the HTTP request headers. If you would instead prefer to send them through cookies, enable this to ``True``.
+| **Purpose**:  By default, the application will look for access tokens in the HTTP request headers. If you would instead prefer to send them through cookies, enable this to ``True``.
 | **Default**: ``False``
 |
 
@@ -344,6 +344,38 @@ Alias for ``cookie_access_token_name``
 --------------
 
 Alias for ``secret``
+
+----------------------------------
+``query_string_access_token_name``
+----------------------------------
+
+| **Purpose**: The name of the cookie to be set for storing the refresh token if using query string based authentication.
+| **Default**: ``'access_token'``
+|
+
+-----------------------------------
+``query_string_refresh_token_name``
+-----------------------------------
+
+| **Purpose**: The name of the cookie to be set for storing the refresh token if using query string based authentication.
+| **Default**: ``'refresh_token'``
+|
+
+--------------------
+``query_string_set``
+--------------------
+
+| **Purpose**:  By default, the application will look for access tokens in the HTTP request headers. If you would instead prefer to send them as a URL query string, enable this to ``True``.
+| **Default**: ``False``
+|
+
+-----------------------
+``query_string_strict``
+-----------------------
+
+| **Purpose**: If ``query_string_set`` is enabled, an exception will be raised if the query string is not present. To allow for an authorization header to be used as a fallback, turn ``query_string_strict`` to ``False``.
+| **Default**: ``True``
+|
 
 -------------------------
 ``refresh_token_enabled``

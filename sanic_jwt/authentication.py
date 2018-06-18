@@ -245,6 +245,19 @@ class Authentication(BaseAuthentication):
 
             return token
 
+    def _get_token_from_query_string(self, request, refresh_token):
+        """
+        Extract the token if present from the request args.
+        """
+        if refresh_token:
+            query_string_token_name_key = "query_string_refresh_token_name"
+        else:
+            query_string_token_name_key = "query_string_access_token_name"
+        query_string_token_name = getattr(
+            self.config, query_string_token_name_key
+        )
+        return request.raw_args.get(query_string_token_name(), None)
+
     def _get_token(self, request, refresh_token=False):
         """
         Extract a token from a request object.
@@ -257,6 +270,15 @@ class Authentication(BaseAuthentication):
             else:
                 if self.config.cookie_strict():
                     raise exceptions.MissingAuthorizationCookie()
+
+        if self.config.query_string_set():
+            token = self._get_token_from_query_string(request, refresh_token)
+            if token is not None:
+                return token
+
+            else:
+                if self.config.query_string_strict():
+                    raise exceptions.MissingAuthorizationQueryArg()
 
         token = self._get_token_from_headers(request, refresh_token)
         if token is not None:

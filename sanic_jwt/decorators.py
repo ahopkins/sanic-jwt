@@ -176,7 +176,7 @@ def inject_user(initialized_on=None, **kw):
             with instant_config(instance, request=request, **kw):
                 if request.method == "OPTIONS":
                     return await utils.call(f, request, *args, **kwargs)
-                
+
                 payload = instance.auth.extract_payload(request, verify=False)
                 user = await instance.auth.retrieve_user(request, payload)
                 response = f(request, user=user, *args, **kwargs)

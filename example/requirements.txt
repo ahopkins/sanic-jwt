@@ -25,7 +25,7 @@ more-itertools==4.3.0     # via pytest
 multidict==4.3.1
 pathtools==0.1.2
 pluggy==0.7.1             # via pytest
-py==1.5.2
+py==1.5.4
 pycparser==2.18
 pyjwt==1.5.3
 pytest==3.5.0

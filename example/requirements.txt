@@ -19,7 +19,7 @@ codecov==2.0.15
 coverage==4.5.1
 cryptography==2.3
 freezegun==0.3.10
-httptools==0.0.9
+httptools==0.0.11
 idna==2.6
 more-itertools==4.1.0     # via pytest
 multidict==3.3.2

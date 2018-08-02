@@ -9,7 +9,7 @@ aiohttp==3.3.2
 aoiklivereload==0.1.0
 argh==0.26.2
 asn1crypto==0.24.0
-async-timeout==2.0.0
+async-timeout==3.0.0
 attrs==17.4.0             # via pytest
 certifi==2018.1.18
 cffi==1.11.4

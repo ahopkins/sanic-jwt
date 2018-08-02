@@ -39,4 +39,4 @@ urllib3==1.22
 uvloop==0.11.0
 watchdog==0.8.3
 websockets==6.0
-yarl==0.14.2
+yarl==1.2.6

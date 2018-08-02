@@ -29,7 +29,7 @@ py==1.5.4
 pycparser==2.18
 pyjwt==1.6.4
 pytest==3.7.0
-python-dateutil==2.6.1
+python-dateutil==2.7.3
 pyyaml==3.12
 requests==2.18.4
 sanic==0.7.0

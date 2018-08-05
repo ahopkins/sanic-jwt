@@ -5,7 +5,7 @@ from inspect import isawaitable
 
 from sanic import Blueprint
 
-from . import exceptions, utils
+from . import exceptions
 from .cache import clear_cache, to_cache
 from .validators import validate_scopes
 
@@ -39,7 +39,10 @@ def protected(initialized_on=None, **kw):
 
             with instant_config(instance, request=request, **kw):
                 if request.method == "OPTIONS":
-                    return await utils.call(f, request, *args, **kwargs)
+                    response = f(request, *args, **kwargs)
+                    if isawaitable(response):
+                        response = await response
+                    return response
 
                 try:
                     (
@@ -58,7 +61,9 @@ def protected(initialized_on=None, **kw):
                 except exceptions.SanicJWTException as e:
                     is_authenticated = False
                     status = e.status_code
-                    reasons = e.args[0]
+                    reasons = instance.auth._reasons if (
+                        instance.auth._reasons and instance.auth.config.debug()
+                    ) else e.args[0]
 
                 if is_authenticated:
                     response = f(request, *args, **kwargs)
@@ -93,7 +98,10 @@ def scoped(
 
             with instant_config(instance, request=request, **kw):
                 if request.method == "OPTIONS":
-                    return await utils.call(f, request, *args, **kwargs)
+                    response = f(request, *args, **kwargs)
+                    if isawaitable(response):
+                        response = await response
+                    return response
 
                 try:
                     (

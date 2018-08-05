@@ -78,22 +78,21 @@ def test_me_with_none(app1):
 
     _, response = app1.test_client.get("/auth/me")
 
-    assert response.status == 200
-    assert response.json.get("me") is None
+    assert response.status == 401
+    assert response.json.get("exception") == "Unauthorized"
 
 
 def test_me_without_authorization_header(app2):
 
     _, response = app2.test_client.get("/auth/me")
 
-    assert response.status == 200
-    assert response.json.get("me") is None
+    assert response.status == 401
+    assert response.json.get("exception") == "Unauthorized"
 
 
 def test_verify_no_auth_header(app1):
     _, response = app1.test_client.get("/auth/verify")
-
-    assert response.status == 400
+    assert response.status == 401
     assert response.json.get("exception") == "MissingAuthorizationHeader"
 
 
@@ -111,5 +110,31 @@ def test_refresh_no_valid_dict(app2):
         "/auth/refresh", json={"not": "important"}
     )
 
+    assert response.status == 400
+    assert response.json.get("exception") == "MissingAuthorizationHeader"
+
+
+def test_me_with_none_debug(app1):
+    app1.auth.config.debug.update(True)
+
+    _, response = app1.test_client.get("/auth/me")
+
+    assert response.status == 400
+    assert response.json.get("exception") == "Unauthorized"
+
+
+def test_me_without_authorization_header_debug(app2):
+    app2.auth.config.debug.update(True)
+
+    _, response = app2.test_client.get("/auth/me")
+
+    assert response.status == 400
+    assert response.json.get("exception") == "Unauthorized"
+
+
+def test_verify_no_auth_header_debug(app1):
+    app1.auth.config.debug.update(True)
+
+    _, response = app1.test_client.get("/auth/verify")
     assert response.status == 400
     assert response.json.get("exception") == "MissingAuthorizationHeader"

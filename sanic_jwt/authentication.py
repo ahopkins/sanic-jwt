@@ -16,6 +16,7 @@ class BaseAuthentication:
         self.app = app
         self.claims = ["exp"]
         self.config = config
+        self._reasons = []
 
     async def _get_user_id(self, user, *, asdict=False):
         """
@@ -115,6 +116,9 @@ class Authentication(BaseAuthentication):
             )
         except Exception as e:
             logger.debug(e.args)
+            if self.config.debug():
+                raise e
+
             raise exceptions.Unauthorized()
 
         return is_valid, status, reasons
@@ -291,6 +295,7 @@ class Authentication(BaseAuthentication):
         request,
         return_payload=False,
         verify=True,
+        raise_missing=False,
         request_args=None,
         request_kwargs=None,
         *args,
@@ -299,23 +304,46 @@ class Authentication(BaseAuthentication):
         """
         Verify that a request object is authenticated.
         """
-        token = self._get_token(request)
-        is_valid = True
-        reason = None
-
         try:
-            payload = self._decode(token, verify=verify)
+            token = self._get_token(request)
+            is_valid = True
+            reason = None
         except (
-            jwt.exceptions.ExpiredSignatureError,
-            jwt.exceptions.InvalidIssuerError,
-            jwt.exceptions.ImmatureSignatureError,
-            jwt.exceptions.InvalidIssuedAtError,
-            jwt.exceptions.InvalidAudienceError,
+            exceptions.MissingAuthorizationCookie,
+            exceptions.MissingAuthorizationQueryArg,
+            exceptions.MissingAuthorizationHeader,
         ) as e:
+            token = None
             is_valid = False
             reason = list(e.args)
-            payload = None
-            status = 403
+            status = e.status_code if self.config.debug() else 401
+
+            if raise_missing:
+                if not self.config.debug():
+                    e.status_code = 401
+                raise e
+
+        if token:
+            try:
+                payload = self._decode(token, verify=verify)
+            except (
+                jwt.exceptions.ExpiredSignatureError,
+                jwt.exceptions.InvalidIssuerError,
+                jwt.exceptions.ImmatureSignatureError,
+                jwt.exceptions.InvalidIssuedAtError,
+                jwt.exceptions.InvalidAudienceError,
+            ) as e:
+                is_valid = False
+                reason = list(e.args)
+                payload = None
+                status = 403
+            except jwt.exceptions.DecodeError as e:
+                self._reasons = e.args
+                logger.debug(e.args)
+                is_valid = False
+                reason = list(e.args) if self.config.debug() else "Auth required."
+                payload = None
+                status = 400 if self.config.debug() else 401
 
         if return_payload:
             return payload

@@ -47,12 +47,6 @@ app.blueprint(blueprint, url_prefix="/test1")
 
 
 def test_protected_blueprints():
-    # _, response = app.test_client.get('/test1/')
-    # _, response = app.test_client.get('/')
-
-    # assert response.status == 401
-    # assert response.status == 401
-
     _, response1 = app.test_client.post(
         "/test1/auth", json={"username": "user1", "password": "abcxyz"}
     )
@@ -108,3 +102,34 @@ def test_protected_blueprints():
 
     assert response1.status == 401
     assert response2.status == 401
+
+
+def test_protected_blueprints_debug():
+    sanicjwt1.config.debug.update(True)
+    sanicjwt2.config.debug.update(True)
+
+    _, response1 = app.test_client.post(
+        "/test1/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+    _, response2 = app.test_client.post(
+        "/a", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    access_token_1 = response1.json.get(
+        sanicjwt1.config.access_token_name(), None
+    )
+    access_token_2 = response2.json.get(
+        sanicjwt2.config.access_token_name(), None
+    )
+
+    _, response1 = app.test_client.get(
+        "/test1/",
+        headers={"Authorization": "Bearer {}".format(access_token_2)},
+    )
+    _, response2 = app.test_client.get(
+        "/",
+        cookies={sanicjwt2.config.cookie_access_token_name(): access_token_1},
+    )
+
+    assert response1.status == 400
+    assert response2.status == 400

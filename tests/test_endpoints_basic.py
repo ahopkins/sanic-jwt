@@ -54,6 +54,14 @@ def test_auth_proper_credentials(app):
 def test_auth_verify_missing_token(app):
     sanic_app, _ = app
     _, response = sanic_app.test_client.get("/auth/verify")
+    assert response.status == 401
+
+
+def test_auth_verify_missing_token_debug(app):
+    sanic_app, sanicjwt = app
+    sanicjwt.config.debug.update(True)
+
+    _, response = sanic_app.test_client.get("/auth/verify")
     assert response.status == 400
 
 
@@ -66,4 +74,4 @@ def test_auth_refresh_not_found(app):
 def test_auth_refresh_not_enabled(app_with_refresh_token):
     sanic_app, _ = app_with_refresh_token
     _, response = sanic_app.test_client.post("/auth/refresh")
-    assert response.status == 400
+    assert response.status == 500

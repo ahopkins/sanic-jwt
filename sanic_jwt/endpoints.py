@@ -3,6 +3,7 @@ from sanic.views import HTTPMethodView
 
 from . import exceptions, utils
 from .base import BaseDerivative
+from .decorators import protected
 
 
 class BaseEndpoint(BaseDerivative, HTTPMethodView):
@@ -69,6 +70,7 @@ class AuthenticateEndpoint(BaseEndpoint):
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
+    decorators = [protected()]
 
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
@@ -126,7 +128,7 @@ class VerifyEndpoint(BaseEndpoint):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
         is_valid, status, reason = self.instance.auth._verify(
-            request, *args, **kwargs
+            request, raise_missing=True, *args, **kwargs
         )
 
         output = {"valid": is_valid}

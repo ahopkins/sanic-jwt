@@ -341,7 +341,9 @@ class Authentication(BaseAuthentication):
                 self._reasons = e.args
                 logger.debug(e.args)
                 is_valid = False
-                reason = list(e.args) if self.config.debug() else "Auth required."
+                reason = list(
+                    e.args
+                ) if self.config.debug() else "Auth required."
                 payload = None
                 status = 400 if self.config.debug() else 401
         else:
@@ -370,6 +372,7 @@ class Authentication(BaseAuthentication):
         payload = self.extract_payload(request)
         if not payload:
             return None
+
         scopes_attribute = self.config.scopes_name()
         return payload.get(scopes_attribute, None)
 

@@ -28,10 +28,10 @@ def instant_config(instance, **kwargs):
 
 
 async def _do_protection(return_response=True, *args, **kwargs):
-    initialized_on = kwargs.pop('initialized_on')
-    kw = kwargs.pop('kw')
-    request = kwargs.pop('request')
-    f = kwargs.pop('f')
+    initialized_on = kwargs.pop("initialized_on")
+    kw = kwargs.pop("kw")
+    request = kwargs.pop("request")
+    f = kwargs.pop("f")
 
     if initialized_on and isinstance(initialized_on, Blueprint):
         instance = initialized_on
@@ -45,6 +45,7 @@ async def _do_protection(return_response=True, *args, **kwargs):
                 response = await response
             if return_response:
                 return response
+
             else:
                 return True, response
 
@@ -67,7 +68,9 @@ async def _do_protection(return_response=True, *args, **kwargs):
             status = e.status_code
             reasons = instance.auth._reasons if (
                 instance.auth._reasons and instance.auth.config.debug()
-            ) else e.args[0]
+            ) else e.args[
+                0
+            ]
 
         if is_authenticated:
             if return_response:
@@ -75,6 +78,7 @@ async def _do_protection(return_response=True, *args, **kwargs):
                 if isawaitable(response):
                     response = await response
                 return response
+
             else:
                 return True, instance
 
@@ -88,12 +92,14 @@ def protected(initialized_on=None, **kw):
 
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            kwargs.update({
-                'initialized_on': initialized_on,
-                'kw': kw,
-                'request': request,
-                'f': f,
-            })
+            kwargs.update(
+                {
+                    "initialized_on": initialized_on,
+                    "kw": kw,
+                    "request": request,
+                    "f": f,
+                }
+            )
             return await _do_protection(*args, **kwargs)
 
         return decorated_function
@@ -114,14 +120,17 @@ def scoped(
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             protect_kwargs = deepcopy(kwargs)
-            protect_kwargs.update({
-                'initialized_on': initialized_on,
-                'kw': kw,
-                'request': request,
-                'f': f,
-            })
+            protect_kwargs.update(
+                {
+                    "initialized_on": initialized_on,
+                    "kw": kw,
+                    "request": request,
+                    "f": f,
+                }
+            )
             _, instance = await _do_protection(
-                return_response=False, *args, **protect_kwargs)
+                return_response=False, *args, **protect_kwargs
+            )
 
             if request.method == "OPTIONS":
                 return instance
@@ -136,6 +145,7 @@ def scoped(
                 status = 403
                 reasons = "Invalid scope"
                 raise exceptions.Unauthorized(reasons, status_code=status)
+
             else:
                 is_authorized = await validate_scopes(
                     request,
@@ -174,17 +184,23 @@ def inject_user(initialized_on=None, **kw):
 
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            if initialized_on and isinstance(initialized_on, Blueprint):  # noqa
+            if (
+                initialized_on and isinstance(initialized_on, Blueprint)
+            ):  # noqa
                 instance = initialized_on
             else:
                 instance = request.app
 
             with instant_config(instance, request=request, **kw):
                 if request.method == "OPTIONS":
-                    return await utils.call(f, request, *args, **kwargs)  # noqa
+                    return await utils.call(
+                        f, request, *args, **kwargs
+                    )  # noqa
 
                 payload = instance.auth.extract_payload(request, verify=False)
-                user = await instance.auth.retrieve_user(request, payload)
+                user = await utils.call(
+                    instance.auth.retrieve_user, request, payload
+                )
                 response = f(request, user=user, *args, **kwargs)
                 return await response
 

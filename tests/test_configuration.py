@@ -296,10 +296,10 @@ def test_configuration_invalid_claim():
     app = Sanic()
 
     class MyConfig(Configuration):
-        claim_foo = 'bar'
+        claim_foo = "bar"
 
     sanicjwt = Initialize(
         app, configuration_class=MyConfig, authenticate=lambda: True
     )
 
-    assert 'claim_foo' not in sanicjwt.config._all_config_keys
+    assert "claim_foo" not in sanicjwt.config._all_config_keys

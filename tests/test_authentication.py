@@ -160,9 +160,7 @@ def test_tricky_debug_option_true(app):
 
     assert response.json.get("exception") == "Unauthorized"
     assert response.status == 400
-    assert "Authorization header not present." in response.json.get(
-        "reasons"
-    )
+    assert "Authorization header not present." in response.json.get("reasons")
 
     _, response = sanic_app.test_client.get(
         "/another_protected",

@@ -51,7 +51,7 @@ class BaseAuthentication:
 
         for option in ["iss", "iat", "nbf", "aud"]:
             setting = "claim_{}".format(option.lower())
-            if setting in self.config:
+            if setting in self.config:  # noqa
                 attr = self.config.get(setting)
                 if attr:
                     self.claims.append(option)
@@ -135,14 +135,14 @@ class Authentication(BaseAuthentication):
         for claim in self.claims:
             if claim != "exp":
                 setting = "claim_{}".format(claim.lower())
-                if setting in self.config:
+                if setting in self.config:  # noqa
                     value = self.config.get(setting)
                     kwargs.update({claim_label[claim]: value})
 
         kwargs["leeway"] = int(self.config.leeway())
-        if "claim_aud" in self.config:
+        if "claim_aud" in self.config:  # noqa
             kwargs["audience"] = self.config.claim_aud()
-        if "claim_iss" in self.config:
+        if "claim_iss" in self.config:  # noqa
             kwargs["issuer"] = self.config.claim_iss()
 
         decoded = jwt.decode(
@@ -344,6 +344,8 @@ class Authentication(BaseAuthentication):
                 reason = list(e.args) if self.config.debug() else "Auth required."
                 payload = None
                 status = 400 if self.config.debug() else 401
+        else:
+            payload = None
 
         if return_payload:
             return payload
@@ -366,6 +368,8 @@ class Authentication(BaseAuthentication):
         Extract scopes from a request object.
         """
         payload = self.extract_payload(request)
+        if not payload:
+            return None
         scopes_attribute = self.config.scopes_name()
         return payload.get(scopes_attribute, None)
 
@@ -422,11 +426,7 @@ class Authentication(BaseAuthentication):
         Checks a request object to determine if that request contains a valid,
         and authenticated JWT.
         """
-        try:
-            is_valid, *_ = self._verify(request)
-        except Exception as e:
-            logger.debug(e.args)
-            is_valid = False
+        is_valid, *_ = self._verify(request)
 
         return is_valid
 

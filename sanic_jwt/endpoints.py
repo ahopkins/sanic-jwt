@@ -81,16 +81,12 @@ class RetrieveUserEndpoint(BaseEndpoint):
             # out of the `Authentication` class, so it won't happen "easily".
             raise exceptions.MeEndpointNotSetup()  # noqa
 
-        try:
-            payload = self.instance.auth.extract_payload(request)
-            user = await utils.call(
-                self.instance.auth.retrieve_user, request, payload
-            )
-        except exceptions.MissingAuthorizationCookie:
-            user = None
-            payload = None
+        payload = self.instance.auth.extract_payload(request)
+        user = await utils.call(
+            self.instance.auth.retrieve_user, request, payload
+        )
 
-        if not user:
+        if not user:  # noqa
             me = None
         else:
             if isinstance(user, dict):
@@ -115,7 +111,7 @@ class RetrieveUserEndpoint(BaseEndpoint):
 
         resp = json(output)
 
-        if payload is None and config.cookie_set():
+        if payload is None and config.cookie_set():  # noqa
             key = config.cookie_access_token_name()
             del resp.cookies[key]
 

@@ -168,8 +168,7 @@ class TestEndpointsCookies(object):
             },
         )
 
-        assert response.status == 200
-        assert response.json.get("me", {}) is None
+        assert response.status == 401
 
         _, response = sanic_app.test_client.get(
             "/protected",
@@ -187,7 +186,17 @@ class TestEndpointsCookies(object):
             },
         )
 
-        assert response.status == 400
+        assert response.status == 401
+
+        _, response = sanic_app.test_client.get(
+            "/auth/me",
+            cookies={
+                sanicjwt.config.cookie_access_token_name(): access_token_from_cookie
+            },
+        )
+
+        assert response.status == 200
+        assert response.json.get("me")
 
         _, response = sanic_app.test_client.get(
             "/protected",
@@ -299,7 +308,7 @@ class TestEndpointsCookies(object):
             headers={"Authorization": "Bearer {}".format(new_access_token)},
         )
 
-        assert response.status == 400
+        assert response.status == 500
 
     def test_refresh_token_with_cookies_not_strict(
         self, app_with_refresh_token, authenticated_response

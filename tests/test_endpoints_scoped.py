@@ -250,7 +250,7 @@ class TestEndpointsSync(object):
         assert response.json.get("hello") == "world"
 
         _, response = sanic_app.test_client.get("/auth/me")
-        assert response.status == 400
+        assert response.status == 401
 
         _, response = sanic_app.test_client.get("/protected")
         assert response.status == 401
@@ -389,6 +389,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/8",
@@ -405,6 +406,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
     def test_scopes_user2(self, app_with_scopes, user2):
         sanic_app, sanicjwt = app_with_scopes
@@ -506,6 +508,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/8",
@@ -522,6 +525,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
     def test_scopes_user3(self, app_with_scopes, user3):
         sanic_app, sanicjwt = app_with_scopes
@@ -558,6 +562,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/2",
@@ -574,6 +579,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/4",
@@ -581,6 +587,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/5",
@@ -588,6 +595,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/1",
@@ -595,6 +603,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/foo",
@@ -602,6 +611,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/7/1",
@@ -609,6 +619,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/8",
@@ -625,6 +636,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
     def test_scopes_user4(self, app_with_scopes, user4):
         sanic_app, sanicjwt = app_with_scopes
@@ -661,6 +673,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/2",
@@ -668,6 +681,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/3",
@@ -675,6 +689,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/4",
@@ -682,6 +697,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/5",
@@ -689,6 +705,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/1",
@@ -696,6 +713,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/foo",
@@ -703,6 +721,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/7/1",
@@ -720,6 +739,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/8",
@@ -727,6 +747,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/9/1",
@@ -744,6 +765,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
     def test_scopes_user5(self, app_with_scopes, user5):
         sanic_app, sanicjwt = app_with_scopes
@@ -780,6 +802,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/2",
@@ -787,6 +810,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/3",
@@ -794,6 +818,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/4",
@@ -810,6 +835,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/1",
@@ -817,6 +843,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/foo",
@@ -824,6 +851,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/7/1",
@@ -831,6 +859,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/8",
@@ -847,6 +876,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
     def test_scopes_user6(self, app_with_scopes, user6):
         sanic_app, sanicjwt = app_with_scopes
@@ -883,6 +913,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/2",
@@ -890,6 +921,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/3",
@@ -897,6 +929,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/4",
@@ -904,6 +937,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/5",
@@ -911,6 +945,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/1",
@@ -918,6 +953,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/6/foo",
@@ -925,6 +961,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/7/1",
@@ -932,6 +969,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/8",
@@ -939,6 +977,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/scoped/9/1",
@@ -946,6 +985,7 @@ class TestEndpointsSync(object):
         )
 
         assert response.status == 403
+        assert "Invalid scope" in response.json.get("reasons")
 
 
 def test_no_user_scopes(app_with_scopes):
@@ -968,6 +1008,7 @@ def test_no_user_scopes(app_with_scopes):
     )
 
     assert response.status == 403
+    assert "Invalid scope" in response.json.get("reasons")
 
 
 def test_scoped_option(app_with_scopes):

@@ -3,6 +3,7 @@ from sanic.views import HTTPMethodView
 
 from . import exceptions, utils
 from .base import BaseDerivative
+from .decorators import protected
 
 
 class BaseEndpoint(BaseDerivative, HTTPMethodView):
@@ -69,6 +70,7 @@ class AuthenticateEndpoint(BaseEndpoint):
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
+    decorators = [protected()]
 
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
@@ -79,16 +81,12 @@ class RetrieveUserEndpoint(BaseEndpoint):
             # out of the `Authentication` class, so it won't happen "easily".
             raise exceptions.MeEndpointNotSetup()  # noqa
 
-        try:
-            payload = self.instance.auth.extract_payload(request)
-            user = await utils.call(
-                self.instance.auth.retrieve_user, request, payload
-            )
-        except exceptions.MissingAuthorizationCookie:
-            user = None
-            payload = None
+        payload = self.instance.auth.extract_payload(request)
+        user = await utils.call(
+            self.instance.auth.retrieve_user, request, payload
+        )
 
-        if not user:
+        if not user:  # noqa
             me = None
         else:
             if isinstance(user, dict):
@@ -113,7 +111,7 @@ class RetrieveUserEndpoint(BaseEndpoint):
 
         resp = json(output)
 
-        if payload is None and config.cookie_set():
+        if payload is None and config.cookie_set():  # noqa
             key = config.cookie_access_token_name()
             del resp.cookies[key]
 
@@ -126,7 +124,7 @@ class VerifyEndpoint(BaseEndpoint):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
         is_valid, status, reason = self.instance.auth._verify(
-            request, *args, **kwargs
+            request, raise_missing=True, *args, **kwargs
         )
 
         output = {"valid": is_valid}

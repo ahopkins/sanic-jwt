@@ -72,4 +72,4 @@ def test_decorators_override_configuration_defaults():
         "/test/scoped", headers={"Foobar": "Bearer {}".format(access_token)}
     )
 
-    assert response.status == 200
+    assert response.status == 403

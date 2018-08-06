@@ -27,11 +27,15 @@ def instant_config(instance, **kwargs):
     clear_cache()
 
 
-async def _do_protection(return_response=True, *args, **kwargs):
+async def _do_protection(*args, **kwargs):
     initialized_on = kwargs.pop("initialized_on")
     kw = kwargs.pop("kw")
     request = kwargs.pop("request")
     f = kwargs.pop("f")
+
+    use_kwargs = deepcopy(kwargs)
+    if 'return_response' in use_kwargs:
+        use_kwargs.pop('return_response')
 
     if initialized_on and isinstance(initialized_on, Blueprint):
         instance = initialized_on
@@ -40,10 +44,10 @@ async def _do_protection(return_response=True, *args, **kwargs):
 
     with instant_config(instance, request=request, **kw):
         if request.method == "OPTIONS":
-            response = f(request, *args, **kwargs)
+            response = f(request, *args, **use_kwargs)
             if isawaitable(response):  # noqa
                 response = await response
-            if return_response:
+            if kwargs.get('return_response', True):
                 return response
 
             else:
@@ -53,7 +57,7 @@ async def _do_protection(return_response=True, *args, **kwargs):
             (
                 is_authenticated, status, reasons
             ) = instance.auth._check_authentication(
-                request, request_args=args, request_kwargs=kwargs
+                request, request_args=args, request_kwargs=use_kwargs
             )
         except AttributeError:
             raise exceptions.SanicJWTException(
@@ -71,8 +75,8 @@ async def _do_protection(return_response=True, *args, **kwargs):
             ) else e.args[0]
 
         if is_authenticated:
-            if return_response:
-                response = f(request, *args, **kwargs)
+            if kwargs.get('return_response', True):
+                response = f(request, *args, **use_kwargs)
                 if isawaitable(response):
                     response = await response
                 return response
@@ -124,10 +128,11 @@ def scoped(
                     "kw": kw,
                     "request": request,
                     "f": f,
+                    "return_response": False,
                 }
             )
             _, instance = await _do_protection(
-                return_response=False, *args, **protect_kwargs
+                *args, **protect_kwargs
             )
 
             if request.method == "OPTIONS":

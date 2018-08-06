@@ -48,6 +48,10 @@ Flexibility is really the name of the game for v. 1.1. Most of the features are 
 
 Checkout the changelog for a more detailed description.
 
+.. note::
+
+  It is recommended that you are at least using **version 1.1.2**. You can upgrade to **version 1.1.4** for improved exception handling and some bug fixes.
+
 +++++++++++++++++++++++++++
 What is new in Version 1.0?
 +++++++++++++++++++++++++++

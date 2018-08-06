@@ -5,6 +5,22 @@ Changelog
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 ++++++++++++++++++++++++++
+Version 1.1.3 - 2018-08-06
+++++++++++++++++++++++++++
+
+| **Changed**
+| - Exception handling to consistently have a ``exception`` and ``reasons`` key
+| - ``reasons`` in exception handling to be consistently formatted
+| - ``400`` responses for ``debug`` turned off, and ``401`` when turned on
+|
+
+| **Fixed**
+| - `#110 <https://github.com/ahopkins/sanic-jwt/issues/110>`_. Preflight methods now properly handled
+| - `#114 <https://github.com/ahopkins/sanic-jwt/issues/114>`_. Proper use of ``utils.call`` to allow for sync and async ``retrieve_user`` functions
+| - `#116 <https://github.com/ahopkins/sanic-jwt/issues/116>`_. Proper error reporting on malformed tokens
+| - `#118 <https://github.com/ahopkins/sanic-jwt/issues/118>`_. Proper error reporting on expired token for ``/auth/me`` and ``/auth/refresh`` by applying ``@protected`` decorators
+
+++++++++++++++++++++++++++
 Version 1.1.2 - 2018-06-18
 ++++++++++++++++++++++++++
 

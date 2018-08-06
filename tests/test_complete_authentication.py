@@ -2,7 +2,8 @@ import jwt
 import pytest
 from sanic import Sanic
 from sanic.response import json
-
+from datetime import datetime, timedelta
+from freezegun import freeze_time
 from sanic_jwt import Authentication, Initialize, exceptions, protected
 
 
@@ -184,7 +185,43 @@ def test_authentication_all_methods(app_full_auth_cls):
     assert sanicjwt.config.refresh_token_name() not in response.json
 
 
-# assert False
+def test_refresh_token_with_expired_access_token(app_full_auth_cls):
+
+    app, sanicjwt = app_full_auth_cls
+
+    _, response = app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    assert response.status == 200
+    assert sanicjwt.config.access_token_name() in response.json
+    assert sanicjwt.config.refresh_token_name() in response.json
+
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+    refresh_token = response.json.get(
+        sanicjwt.config.refresh_token_name(), None
+    )
+
+    assert access_token is not None
+    assert refresh_token is not None
+
+    with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 * 60))):
+        _, response = app.test_client.post(
+            "/auth/refresh",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+            json={sanicjwt.config.refresh_token_name(): refresh_token},
+        )
+
+        new_access_token = response.json.get(
+            sanicjwt.config.access_token_name(), None
+        )
+
+        assert response.status == 200
+        assert new_access_token is not None
+        assert response.json.get(
+            sanicjwt.config.refresh_token_name(), None
+        ) is None  # there is no new refresh token
+        assert sanicjwt.config.refresh_token_name() not in response.json
 
 
 def test_authentication_cross_tokens(app_full_auth_cls):

@@ -223,6 +223,7 @@ def test_authentication_cross_tokens(app_full_auth_cls):
 
     assert response.status == 401
     assert response.json.get("exception") == "AuthenticationFailed"
+    assert "Authentication failed." in response.json.get("reasons")
 
 
 def test_authentication_with_bytes_refresh_token(app_full_bytes_refresh_token):

@@ -80,6 +80,7 @@ def test_me_with_none(app1):
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_me_without_authorization_header(app2):
@@ -88,12 +89,14 @@ def test_me_without_authorization_header(app2):
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_verify_no_auth_header(app1):
     _, response = app1.test_client.get("/auth/verify")
     assert response.status == 401
     assert response.json.get("exception") == "MissingAuthorizationHeader"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_refresh_no_valid_object(app1):
@@ -101,8 +104,9 @@ def test_refresh_no_valid_object(app1):
         "/auth/refresh", json={"not": "important"}
     )
 
-    assert response.status == 500
-    assert response.json.get("exception") == "InvalidRetrieveUserObject"
+    assert response.status == 401
+    assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_refresh_no_valid_dict(app2):
@@ -110,8 +114,9 @@ def test_refresh_no_valid_dict(app2):
         "/auth/refresh", json={"not": "important"}
     )
 
-    assert response.status == 400
-    assert response.json.get("exception") == "MissingAuthorizationHeader"
+    assert response.status == 401
+    assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_me_with_none_debug(app1):
@@ -121,6 +126,7 @@ def test_me_with_none_debug(app1):
 
     assert response.status == 400
     assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_me_without_authorization_header_debug(app2):
@@ -130,6 +136,7 @@ def test_me_without_authorization_header_debug(app2):
 
     assert response.status == 400
     assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')
 
 
 def test_verify_no_auth_header_debug(app1):
@@ -138,3 +145,4 @@ def test_verify_no_auth_header_debug(app1):
     _, response = app1.test_client.get("/auth/verify")
     assert response.status == 400
     assert response.json.get("exception") == "MissingAuthorizationHeader"
+    assert "Authorization header not present." in response.json.get('reasons')

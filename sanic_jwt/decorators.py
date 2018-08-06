@@ -68,9 +68,7 @@ async def _do_protection(return_response=True, *args, **kwargs):
             status = e.status_code
             reasons = instance.auth._reasons if (
                 instance.auth._reasons and instance.auth.config.debug()
-            ) else e.args[
-                0
-            ]
+            ) else e.args[0]
 
         if is_authenticated:
             if return_response:
@@ -143,7 +141,7 @@ def scoped(
                 # deny access
                 is_authorized = False
                 status = 403
-                reasons = "Invalid scope"
+                reasons = "Invalid scope."
                 raise exceptions.Unauthorized(reasons, status_code=status)
 
             else:
@@ -160,7 +158,7 @@ def scoped(
                 )
                 if not is_authorized:
                     status = 403
-                    reasons = "Invalid scope"
+                    reasons = "Invalid scope."
                     raise exceptions.Unauthorized(reasons, status_code=status)
 
             # the user is authorized.

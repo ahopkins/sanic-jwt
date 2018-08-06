@@ -57,16 +57,19 @@ def test_expired(app):
         )
 
         assert response.status == 403
-        assert "Signature has expired" in response.json.get("reasons")
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Signature has expired." in response.json.get("reasons")
 
-        # regression test see https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
+        # regression test see
+        # https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
         _, response = sanic_app.test_client.get(
             "/protected/0/",
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
         assert response.status == 403
-        assert "Signature has expired" in response.json.get("reasons")
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Signature has expired." in response.json.get("reasons")
 
 
 def test_exp_configuration(app_with_extended_exp):
@@ -112,6 +115,8 @@ def test_leeway_configuration(app_with_leeway):
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
         assert response.status == 403
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Signature has expired." in response.json.get("reasons")
 
     with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 35 - 1))):
         _, response = sanic_app.test_client.get(
@@ -143,17 +148,21 @@ def test_nbf(app_with_nbf):
     )
 
     assert response.status == 403
-    assert "The token is not yet valid (nbf)" in response.json.get("reasons")
+    assert response.json.get("exception") == "Unauthorized"
+    assert "The token is not yet valid (nbf)." in response.json.get("reasons")
 
-    with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 - 1))):
+    with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 - 10))):
         _, response = sanic_app.test_client.get(
             "/protected",
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
         assert response.status == 403
+        assert response.json.get("exception") == "Unauthorized"
+        assert "The token is not yet valid (nbf)." in \
+            response.json.get("reasons")
 
-    with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 + 1))):
+    with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 + 10))):
         _, response = sanic_app.test_client.get(
             "/protected",
             headers={"Authorization": "Bearer {}".format(access_token)},

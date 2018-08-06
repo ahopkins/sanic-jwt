@@ -120,6 +120,8 @@ def test_wrong_header(app):
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header is invalid." in response.json.get("reasons")
+    # assert "Auth required." in response.json.get('reasons')
 
 
 def test_tricky_debug_option_true(app):
@@ -169,7 +171,6 @@ def test_tricky_debug_option_true(app):
 
     assert response.json.get("exception") == "Unauthorized"
     assert response.status == 400
-    print(response.json)
     assert "Authorization header is invalid." in response.json.get("reasons")
 
 
@@ -220,4 +221,4 @@ def test_tricky_debug_option_false(app):
 
     assert response.json.get("exception") == "Unauthorized"
     assert response.status == 401
-    assert "Auth required." in response.json.get("reasons")
+    assert "Authorization header is invalid." in response.json.get("reasons")

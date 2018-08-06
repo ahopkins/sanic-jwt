@@ -73,10 +73,14 @@ class TestEndpointsCBV(object):
     def test_protected(self):
         _, response = sanic_app.test_client.get("/protected")
         assert response.status == 401
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Authorization header not present." in \
+            response.json.get('reasons')
 
     def test_auth_invalid_method(self):
         _, response = sanic_app.test_client.get("/auth")
         assert response.status == 405
+        assert b"Error: Method GET not allowed for URL /auth" in response.body
 
     def test_auth_proper_credentials(self):
         _, response = sanic_app.test_client.post(

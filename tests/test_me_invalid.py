@@ -57,7 +57,8 @@ def test_expired(app_with_retrieve_user):
         )
 
         assert response.status == 403
-        assert "Signature has expired" in response.json.get("reasons")
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Signature has expired." in response.json.get("reasons")
 
         _, response = sanic_app.test_client.get(
             "/protected/user",
@@ -65,4 +66,5 @@ def test_expired(app_with_retrieve_user):
         )
 
         assert response.status == 403
-        assert "Signature has expired" in response.json.get("reasons")
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Signature has expired." in response.json.get("reasons")

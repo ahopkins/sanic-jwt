@@ -6,6 +6,10 @@ class SanicJWTException(SanicException):
     pass
 
 
+class InvalidToken(SanicJWTException):
+    pass
+
+
 class AuthenticationFailed(SanicJWTException):
     status_code = 401
 

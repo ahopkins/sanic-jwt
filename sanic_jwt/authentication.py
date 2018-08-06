@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timedelta
 import warnings
 import jwt
+from .exceptions import SanicJWTException
 
 from . import exceptions, utils
 
@@ -93,7 +94,7 @@ class BaseAuthentication:
         return scopes
 
     async def retrieve_user(self, *args, **kwargs):
-        raise exceptions.MeEndpointNotSetup()  # noqa
+        raise exceptions.MeEndpointNotSetup  # noqa
 
 
 class Authentication(BaseAuthentication):
@@ -119,7 +120,9 @@ class Authentication(BaseAuthentication):
             if self.config.debug():
                 raise e
 
-            raise exceptions.Unauthorized()
+            args = e.args if isinstance(e, SanicJWTException) else []
+
+            raise exceptions.Unauthorized(*args)
 
         return is_valid, status, reasons
 
@@ -333,17 +336,23 @@ class Authentication(BaseAuthentication):
                 jwt.exceptions.InvalidIssuedAtError,
                 jwt.exceptions.InvalidAudienceError,
             ) as e:
-                is_valid = False
-                reason = list(e.args)
+                # Make sure that the reasons all end with '.' for consistency
+                reason = [
+                    x if x.endswith('.') else f'{x}.'
+                    for x in list(e.args)
+                ]
                 payload = None
                 status = 403
+                is_valid = False
             except jwt.exceptions.DecodeError as e:
                 self._reasons = e.args
+                # Make sure that the reasons all end with '.' for consistency
+                reason = [
+                    x if x.endswith('.') else f'{x}.'
+                    for x in list(e.args)
+                ] if self.config.debug() else "Auth required."
                 logger.debug(e.args)
                 is_valid = False
-                reason = list(
-                    e.args
-                ) if self.config.debug() else "Auth required."
                 payload = None
                 status = 400 if self.config.debug() else 401
         else:

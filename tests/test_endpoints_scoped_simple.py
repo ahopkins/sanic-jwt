@@ -20,3 +20,6 @@ class TestEndpointsScoped(object):
     def test_scoped_empty(self):
         _, response = app.test_client.get("/scoped_empty")
         assert response.status == 401
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Authorization header not present." in \
+            response.json.get('reasons')

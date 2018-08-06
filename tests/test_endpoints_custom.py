@@ -95,3 +95,4 @@ def test_custom_endpoints_as_args():
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
+    assert "Authorization header not present." in response.json.get('reasons')

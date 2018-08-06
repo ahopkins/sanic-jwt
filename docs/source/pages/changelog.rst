@@ -5,6 +5,14 @@ Changelog
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 ++++++++++++++++++++++++++
+Version 1.1.4 - 2018-08-06
+++++++++++++++++++++++++++
+
+| **Fixed**
+| - Bug with ``_do_protect`` in ``@scoped`` decorator
+|
+
+++++++++++++++++++++++++++
 Version 1.1.3 - 2018-08-06
 ++++++++++++++++++++++++++
 

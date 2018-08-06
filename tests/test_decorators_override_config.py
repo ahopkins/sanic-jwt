@@ -69,7 +69,25 @@ def test_decorators_override_configuration_defaults():
         assert response.status == 200
 
     _, response = app.test_client.get(
+        "/test/scoped", headers={"FudgeBar": "Bearer {}".format(access_token)}
+    )
+
+    assert response.status == 401
+    assert "Authorization header not present." in response.json.get("reasons")
+    assert response.json.get("exception") == "Unauthorized"
+
+    _, response = app.test_client.get(
+        "/test/scoped", headers={"Foobar": "Bear {}".format(access_token)}
+    )
+
+    assert response.status == 401
+    assert "Authorization header is invalid." in response.json.get("reasons")
+    assert response.json.get("exception") == "Unauthorized"
+
+    _, response = app.test_client.get(
         "/test/scoped", headers={"Foobar": "Bearer {}".format(access_token)}
     )
 
-    assert response.status == 200
+    assert response.status == 403
+    assert "Invalid scope." in response.json.get("reasons")
+    assert response.json.get("exception") == "Unauthorized"

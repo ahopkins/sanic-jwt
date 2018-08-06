@@ -23,7 +23,8 @@ initialize(
     class_views=[
         (
             "/magic-login", MagicLoginHandler
-        )  # The path will be relative to the url prefix (which defaults to /auth)
+        )  # The path will be relative to the url prefix
+           # (which defaults to /auth)
     ],
 )
 
@@ -31,7 +32,6 @@ initialize(
 class TestEndpointsExtra(object):
 
     def dispatch(self, path, method):
-        # header_token = '{} {}'.format(app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX, access_token)
         method = getattr(app.test_client, method)
         request, response = method(path)
         return request, response

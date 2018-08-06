@@ -119,7 +119,7 @@ class ConfigItem:
             if self._get_from_config is not None:
                 args = []
 
-                if self._inject_request and is_cached("_request"):
+                if self._inject_request and is_cached("_request"):  # noqa
                     args.append(get_cached("_request"))
                 val = self._get_from_config.__call__(*args)
                 to_cache(self._item_name, val)
@@ -162,7 +162,7 @@ class Configuration:
         _aliases = copy.deepcopy(aliases)
         _config_keys = []
 
-        if args and isinstance(args[0], dict):
+        if args and isinstance(args[0], dict):  # noqa
             _args = cls.extract_presets(args[0])
             for key, value in _args.items():
                 if key in _defaults or key in _aliases:
@@ -231,7 +231,7 @@ class Configuration:
     def get(self, item):
         """Helper method to avoid calling getattr
         """
-        if item in self:
+        if item in self:  # noqa
             item = getattr(self, item)
             return item()
 
@@ -267,12 +267,12 @@ class Configuration:
                 self._merge(alias, value)
         elif key in self.config_aliases_keys:
             correct_key = None
-            for v in self.config_aliases.values():
+            for v in self.config_aliases.values():  # noqa
                 if key == v:
                     correct_key = key
                     break
 
-            if hasattr(self, correct_key):
+            if hasattr(self, correct_key):  # noqa
                 getattr(self, correct_key).update(value)
         else:
             _warn_key(key)

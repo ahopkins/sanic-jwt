@@ -100,7 +100,8 @@ def app(username_table, authenticate):
     @protected()
     def protected_regression_verify(request, verify):
         """
-        for regression test see https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
+        for regression test see
+        https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
         """
         return json({"protected": True})
 
@@ -115,8 +116,8 @@ def app_with_refresh_token(username_table, authenticate):
         sanic_app,
         authenticate=authenticate,
         refresh_token_enabled=True,
-        store_refresh_token=lambda: True,
-        retrieve_refresh_token=lambda: True,
+        store_refresh_token=lambda user_id, refresh_token, request: True,
+        retrieve_refresh_token=lambda user_id, request: True,
     )
 
     yield (sanic_app, sanic_jwt)

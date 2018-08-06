@@ -128,6 +128,8 @@ class TestEndpointsQueryString(object):
         self, app_with_refresh_token, authenticated_response
     ):
         sanic_app, sanicjwt = app_with_refresh_token
+        sanicjwt.config.query_string_strict.update(True)
+        sanic_app.auth.config.query_string_strict.update(True)
         access_token_from_json = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
         )
@@ -144,7 +146,10 @@ class TestEndpointsQueryString(object):
             },
         )
 
-        assert response.status == 400
+        assert response.status == 401
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Authorization query argument not present." in \
+            response.json.get('reasons')
 
         url += "?{}={}".format(
             sanicjwt.config.query_string_access_token_name(),
@@ -153,7 +158,6 @@ class TestEndpointsQueryString(object):
         _, response = sanic_app.test_client.get(url)
 
         assert response.status == 200
-        assert response.json.get("me", {}) is not None
 
         url = "/protected"
         _, response = sanic_app.test_client.get(
@@ -164,6 +168,9 @@ class TestEndpointsQueryString(object):
         )
 
         assert response.status == 401
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Authorization query argument not present." in \
+            response.json.get('reasons')
 
         url = "/auth/verify"
         _, response = sanic_app.test_client.get(
@@ -173,7 +180,19 @@ class TestEndpointsQueryString(object):
             },
         )
 
-        assert response.status == 400
+        assert response.status == 401
+        assert response.json.get("exception") == "MissingAuthorizationQueryArg"
+        assert "Authorization query argument not present." in \
+            response.json.get('reasons')
+
+        url = "/auth/me?{}={}".format(
+            sanicjwt.config.query_string_access_token_name(),
+            access_token_from_json,
+        )
+        _, response = sanic_app.test_client.get(url)
+
+        assert response.status == 200
+        assert response.json.get("me")
 
         url = "/protected?{}={}".format(
             sanicjwt.config.query_string_access_token_name(),
@@ -273,7 +292,8 @@ class TestEndpointsQueryString(object):
         assert response.json.get(
             sanicjwt.config.query_string_refresh_token_name(), None
         ) is None  # there is no new refresh token
-        assert sanicjwt.config.query_string_refresh_token_name() not in response.json
+        assert sanicjwt.config.query_string_refresh_token_name() not in \
+            response.json
 
         url = "/auth/refresh?{}={}&{}={}".format(
             sanicjwt.config.query_string_access_token_name(),
@@ -311,4 +331,5 @@ class TestEndpointsQueryString(object):
         assert response.json.get(
             sanicjwt.config.query_string_refresh_token_name(), None
         ) is None  # there is no new refresh token
-        assert sanicjwt.config.query_string_refresh_token_name() not in response.json
+        assert sanicjwt.config.query_string_refresh_token_name() not in \
+            response.json

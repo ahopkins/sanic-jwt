@@ -242,7 +242,12 @@ What if we wanted a ``/register`` endpoint? It could easily be added like this:
         ('/register', Register),
     )
 
-    Initialize(app, class_views=my_views)
+    # Please note that this Initialize instance is incomplete.
+    # It is missing handlers for: authenticate, store_refresh_token, and
+    # retrieve_refresh_token.
+    # It is meant as illustrative purposes on how you might approach this.
+    # See https://github.com/ahopkins/sanic-jwt/issues/111 for more information.
+    Initialize(app, class_views=my_views, ...)
 
 You hook up your custom endpoints at :doc:`initialization<initialization>` by providing ``Initialize`` with a ``class_views`` argument naming your endpoint and its path.
 

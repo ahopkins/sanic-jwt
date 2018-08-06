@@ -193,37 +193,6 @@ def test_configuration_dynamic_config():
     assert response.json.get("protected") == "yes"
 
 
-# i don't see the following scenarios happening in real life, but we have to test them ...
-
-
-def test_configuration_custom_class_and_config_item():
-    app = Sanic()
-
-    class MyConfig(Configuration):
-        access_token_name = ConfigItem("config-item-level")
-
-    sanicjwt = Initialize(
-        app, configuration_class=MyConfig, authenticate=lambda: True
-    )
-
-    assert sanicjwt.config.access_token_name() == "config-item-level"
-
-
-def test_configuration_custom_class_and_config_item_as_method():
-    app = Sanic()
-
-    class MyConfig(Configuration):
-
-        def set_access_token_name(self):
-            return ConfigItem("config-item-function-level")
-
-    sanicjwt = Initialize(
-        app, configuration_class=MyConfig, authenticate=lambda: True
-    )
-
-    assert sanicjwt.config.access_token_name() == "config-item-function-level"
-
-
 def test_deprecated_handler_payload_scopes():
     app = Sanic()
     app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = lambda *a, **kw: {}
@@ -289,3 +258,48 @@ def test_empty_string_authorization_prefix():
 
     assert response.status == 200
     assert response.json.get("protected") == "yes"
+
+
+# I don't see the following scenarios happening in real life
+# but we have to test them ...
+
+
+def test_configuration_custom_class_and_config_item():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+        access_token_name = ConfigItem("config-item-level")
+
+    sanicjwt = Initialize(
+        app, configuration_class=MyConfig, authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.access_token_name() == "config-item-level"
+
+
+def test_configuration_custom_class_and_config_item_as_method():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+
+        def set_access_token_name(self):
+            return ConfigItem("config-item-function-level")
+
+    sanicjwt = Initialize(
+        app, configuration_class=MyConfig, authenticate=lambda: True
+    )
+
+    assert sanicjwt.config.access_token_name() == "config-item-function-level"
+
+
+def test_configuration_invalid_claim():
+    app = Sanic()
+
+    class MyConfig(Configuration):
+        claim_foo = "bar"
+
+    sanicjwt = Initialize(
+        app, configuration_class=MyConfig, authenticate=lambda: True
+    )
+
+    assert "claim_foo" not in sanicjwt.config._all_config_keys

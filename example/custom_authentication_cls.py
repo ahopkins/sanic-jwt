@@ -40,7 +40,7 @@ if __name__ == "__main__":
     app = Sanic(__name__)
     app.my_cache = {}
 
-    sanic_jwt = Initialize(
+    sanicjwt = Initialize(
         app, authentication_class=MyAuthentication, refresh_token_enabled=True
     )
 
@@ -49,13 +49,13 @@ if __name__ == "__main__":
         return json({"hello": "world"})
 
     @app.route("/protected")
-    @sanic_jwt.protected()
+    @sanicjwt.protected()
     async def protected_request(request):
         return json({"protected": True})
 
     # this route is for demonstration only
     @app.route("/cache")
-    @sanic_jwt.protected()
+    @sanicjwt.protected()
     async def protected_cache(request):
         return json(request.app.my_cache)
 

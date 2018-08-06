@@ -338,7 +338,7 @@ class Authentication(BaseAuthentication):
             ) as e:
                 # Make sure that the reasons all end with '.' for consistency
                 reason = [
-                    x if x.endswith('.') else f'{x}.'
+                    x if x.endswith('.') else '{}.'.format(x)
                     for x in list(e.args)
                 ]
                 payload = None
@@ -348,7 +348,7 @@ class Authentication(BaseAuthentication):
                 self._reasons = e.args
                 # Make sure that the reasons all end with '.' for consistency
                 reason = [
-                    x if x.endswith('.') else f'{x}.'
+                    x if x.endswith('.') else '{}.'.format(x)
                     for x in list(e.args)
                 ] if self.config.debug() else "Auth required."
                 logger.debug(e.args)

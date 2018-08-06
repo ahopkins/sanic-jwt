@@ -126,6 +126,8 @@ def scoped(
                     "f": f,
                 }
             )
+            if 'return_response' in protect_kwargs:
+                protect_kwargs.pop('protect_kwargs')
             _, instance = await _do_protection(
                 return_response=False, *args, **protect_kwargs
             )

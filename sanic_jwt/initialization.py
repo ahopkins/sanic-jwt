@@ -87,17 +87,17 @@ class Initialize:
                 setattr(self, class_name, value)
 
         app = self.__get_app(instance, app=app)
-        bp = self.__get_bp(instance)
 
         self.app = app
-        self.bp = bp
         self.kwargs = kwargs
         self.instance = instance
         self.config = None
+        self.bp = None
 
         self.__check_deprecated()
         self.__check_classes()
         self.__load_configuration()
+        self.__initialize_bp()
         self.__load_responses()
         self.__add_class_views()
         self.__add_endpoints()
@@ -290,17 +290,16 @@ class Initialize:
 
         raise exceptions.InitializationFailure
 
-    @staticmethod
-    def __get_bp(instance):
-        if isinstance(instance, Sanic):
-            return Blueprint("auth_bp")
+    def __initialize_bp(self):
+        if isinstance(self.instance, Sanic):
+            bp_name = self.config.blueprint_name()
+            self.bp = Blueprint(bp_name)
 
-        elif isinstance(instance, Blueprint):
-            return instance
+        elif isinstance(self.instance, Blueprint):
+            self.bp = self.instance
 
-        # I think this will never get here because `__get_app` get's called
-        # first and does the same check
-        raise exceptions.InitializationFailure  # noqa see line above
+        else:
+            raise exceptions.InitializationFailure  # noqa see line above
 
     def protected(self, *args, **kwargs):
         args = list(args)

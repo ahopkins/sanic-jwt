@@ -45,6 +45,7 @@ defaults = {
     "strict_slashes": False,
     "url_prefix": "/auth",
     "user_id": "user_id",
+    "blueprint_name": "auth_bp",
     "verify_exp": True
 }
 

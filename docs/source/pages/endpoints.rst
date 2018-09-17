@@ -303,7 +303,7 @@ One of the benefits of a lightweight framework like Sanic is that it makes build
     http://app2.mymicroserviceapp.com/auth
     http://app3.mymicroserviceapp.com/auth
 
-Instead, you probably only want to authenticate against a single service, and use the token generated there among all yout services. This can be easily accomplished with the ``auth_mode=True`` :doc:`configuration`. Set it to ``True`` on your authentication service, and ``False`` everywhere else. All the decorators will still work as expected.
+Instead, you probably only want to authenticate against a single service, and use the token generated there among all your services. This can be easily accomplished with the ``auth_mode=True`` :doc:`configuration`. Set it to ``True`` on your authentication service, and ``False`` everywhere else. All the decorators will still work as expected.
 
 .. code-block:: python
 

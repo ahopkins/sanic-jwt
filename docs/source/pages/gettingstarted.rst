@@ -34,7 +34,7 @@ You should get back a bit of JSON like this::
 
 Want to check to make sure it is valid? ::
 
-    curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8888/auth/verify
+    curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/verify
 
 Your response should be this: ::
 

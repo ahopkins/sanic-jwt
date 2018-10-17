@@ -38,5 +38,5 @@ ujson==1.35
 urllib3==1.22
 uvloop==0.8.1
 watchdog==0.8.3
-websockets==4.0.1
+websockets==6.0
 yarl==0.14.2

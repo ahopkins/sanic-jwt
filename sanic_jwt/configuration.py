@@ -60,6 +60,7 @@ ignore_keys = (
     "retrieve_refresh_token",
     "retrieve_user",
     "store_refresh_token",
+    "destructure_scopes",
 )
 
 logger = logging.getLogger(__name__)

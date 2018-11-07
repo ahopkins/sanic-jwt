@@ -187,7 +187,8 @@ class Initialize:
         and / or `Responses`) have been overwitten and if they're still valid
         """
         # msg took from BaseAuthentication
-        msg = "Sanic JWT was not initialized properly. It did not " "received an instance of {}"
+        msg = "Sanic JWT was not initialized properly. It did not received "\
+              "an instance of {}"
         if not issubclass(self.authentication_class, Authentication):
             raise exceptions.InitializationFailure(
                 message=msg.format("Authentication")
@@ -285,7 +286,9 @@ class Initialize:
             )
 
     def _get_url_prefix(self):
-        bp_url_prefix = self.bp.url_prefix if self.bp.url_prefix is not None else ""
+        bp_url_prefix = (
+            self.bp.url_prefix if self.bp.url_prefix is not None else ""
+        )
         config_url_prefix = self.config.url_prefix()
         url_prefix = bp_url_prefix + config_url_prefix
         return url_prefix

@@ -1,25 +1,48 @@
 # Config file for automatic testing at travis-ci.org
-
 language: python
-
-python:
-  # - "3.7-dev"
-  - "3.6"
-  - "3.5"
-  # - "pypy"
-
-# command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install:
-  - pip install -r example/requirements.txt
-
-# command to run tests, e.g. python setup.py test
-script:
-  - python setup.py test
-
-after_success:
-  - coverage xml
-  - python-codacy-coverage -r coverage.xml
-  - codecov
-
+dist: xenial
+sudo: true
 env:
-  - DEVELOPMENT=false
+    global:
+        - LD_PRELOAD=/lib/x86_64-linux-gnu/libSegFault.so
+        - SEGFAULT_SIGNALS=all
+        - DEVELOPMENT=false
+matrix:
+    fast_finish: true
+    include:
+        - python: "3.5"
+          env: TOXENV=py35
+        - python: "3.6"
+          env: TOXENV=py36
+        - python: "3.7"
+          env: TOXENV=py37
+        # - python: "3.6"
+        #   env: TOXENV=check
+cache:
+    directories:
+        - $HOME/.cache/pip
+before_install:
+    - python --version
+    - uname -a
+    - lsb_release -a
+    - pip install codecov
+install:
+    - pip install tox
+    - virtualenv --version
+    - easy_install --version
+    - pip --version
+    - tox --version
+script:
+    - tox -v
+after_success:
+    - tox -e report
+    - coverage xml
+    - python-codacy-coverage -r coverage.xml
+    - codecov
+after_failure:
+    - more .tox/log/* | cat
+    - more .tox/*/log/* | cat
+notifications:
+    email:
+        on_success: never
+        on_failure: always

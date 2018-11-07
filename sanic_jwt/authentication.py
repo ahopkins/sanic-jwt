@@ -175,7 +175,7 @@ class Authentication(BaseAuthentication):
 
         payload = await utils.call(self.add_claims, payload)
 
-        extend_payload_args = inspect.getargspec(self.extend_payload)
+        extend_payload_args = inspect.getfullargspec(self.extend_payload)
         args = [payload]
         if "user" in extend_payload_args.args:
             args.append(user)

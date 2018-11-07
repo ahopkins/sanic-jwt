@@ -9,7 +9,8 @@ from sanic_jwt.configuration import Configuration
 from sanic_jwt.decorators import protected, scoped, inject_user
 from sanic_jwt.responses import Responses
 
-_Handler = namedtuple("_Handler", ["name", "keys", "exception"])
+_Handler = namedtuple(
+    "_Handler", ["name", "keys", "exception", "outside_auth_mode"])
 _EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys"])
 
 
@@ -40,28 +41,39 @@ endpoint_mappings = (
     ),
 )
 
-handlers = (
-    _Handler("authenticate", None, exceptions.AuthenticateNotImplemented()),
+auth_mode_handlers = (
+    _Handler(
+        "authenticate",
+        None,
+        exceptions.AuthenticateNotImplemented(),
+        False,
+    ),
     _Handler(
         "store_refresh_token",
         ["refresh_token_enabled"],
         exceptions.RefreshTokenNotImplemented(),
+        False,
     ),
     _Handler(
         "retrieve_refresh_token",
         ["refresh_token_enabled"],
         exceptions.RefreshTokenNotImplemented(),
+        False,
     ),
-    _Handler("retrieve_user", None, None),
     _Handler(
         "add_scopes_to_payload",
         ["scopes_enabled"],
         exceptions.ScopesNotImplemented(),
+        False,
     ),
-    _Handler("override_scope_validator", None, None),
-    _Handler("destructure_scopes", None, None),
-    _Handler("extend_payload", None, None),
+    _Handler("override_scope_validator", None, None, False),
+    _Handler("destructure_scopes", None, None, False),
+    _Handler("extend_payload", None, None, False),
 )
+auth_mode_agnostic_handlers = (
+    _Handler("retrieve_user", None, None, True),
+)
+handlers = auth_mode_handlers + auth_mode_agnostic_handlers
 
 init_classes = (
     "configuration_class", "authentication_class", "responses_class"
@@ -200,25 +212,24 @@ class Initialize:
         # Initialize instance of the Authentication class
         self.instance.auth = self.authentication_class(self.app, config=config)
 
-        if config.auth_mode():
-            # check if kwargs methods contains authentication methods or if
-            # the authentication auth already has them (if subclassed)
+        init_handlers = handlers if config.auth_mode() else \
+            auth_mode_agnostic_handlers
 
-            for handler in handlers:
-                if handler.keys is None:
+        for handler in init_handlers:
+            if handler.keys is None:
+                self.__check_method_in_auth(
+                    handler.name, handler.exception
+                )
+            else:
+                if all(map(config.get, handler.keys)):
                     self.__check_method_in_auth(
                         handler.name, handler.exception
                     )
-                else:
-                    if all(map(config.get, handler.keys)):
-                        self.__check_method_in_auth(
-                            handler.name, handler.exception
-                        )
 
-            for handler in handlers:
-                if handler.name in self.kwargs:
-                    method = self.kwargs.pop(handler.name)
-                    setattr(self.instance.auth, handler.name, method)
+        for handler in init_handlers:
+            if handler.name in self.kwargs:
+                method = self.kwargs.pop(handler.name)
+                setattr(self.instance.auth, handler.name, method)
 
     def __check_method_in_auth(self, method_name, exc):
         if method_name not in self.kwargs:

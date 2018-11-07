@@ -303,3 +303,28 @@ def test_configuration_invalid_claim():
     )
 
     assert "claim_foo" not in sanicjwt.config._all_config_keys
+
+
+def test_disable_protection():
+    app = Sanic()
+
+    async def authenticate(request, *args, **kwargs):
+        return {"user_id": 1}
+
+    sanicjwt = Initialize(
+        app,
+        authenticate=authenticate,
+        do_protection=False,
+    )
+
+    @app.route("/protected")
+    @sanicjwt.protected()
+    def protected_route(request):
+        return json({"protected": "yes"})
+
+    _, response = app.test_client.get(
+        "/protected"
+    )
+
+    assert response.status == 200
+    assert response.json.get("protected") == "yes"

@@ -275,6 +275,14 @@ Alias for ``cookie_access_token_name``
 | **Default**: ``False``
 |
 
+---------
+``do_protection``
+---------
+
+| **Purpose**: Whether or not protection should be inforced. This almost **always** should stay as ``True``, unless you know what you are doing since it will effectively render the ``@protected`` decorator useless and all traffic will be passed thru.
+| **Default**: ``True``
+|
+
 --------------------
 ``expiration_delta``
 --------------------

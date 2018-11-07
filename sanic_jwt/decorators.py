@@ -54,11 +54,16 @@ async def _do_protection(*args, **kwargs):
                 return True, response
 
         try:
-            (
-                is_authenticated, status, reasons
-            ) = instance.auth._check_authentication(
-                request, request_args=args, request_kwargs=use_kwargs
-            )
+            if instance.auth.config.do_protection():
+                (
+                    is_authenticated, status, reasons
+                ) = instance.auth._check_authentication(
+                    request, request_args=args, request_kwargs=use_kwargs
+                )
+            else:
+                is_authenticated = True
+                status = 200
+                reasons = None
         except AttributeError:
             raise exceptions.SanicJWTException(
                 "Authentication instance not found. Perhaps you used "

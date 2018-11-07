@@ -25,6 +25,7 @@ defaults = {
     "cookie_set": False,
     "cookie_strict": True,
     "debug": False,
+    "do_protection": True,
     "expiration_delta": 60 * 5 * 6,
     "generate_refresh_token": utils.generate_token,
     "leeway": 60 * 3,

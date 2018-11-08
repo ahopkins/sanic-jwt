@@ -6,6 +6,7 @@ from sanic.response import json
 from sanic.response import text
 
 from sanic_jwt import Initialize
+from sanic_jwt import Claim
 from sanic_jwt import exceptions
 from sanic_jwt.decorators import protected
 
@@ -116,8 +117,11 @@ def app_with_refresh_token(username_table, authenticate):
         sanic_app,
         authenticate=authenticate,
         refresh_token_enabled=True,
-        store_refresh_token=lambda user_id, refresh_token, request: True,
-        retrieve_refresh_token=lambda user_id, request: True,
+        store_refresh_token=lambda user_id,
+        refresh_token,
+        request: True,
+        retrieve_refresh_token=lambda user_id,
+        request: True,
     )
 
     yield (sanic_app, sanic_jwt)
@@ -311,6 +315,56 @@ def app_with_retrieve_user(retrieve_user, authenticate):
     @sanic_app.route("/")
     async def helloworld(request):
         return json({"hello": "world"})
+
+    @sanic_app.route("/protected")
+    @protected()
+    async def protected_request(request):
+        return json({"protected": True})
+
+    yield (sanic_app, sanic_jwt)
+
+
+@pytest.yield_fixture
+def app_with_extra_verification(authenticate):
+
+    def user2(payload):
+        return payload.get("user_id") == 2
+
+    extra_verifications = [user2]
+
+    sanic_app = Sanic()
+    sanic_jwt = Initialize(
+        sanic_app,
+        authenticate=authenticate,
+        extra_verifications=extra_verifications,
+    )
+
+    @sanic_app.route("/protected")
+    @protected()
+    async def protected_request(request):
+        return json({"protected": True})
+
+    yield (sanic_app, sanic_jwt)
+
+
+@pytest.yield_fixture
+def app_with_custom_claims(authenticate):
+
+    class User2Claim(Claim):
+        key = "username"
+
+        def setup(self, payload, user):
+            return user.username
+
+        def verify(self, value):
+            return value == "user2"
+
+    custom_claims = [User2Claim]
+
+    sanic_app = Sanic()
+    sanic_jwt = Initialize(
+        sanic_app, authenticate=authenticate, custom_claims=custom_claims
+    )
 
     @sanic_app.route("/protected")
     @protected()

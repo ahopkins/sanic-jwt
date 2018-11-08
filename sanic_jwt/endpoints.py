@@ -1,7 +1,9 @@
-from sanic.response import json, text
+from sanic.response import json
+from sanic.response import text
 from sanic.views import HTTPMethodView
 
-from . import exceptions, utils
+from . import exceptions
+from . import utils
 from .base import BaseDerivative
 from .decorators import protected
 
@@ -135,9 +137,7 @@ class VerifyEndpoint(BaseEndpoint):
             output.update({"reasons": reason})
 
         if not is_valid:
-            output.update({
-                "exception": exceptions.InvalidToken.__name__
-            })
+            output.update({"exception": exceptions.InvalidToken.__name__})
 
         output.update(self.responses.extend_verify(request))
         output = await self.do_output(output)

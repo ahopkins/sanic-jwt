@@ -4,13 +4,13 @@ https://github.com/ahopkins/sanic-jwt/issues/110#issue-330031252
 """
 
 
-from sanic.views import HTTPMethodView
-from sanic.response import text
-from sanic_jwt import Authentication, initialize, protected
-from sanic import Sanic, Blueprint
-
 import pytest
+from sanic import Blueprint, Sanic
+from sanic.response import text
+from sanic.views import HTTPMethodView
 
+import jwt
+from sanic_jwt import Authentication, initialize, protected
 
 ALL_METHODS = ["GET", "OPTIONS"]
 
@@ -66,7 +66,7 @@ def test_async_options(app):
     sanic_app, sanicjwt = app
     _, response = sanic_app.test_client.get("/test")
     assert response.status == 401
-    assert "Authorization header not present." in response.json.get('reasons')
+    assert "Authorization header not present." in response.json.get("reasons")
 
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "Rich", "password": "not secure"}
@@ -74,11 +74,23 @@ def test_async_options(app):
 
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
+    payload = jwt.decode(access_token, sanicjwt.config.secret())
+
+    assert "extra_info" in payload
+    assert payload.get("extra_info") == "awesome!"
+
     assert response.status == 200
     assert access_token is not None
 
+    _, response = sanic_app.test_client.get(
+        "/test/", headers={"Authorization": "JWT {}".format(access_token)}
+    )
+
+    assert response.status == 200
+    assert response.body == b"ok"
+
     _, response = sanic_app.test_client.options("/test")
-    print(response.body)
+    # print(response.body)
 
     assert response.status == 200
     assert response.body == b"ok"

@@ -170,8 +170,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in \
-            response.json.get('reasons')
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         _, response = sanic_app.test_client.get(
             "/protected",
@@ -182,8 +183,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in \
-            response.json.get('reasons')
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         _, response = sanic_app.test_client.get(
             "/auth/verify",
@@ -194,8 +196,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 401
         assert response.json.get("exception") == "MissingAuthorizationCookie"
-        assert "Authorization cookie not present." in \
-            response.json.get('reasons')
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         _, response = sanic_app.test_client.get(
             "/auth/me",
@@ -320,8 +323,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in \
-            response.json.get('reasons')
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         sanicjwt.config.debug.update(True)
         _, response = sanic_app.test_client.post(
@@ -332,8 +336,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 400
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in \
-            response.json.get('reasons')
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
     def test_refresh_token_with_cookies_not_strict(
         self, app_with_refresh_token, authenticated_response

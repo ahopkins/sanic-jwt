@@ -60,12 +60,12 @@ class Responses(BaseDerivative):
 
     @staticmethod
     def exception_response(request, exception):
-        reasons = exception.args[0] if isinstance(exception.args[0], list) \
-            else [exception.args[0]]
+        reasons = exception.args[0] if isinstance(
+            exception.args[0], list
+        ) else [
+            exception.args[0]
+        ]
         return json(
-            {
-                "reasons": reasons,
-                "exception": exception.__class__.__name__,
-            },
+            {"reasons": reasons, "exception": exception.__class__.__name__},
             status=exception.status_code,
         )

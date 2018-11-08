@@ -5,6 +5,20 @@ Changelog
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 ++++++++++++++++++++++++++
+Version 1.2.0 - 2018-08-06
+++++++++++++++++++++++++++
+
+| **Added**
+| - Custom claims
+| - Extra payload validation
+| - Configuration option: ``SANIC_JWT_DO_PROTECTION``
+|
+
+| **Changed**
+| - Invalid tokens now ``401`` instead of ``403``
+|
+
+++++++++++++++++++++++++++
 Version 1.1.4 - 2018-08-06
 ++++++++++++++++++++++++++
 

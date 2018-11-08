@@ -357,6 +357,7 @@ One of the most powerful concepts of the JWT is that you are able to pass data (
         authenticate=lambda: True,
         extend_payload=my_extender)
 
+------------
 
 ---------------------
 Runtime Configuration
@@ -374,6 +375,8 @@ There are several ways to :doc:`configure the settings<configuration>` for Sanic
         user_id='id',
         claim_iat=True,
         cookie_domain='example.com',)
+
+------------
 
 ----------------
 Additional Views
@@ -432,6 +435,8 @@ As an example, perhaps you would like to create a "passwordless" login. You coul
 
         async def options(self, request):
             return response.text('', status=204)
+
+------------
 
 -------------------
 Component Overrides

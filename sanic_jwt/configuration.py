@@ -2,8 +2,11 @@ import asyncio
 import copy
 import logging
 
-from . import exceptions, utils
-from .cache import get_cached, is_cached, to_cache
+from . import exceptions
+from . import utils
+from .cache import get_cached
+from .cache import is_cached
+from .cache import to_cache
 
 
 defaults = {
@@ -25,6 +28,7 @@ defaults = {
     "cookie_set": False,
     "cookie_strict": True,
     "debug": False,
+    "do_protection": True,
     "expiration_delta": 60 * 5 * 6,
     "generate_refresh_token": utils.generate_token,
     "leeway": 60 * 3,
@@ -61,6 +65,7 @@ ignore_keys = (
     "retrieve_refresh_token",
     "retrieve_user",
     "store_refresh_token",
+    "destructure_scopes",
 )
 
 logger = logging.getLogger(__name__)

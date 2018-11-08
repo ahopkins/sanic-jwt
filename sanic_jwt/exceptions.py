@@ -1,5 +1,5 @@
-from sanic.exceptions import Unauthorized as SanicUnauthorized
 from sanic.exceptions import SanicException
+from sanic.exceptions import Unauthorized as SanicUnauthorized
 
 
 class SanicJWTException(SanicException):
@@ -44,6 +44,39 @@ class InvalidAuthorizationHeader(SanicJWTException):
     status_code = 400
 
     def __init__(self, message="Authorization header is invalid.", **kwargs):
+        super().__init__(message, **kwargs)
+
+
+class InvalidCustomClaim(SanicJWTException):
+    status_code = 500
+
+    def __init__(self, message="Custom claim is invalid.", **kwargs):
+        super().__init__(message, **kwargs)
+
+
+class InvalidCustomClaimError(SanicJWTException):
+    status_code = 401
+
+    def __init__(self, message="Custom claim value was not met.", **kwargs):
+        super().__init__(message, **kwargs)
+
+
+class InvalidVerification(SanicJWTException):
+    status_code = 500
+
+    def __init__(
+        self,
+        message="Verifications must be a callable object "
+        "returning a boolean value.",
+        **kwargs
+    ):
+        super().__init__(message, **kwargs)
+
+
+class InvalidVerificationError(SanicJWTException):
+    status_code = 401
+
+    def __init__(self, message="Verifications were not met.", **kwargs):
         super().__init__(message, **kwargs)
 
 

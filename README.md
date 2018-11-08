@@ -7,9 +7,9 @@
 
 [![Build Status](https://travis-ci.org/ahopkins/sanic-jwt.svg?branch=master)](https://travis-ci.org/ahopkins/sanic-jwt)
 [![Documentation](https://readthedocs.org/projects/sanic-jwt/badge/?version=latest)](http://sanic-jwt.readthedocs.io/en/latest/?badge=latest)
-[![Waffle.io](https://badge.waffle.io/ahopkins/sanic-jwt.svg?columns=In%20Progress)](https://waffle.io/ahopkins/sanic-jwt)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9727756ffccd45f7bc5ad6292596e03d)](https://www.codacy.com/app/ahopkins/sanic-jwt?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ahopkins/sanic-jwt&amp;utm_campaign=Badge_Grade)
 [![Test Coverage](https://codecov.io/gh/ahopkins/sanic-jwt/branch/dev/graph/badge.svg)](https://codecov.io/gh/ahopkins/sanic-jwt)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/ambv/black)
 
 
 Sanic JWT adds authentication protection and endpoints to [Sanic].

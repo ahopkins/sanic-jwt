@@ -1,13 +1,15 @@
 import logging
+
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import wraps
 from inspect import isawaitable
-from copy import deepcopy
 from sanic import Blueprint
 
 from . import exceptions
 from . import utils
-from .cache import clear_cache, to_cache
+from .cache import clear_cache
+from .cache import to_cache
 from .validators import validate_scopes
 
 logger = logging.getLogger(__name__)
@@ -34,8 +36,8 @@ async def _do_protection(*args, **kwargs):
     f = kwargs.pop("f")
 
     use_kwargs = deepcopy(kwargs)
-    if 'return_response' in use_kwargs:
-        use_kwargs.pop('return_response')
+    if "return_response" in use_kwargs:
+        use_kwargs.pop("return_response")
 
     if initialized_on and isinstance(initialized_on, Blueprint):
         instance = initialized_on
@@ -47,18 +49,23 @@ async def _do_protection(*args, **kwargs):
             response = f(request, *args, **use_kwargs)
             if isawaitable(response):  # noqa
                 response = await response
-            if kwargs.get('return_response', True):
+            if kwargs.get("return_response", True):
                 return response
 
             else:
                 return True, response
 
         try:
-            (
-                is_authenticated, status, reasons
-            ) = instance.auth._check_authentication(
-                request, request_args=args, request_kwargs=use_kwargs
-            )
+            if instance.auth.config.do_protection():
+                (
+                    is_authenticated, status, reasons
+                ) = instance.auth._check_authentication(
+                    request, request_args=args, request_kwargs=use_kwargs
+                )
+            else:
+                is_authenticated = True
+                status = 200
+                reasons = None
         except AttributeError:
             raise exceptions.SanicJWTException(
                 "Authentication instance not found. Perhaps you used "
@@ -72,10 +79,12 @@ async def _do_protection(*args, **kwargs):
             status = e.status_code
             reasons = instance.auth._reasons if (
                 instance.auth._reasons and instance.auth.config.debug()
-            ) else e.args[0]
+            ) else e.args[
+                0
+            ]
 
         if is_authenticated:
-            if kwargs.get('return_response', True):
+            if kwargs.get("return_response", True):
                 response = f(request, *args, **use_kwargs)
                 if isawaitable(response):
                     response = await response
@@ -131,9 +140,7 @@ def scoped(
                     "return_response": False,
                 }
             )
-            _, instance = await _do_protection(
-                *args, **protect_kwargs
-            )
+            _, instance = await _do_protection(*args, **protect_kwargs)
 
             if request.method == "OPTIONS":
                 return instance

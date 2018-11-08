@@ -96,6 +96,59 @@ Not before - ``NBF``
 
 ------------
 
++++++++++++++
+Custom Claims
++++++++++++++
+
+Sometimes you may find a need to add claims to a JWT beyond what is built into Sanic JWT.
+
+To do so, simply subclass ``Claim`` and register them at :doc:`initialization<initialization>` by providing the custom claim class in a list to ``custom_claims``.
+
+.. code-block:: python
+
+    from sanic_jwt import Claim, Initialize
+
+    MyCustomClaim(Claim):
+        key = 'foo'
+
+        def setup(self, payload, user):
+            return 'bar'
+
+        def verify(self, value):
+            return value == 'bar'
+
+    Initialize(..., custom_claims=[MyCustomClaim])
+
+There are three attributes that a ``Claim`` must have: ``key``, ``setup``, and ``verify``.
+
+| ``key``: The name of the claim and the key that will be inserted into the payload.
+| ``setup``: A method to be run at the time the payload is created. It should return the value of the claim.
+| ``verify``: A method to be run when a token is being verified. It should return a ``boolean`` whether or not the claim has been met.
+|
+
+------------
+
++++++++++++++++++++
+Extra Verifications
++++++++++++++++++++
+
+Besides registering custom claims, sometimes you may find the need to do additional verifications on a payload. For example, perhaps you want to run checks that span more than one claim on the payload.
+
+To accomplish this, you can register a list of methods (that each return a ``boolean``) at :doc:`initialization<initialization>` by providing the list to ``extra_verifications``.
+
+.. code-block:: python
+
+    def check_number_of_claims(payload):
+        return len(payload.keys()) == 5
+
+    extra_verifications = [check_number_of_claims]
+    Initialize(
+        ...,
+        extra_verifications=extra_verifications
+    )
+
+------------
+
 ++++++++++++++++
 Payload Handlers
 ++++++++++++++++

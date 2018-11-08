@@ -1,6 +1,15 @@
 import asyncio
+import sys
 
 from .exceptions import LoopNotRunning
+
+
+def _get_current_task(loop):  # noqa
+    if sys.version_info[:2] < (3, 7):  # to avoid deprecation warning
+        return asyncio.Task.current_task(loop=loop)
+
+    else:
+        return asyncio.current_task(loop=loop)
 
 
 def _check_event_loop():
@@ -11,11 +20,11 @@ def _check_event_loop():
 def _get_or_create_cache():
     loop = asyncio.get_event_loop()
     try:
-        return asyncio.Task.current_task(loop=loop)._sanicjwt
+        return _get_current_task(loop)._sanicjwt
 
     except AttributeError:
-        asyncio.Task.current_task(loop=loop)._sanicjwt = {}
-        return asyncio.Task.current_task(loop=loop)._sanicjwt
+        _get_current_task(loop)._sanicjwt = {}
+        return _get_current_task(loop)._sanicjwt
 
 
 def get_cached(value):
@@ -37,6 +46,6 @@ def clear_cache():
     _check_event_loop()
     loop = asyncio.get_event_loop()
     try:
-        asyncio.Task.current_task(loop=loop)._sanicjwt = {}
+        _get_current_task(loop)._sanicjwt = {}
     except AttributeError:  # noqa
         pass

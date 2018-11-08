@@ -4,9 +4,8 @@ source =
     tests
 
 [run]
-source =
-    sanic_jwt
-    tests
+source = sanic_jwt
+omit = tests
 branch = True
 
 [report]

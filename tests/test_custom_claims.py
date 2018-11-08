@@ -44,7 +44,7 @@ def test_custom_claims(app_with_custom_claims):
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
-    assert response.status == 403
+    assert response.status == 401
     assert "Invalid claim: username." in response.json.get("reasons")
 
     _, response = sanic_app.test_client.post(

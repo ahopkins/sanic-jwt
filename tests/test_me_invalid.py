@@ -56,7 +56,7 @@ def test_expired(app_with_retrieve_user):
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
-        assert response.status == 403
+        assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
         assert "Signature has expired." in response.json.get("reasons")
 
@@ -65,6 +65,6 @@ def test_expired(app_with_retrieve_user):
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
-        assert response.status == 403
+        assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
         assert "Signature has expired." in response.json.get("reasons")

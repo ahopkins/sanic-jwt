@@ -56,7 +56,7 @@ def test_expired(app):
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
-        assert response.status == 403
+        assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
         assert "Signature has expired." in response.json.get("reasons")
 
@@ -67,7 +67,7 @@ def test_expired(app):
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
-        assert response.status == 403
+        assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
         assert "Signature has expired." in response.json.get("reasons")
 
@@ -114,7 +114,7 @@ def test_leeway_configuration(app_with_leeway):
             "/protected",
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
-        assert response.status == 403
+        assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
         assert "Signature has expired." in response.json.get("reasons")
 
@@ -147,7 +147,7 @@ def test_nbf(app_with_nbf):
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
-    assert response.status == 403
+    assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
     assert "The token is not yet valid (nbf)." in response.json.get("reasons")
 
@@ -157,7 +157,7 @@ def test_nbf(app_with_nbf):
             headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
-        assert response.status == 403
+        assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
         assert "The token is not yet valid (nbf)." in response.json.get(
             "reasons"

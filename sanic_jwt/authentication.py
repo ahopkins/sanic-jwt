@@ -367,7 +367,7 @@ class Authentication(BaseAuthentication):
                     for x in list(e.args)
                 ]
                 payload = None
-                status = 403
+                status = 401
                 is_valid = False
             except jwt.exceptions.DecodeError as e:
                 self._reasons = e.args

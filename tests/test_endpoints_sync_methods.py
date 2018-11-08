@@ -152,7 +152,7 @@ class TestEndpointsSync(object):
                 headers={"Authorization": "Bearer {}".format(access_token)},
             )
 
-            assert response.status == 403
+            assert response.status == 401
             assert response.json.get("exception") == "InvalidToken"
             assert "Signature has expired." in response.json.get("reasons")
 

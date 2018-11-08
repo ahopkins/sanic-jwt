@@ -18,7 +18,7 @@ def test_extra_verification_passing(app_with_extra_verification):
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
-    assert response.status == 403
+    assert response.status == 401
     assert "Verifications were not met." in response.json.get("reasons")
 
     _, response = sanic_app.test_client.post(

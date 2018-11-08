@@ -102,10 +102,10 @@ def test_protected_blueprints():
 
     assert response1.status == 401
     assert response1.json.get("exception") == "Unauthorized"
-    assert "Auth required." in response1.json.get('reasons')
+    assert "Auth required." in response1.json.get("reasons")
     assert response2.status == 401
     assert response2.json.get("exception") == "Unauthorized"
-    assert "Auth required." in response2.json.get('reasons')
+    assert "Auth required." in response2.json.get("reasons")
 
 
 def test_protected_blueprints_debug():
@@ -137,7 +137,7 @@ def test_protected_blueprints_debug():
 
     assert response1.status == 400
     assert response1.json.get("exception") == "Unauthorized"
-    assert "Signature verification failed." in response1.json.get('reasons')
+    assert "Signature verification failed." in response1.json.get("reasons")
     assert response2.status == 400
     assert response2.json.get("exception") == "Unauthorized"
-    assert "Signature verification failed." in response2.json.get('reasons')
+    assert "Signature verification failed." in response2.json.get("reasons")

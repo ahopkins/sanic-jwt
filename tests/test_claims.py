@@ -159,8 +159,9 @@ def test_nbf(app_with_nbf):
 
         assert response.status == 403
         assert response.json.get("exception") == "Unauthorized"
-        assert "The token is not yet valid (nbf)." in \
-            response.json.get("reasons")
+        assert "The token is not yet valid (nbf)." in response.json.get(
+            "reasons"
+        )
 
     with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 + 10))):
         _, response = sanic_app.test_client.get(

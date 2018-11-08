@@ -66,7 +66,7 @@ def test_async_options(app):
     sanic_app, sanicjwt = app
     _, response = sanic_app.test_client.get("/test")
     assert response.status == 401
-    assert "Authorization header not present." in response.json.get('reasons')
+    assert "Authorization header not present." in response.json.get("reasons")
 
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "Rich", "password": "not secure"}

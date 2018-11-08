@@ -24,7 +24,7 @@ initialize(
         (
             "/magic-login", MagicLoginHandler
         )  # The path will be relative to the url prefix
-           # (which defaults to /auth)
+        # (which defaults to /auth)
     ],
 )
 

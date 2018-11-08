@@ -43,7 +43,7 @@ def test_protected_blueprint():
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
-    assert "Authorization header not present." in response.json.get('reasons')
+    assert "Authorization header not present." in response.json.get("reasons")
 
     _, response = app.test_client.post(
         "/test/auth", json={"username": "user1", "password": "abcxyz"}
@@ -67,4 +67,4 @@ def test_scoped_empty():
     _, response = app.test_client.get("/test/scoped_empty")
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
-    assert "Authorization header not present." in response.json.get('reasons')
+    assert "Authorization header not present." in response.json.get("reasons")

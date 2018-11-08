@@ -10,7 +10,8 @@ from sanic_jwt.decorators import protected, scoped, inject_user
 from sanic_jwt.responses import Responses
 
 _Handler = namedtuple(
-    "_Handler", ["name", "keys", "exception", "outside_auth_mode"])
+    "_Handler", ["name", "keys", "exception", "outside_auth_mode"]
+)
 _EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys"])
 
 
@@ -43,10 +44,7 @@ endpoint_mappings = (
 
 auth_mode_handlers = (
     _Handler(
-        "authenticate",
-        None,
-        exceptions.AuthenticateNotImplemented(),
-        False,
+        "authenticate", None, exceptions.AuthenticateNotImplemented(), False
     ),
     _Handler(
         "store_refresh_token",
@@ -70,9 +68,7 @@ auth_mode_handlers = (
     _Handler("destructure_scopes", None, None, False),
     _Handler("extend_payload", None, None, False),
 )
-auth_mode_agnostic_handlers = (
-    _Handler("retrieve_user", None, None, True),
-)
+auth_mode_agnostic_handlers = (_Handler("retrieve_user", None, None, True),)
 handlers = auth_mode_handlers + auth_mode_agnostic_handlers
 
 init_classes = (
@@ -114,6 +110,7 @@ class Initialize:
         self.__add_class_views()
         self.__add_endpoints()
         self.__initialize_instance()
+        self.__initialize_claims()
 
     def __check_deprecated(self):
         """
@@ -187,8 +184,7 @@ class Initialize:
         and / or `Responses`) have been overwitten and if they're still valid
         """
         # msg took from BaseAuthentication
-        msg = "Sanic JWT was not initialized properly. It did not received "\
-              "an instance of {}"
+        msg = "Sanic JWT was not initialized properly. It did not received " "an instance of {}"
         if not issubclass(self.authentication_class, Authentication):
             raise exceptions.InitializationFailure(
                 message=msg.format("Authentication")
@@ -213,14 +209,11 @@ class Initialize:
         # Initialize instance of the Authentication class
         self.instance.auth = self.authentication_class(self.app, config=config)
 
-        init_handlers = handlers if config.auth_mode() else \
-            auth_mode_agnostic_handlers
+        init_handlers = handlers if config.auth_mode() else auth_mode_agnostic_handlers
 
         for handler in init_handlers:
             if handler.keys is None:
-                self.__check_method_in_auth(
-                    handler.name, handler.exception
-                )
+                self.__check_method_in_auth(handler.name, handler.exception)
             else:
                 if all(map(config.get, handler.keys)):
                     self.__check_method_in_auth(
@@ -231,6 +224,19 @@ class Initialize:
             if handler.name in self.kwargs:
                 method = self.kwargs.pop(handler.name)
                 setattr(self.instance.auth, handler.name, method)
+
+    def __initialize_claims(self):
+        if "extra_verifications" in self.kwargs:
+            self.instance.auth._extra_verifications = self.kwargs.get(
+                "extra_verifications"
+            )
+
+        if "custom_claims" in self.kwargs:
+            try:
+                for claim in self.kwargs.get("custom_claims"):
+                    claim._register(self)
+            except AttributeError:
+                raise exceptions.InvalidCustomClaim
 
     def __check_method_in_auth(self, method_name, exc):
         if method_name not in self.kwargs:

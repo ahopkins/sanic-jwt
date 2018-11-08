@@ -135,9 +135,7 @@ class VerifyEndpoint(BaseEndpoint):
             output.update({"reasons": reason})
 
         if not is_valid:
-            output.update({
-                "exception": exceptions.InvalidToken.__name__
-            })
+            output.update({"exception": exceptions.InvalidToken.__name__})
 
         output.update(self.responses.extend_verify(request))
         output = await self.do_output(output)

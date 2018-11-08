@@ -154,8 +154,7 @@ class TestEndpointsSync(object):
 
             assert response.status == 403
             assert response.json.get("exception") == "InvalidToken"
-            assert "Signature has expired." in \
-                response.json.get('reasons')
+            assert "Signature has expired." in response.json.get("reasons")
 
     def test_refresh_token_sync(
         self, app_with_sync_methods, authenticated_response

@@ -311,20 +311,14 @@ def test_disable_protection():
     async def authenticate(request, *args, **kwargs):
         return {"user_id": 1}
 
-    sanicjwt = Initialize(
-        app,
-        authenticate=authenticate,
-        do_protection=False,
-    )
+    sanicjwt = Initialize(app, authenticate=authenticate, do_protection=False)
 
     @app.route("/protected")
     @sanicjwt.protected()
     def protected_route(request):
         return json({"protected": "yes"})
 
-    _, response = app.test_client.get(
-        "/protected"
-    )
+    _, response = app.test_client.get("/protected")
 
     assert response.status == 200
     assert response.json.get("protected") == "yes"

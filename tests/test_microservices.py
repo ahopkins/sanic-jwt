@@ -37,7 +37,7 @@ def test_microservice_interaction():
 
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"
-    assert "Authorization header not present." in response.json.get('reasons')
+    assert "Authorization header not present." in response.json.get("reasons")
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}

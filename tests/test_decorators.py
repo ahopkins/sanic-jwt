@@ -186,19 +186,18 @@ def test_inject_user_on_instance_non_async(app_with_retrieve_user):
 def test_inject_user_with_auth_mode_off(app_with_retrieve_user):
 
     async def retrieve_user(request, payload, *args, **kwargs):
-        return {'user_id': 123}
+        return {"user_id": 123}
 
     microservice_app = Sanic()
     microservice_sanic_jwt = Initialize(
-        microservice_app,
-        auth_mode=False,
-        retrieve_user=retrieve_user)
+        microservice_app, auth_mode=False, retrieve_user=retrieve_user
+    )
 
     @microservice_app.route("/protected/user")
     @microservice_sanic_jwt.inject_user()
     @microservice_sanic_jwt.protected()
     async def my_protected_user(request, user):
-        return json({"user_id": user.get('user_id')})
+        return json({"user_id": user.get("user_id")})
 
     sanic_app, sanic_jwt = app_with_retrieve_user
     _, response = sanic_app.test_client.post(
@@ -217,8 +216,6 @@ def test_inject_user_with_auth_mode_off(app_with_retrieve_user):
     assert response.status == 200
     assert response.json.get("user_id") == 123
 
-    _, response = microservice_app.test_client.get(
-        "/protected/user",
-    )
+    _, response = microservice_app.test_client.get("/protected/user")
 
     assert response.status == 401

@@ -34,8 +34,8 @@ async def _do_protection(*args, **kwargs):
     f = kwargs.pop("f")
 
     use_kwargs = deepcopy(kwargs)
-    if 'return_response' in use_kwargs:
-        use_kwargs.pop('return_response')
+    if "return_response" in use_kwargs:
+        use_kwargs.pop("return_response")
 
     if initialized_on and isinstance(initialized_on, Blueprint):
         instance = initialized_on
@@ -47,7 +47,7 @@ async def _do_protection(*args, **kwargs):
             response = f(request, *args, **use_kwargs)
             if isawaitable(response):  # noqa
                 response = await response
-            if kwargs.get('return_response', True):
+            if kwargs.get("return_response", True):
                 return response
 
             else:
@@ -77,10 +77,12 @@ async def _do_protection(*args, **kwargs):
             status = e.status_code
             reasons = instance.auth._reasons if (
                 instance.auth._reasons and instance.auth.config.debug()
-            ) else e.args[0]
+            ) else e.args[
+                0
+            ]
 
         if is_authenticated:
-            if kwargs.get('return_response', True):
+            if kwargs.get("return_response", True):
                 response = f(request, *args, **use_kwargs)
                 if isawaitable(response):
                     response = await response
@@ -136,9 +138,7 @@ def scoped(
                     "return_response": False,
                 }
             )
-            _, instance = await _do_protection(
-                *args, **protect_kwargs
-            )
+            _, instance = await _do_protection(*args, **protect_kwargs)
 
             if request.method == "OPTIONS":
                 return instance

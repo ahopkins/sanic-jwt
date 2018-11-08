@@ -5,6 +5,7 @@ from sanic_jwt import Authentication, exceptions, Initialize
 
 
 class MyAuthentication(Authentication):
+
     async def authenticate(self, request, *args, **kwargs):
         username = request.json.get("username", None)
         password = request.json.get("password", None)
@@ -31,6 +32,7 @@ class MyAuthentication(Authentication):
         if payload:
             user_id = payload.get("user_id", None)
             return {"user_id": user_id}
+
         else:
             return None
 
@@ -54,6 +56,7 @@ if __name__ == "__main__":
         return json({"protected": True})
 
     # this route is for demonstration only
+
     @app.route("/cache")
     @sanicjwt.protected()
     async def protected_cache(request):

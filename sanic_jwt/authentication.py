@@ -4,6 +4,9 @@ from datetime import datetime, timedelta
 import warnings
 import jwt
 from .exceptions import SanicJWTException
+from .exceptions import InvalidVerification
+from .exceptions import InvalidVerificationError
+from .exceptions import InvalidCustomClaimError
 
 from . import exceptions, utils
 
@@ -16,8 +19,10 @@ class BaseAuthentication:
     def __init__(self, app, config):
         self.app = app
         self.claims = ["exp"]
+        self._extra_verifications = None
         self.config = config
         self._reasons = []
+        self._custom_claims = set()
 
     async def _get_user_id(self, user, *, asdict=False):
         """
@@ -42,9 +47,10 @@ class BaseAuthentication:
     async def build_payload(self, user, *args, **kwargs):
         return await self._get_user_id(user, asdict=True)
 
-    async def add_claims(self, payload, *args, **kwargs):
+    async def add_claims(self, payload, user, *args, **kwargs):
         """
         Injects standard claims into the payload for: exp, iss, iat, nbf, aud.
+        And, custom claims, if they exist
         """
         delta = timedelta(seconds=self.config.expiration_delta())
         exp = datetime.utcnow() + delta
@@ -61,6 +67,13 @@ class BaseAuthentication:
                     additional.update({option: method(attr, self.config)})
 
         payload.update(additional)
+
+        if self._custom_claims:
+            custom_claims = {
+                x.get_key(): await utils.call(x.setup, payload, user)
+                for x in self._custom_claims
+            }
+            payload.update(custom_claims)
 
         return payload
 
@@ -173,7 +186,7 @@ class Authentication(BaseAuthentication):
         ):
             raise exceptions.InvalidPayload
 
-        payload = await utils.call(self.add_claims, payload)
+        payload = await utils.call(self.add_claims, payload, user)
 
         extend_payload_args = inspect.getfullargspec(self.extend_payload)
         args = [payload]
@@ -187,7 +200,8 @@ class Authentication(BaseAuthentication):
                 scopes = [scopes]
             payload[self.config.scopes_name()] = scopes
 
-        missing = [x for x in self.claims if x not in payload]
+        claims = self.claims + [x.get_key() for x in self._custom_claims]
+        missing = [x for x in claims if x not in payload]
         if missing:
             logger.debug("")
             raise exceptions.MissingRegisteredClaim(missing=missing)
@@ -329,16 +343,24 @@ class Authentication(BaseAuthentication):
         if token:
             try:
                 payload = self._decode(token, verify=verify)
+
+                if verify:
+                    if self._extra_verifications:
+                        self._verify_extras(payload)
+                    if self._custom_claims:
+                        self._verify_custom_claims(payload)
             except (
                 jwt.exceptions.ExpiredSignatureError,
                 jwt.exceptions.InvalidIssuerError,
                 jwt.exceptions.ImmatureSignatureError,
                 jwt.exceptions.InvalidIssuedAtError,
                 jwt.exceptions.InvalidAudienceError,
+                InvalidVerificationError,
+                InvalidCustomClaimError,
             ) as e:
                 # Make sure that the reasons all end with '.' for consistency
                 reason = [
-                    x if x.endswith('.') else '{}.'.format(x)
+                    x if x.endswith(".") else "{}.".format(x)
                     for x in list(e.args)
                 ]
                 payload = None
@@ -348,7 +370,7 @@ class Authentication(BaseAuthentication):
                 self._reasons = e.args
                 # Make sure that the reasons all end with '.' for consistency
                 reason = [
-                    x if x.endswith('.') else '{}.'.format(x)
+                    x if x.endswith(".") else "{}.".format(x)
                     for x in list(e.args)
                 ] if self.config.debug() else "Auth required."
                 logger.debug(e.args)
@@ -364,6 +386,22 @@ class Authentication(BaseAuthentication):
         status = 200 if is_valid else status
 
         return is_valid, status, reason
+
+    def _verify_extras(self, payload):
+        for verification in self._extra_verifications:
+            if not callable(verification):
+                raise InvalidVerification()
+
+            verified = verification(payload)
+            if not isinstance(verified, bool):
+                raise InvalidVerification()
+
+            if verified is False:
+                raise InvalidVerificationError()
+
+    def _verify_custom_claims(self, payload):
+        for claim in self._custom_claims:
+            claim._verify(payload)
 
     def extract_payload(self, request, verify=True, *args, **kwargs):
         """

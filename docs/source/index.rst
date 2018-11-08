@@ -3,7 +3,7 @@ Sanic JWT
 =========
 
 |Latest PyPI version| |Version status| |Python versions| |Build Status|
-|Codacy Badge| |Documentation| Waffle.io|
+|Codacy Badge| |Documentation| |Black|
 
 
 Sanic JWT adds authentication protection and endpoints to `Sanic <http://sanic.readthedocs.io>`_.
@@ -37,6 +37,14 @@ Pick your favorite user management system, run :doc:`a single class to initializ
    pages/changelog
 
 ------------
+
++++++++++++++++++++++++++++
+What is new in Version 1.2?
++++++++++++++++++++++++++++
+
+**Version 1.2** saw a a few `minor fixes and changes <https://github.com/ahopkins/sanic-jwt/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.2>`_. Some new features were added to allow custom claims and additional payload verifications. **Version 1.1.4** is still stable, so there is no need to upgrade to **1.2**.
+
+In addition, there was a change that will (unfortunately) have some potential impact on users. Expired and invalid tokens will report as ``HTTP 401``.
 
 +++++++++++++++++++++++++++
 What is new in Version 1.1?
@@ -105,5 +113,5 @@ Have fun, and happy coding.
    :target: https://www.codacy.com/app/ahopkins/sanic-jwt?utm_source=github.com&utm_medium=referral&utm_content=ahopkins/sanic-jwt&utm_campaign=Badge_Grade
 .. |Documentation| image:: https://readthedocs.org/projects/sanic-jwt/badge/?version=latest
    :target: http://sanic-jwt.readthedocs.io/en/latest/?badge=latest
-.. |Waffle.io| image:: https://badge.waffle.io/ahopkins/sanic-jwt.svg?columns=In%20Progress
-   :target: https://waffle.io/ahopkins/sanic-jwt
+.. |Black| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://github.com/ambv/black

@@ -1,5 +1,5 @@
-from sanic.exceptions import Unauthorized as SanicUnauthorized
 from sanic.exceptions import SanicException
+from sanic.exceptions import Unauthorized as SanicUnauthorized
 
 
 class SanicJWTException(SanicException):

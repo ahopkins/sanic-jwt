@@ -2,8 +2,11 @@ import asyncio
 import copy
 import logging
 
-from . import exceptions, utils
-from .cache import get_cached, is_cached, to_cache
+from . import exceptions
+from . import utils
+from .cache import get_cached
+from .cache import is_cached
+from .cache import to_cache
 
 
 defaults = {

@@ -1,12 +1,17 @@
 import inspect
+
 from collections import namedtuple
 
-from sanic import Blueprint, Sanic
+from sanic import Blueprint
+from sanic import Sanic
 
-from sanic_jwt import endpoints, exceptions
+from sanic_jwt import endpoints
+from sanic_jwt import exceptions
 from sanic_jwt.authentication import Authentication
 from sanic_jwt.configuration import Configuration
-from sanic_jwt.decorators import protected, scoped, inject_user
+from sanic_jwt.decorators import inject_user
+from sanic_jwt.decorators import protected
+from sanic_jwt.decorators import scoped
 from sanic_jwt.responses import Responses
 
 _Handler = namedtuple(

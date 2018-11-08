@@ -1,7 +1,9 @@
-from sanic.response import json, text
+from sanic.response import json
+from sanic.response import text
 from sanic.views import HTTPMethodView
 
-from . import exceptions, utils
+from . import exceptions
+from . import utils
 from .base import BaseDerivative
 from .decorators import protected
 

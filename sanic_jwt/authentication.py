@@ -1,14 +1,17 @@
 import inspect
-import logging
-from datetime import datetime, timedelta
-import warnings
 import jwt
-from .exceptions import SanicJWTException
+import logging
+import warnings
+
+from .exceptions import InvalidCustomClaimError
 from .exceptions import InvalidVerification
 from .exceptions import InvalidVerificationError
-from .exceptions import InvalidCustomClaimError
+from .exceptions import SanicJWTException
+from datetime import datetime
+from datetime import timedelta
 
-from . import exceptions, utils
+from . import exceptions
+from . import utils
 
 logger = logging.getLogger(__name__)
 claim_label = {"iss": "issuer", "iat": "iat", "nbf": "nbf", "aud": "audience"}

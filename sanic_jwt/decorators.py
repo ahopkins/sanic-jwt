@@ -1,13 +1,15 @@
 import logging
+
 from contextlib import contextmanager
+from copy import deepcopy
 from functools import wraps
 from inspect import isawaitable
-from copy import deepcopy
 from sanic import Blueprint
 
 from . import exceptions
 from . import utils
-from .cache import clear_cache, to_cache
+from .cache import clear_cache
+from .cache import to_cache
 from .validators import validate_scopes
 
 logger = logging.getLogger(__name__)

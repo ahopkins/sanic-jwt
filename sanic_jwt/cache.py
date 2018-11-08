@@ -7,6 +7,7 @@ from .exceptions import LoopNotRunning
 def _get_current_task(loop):  # noqa
     if sys.version_info[:2] < (3, 7):  # to avoid deprecation warning
         return asyncio.Task.current_task(loop=loop)
+
     else:
         return asyncio.current_task(loop=loop)
 

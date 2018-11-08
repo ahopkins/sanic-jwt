@@ -2,12 +2,14 @@ from sanic_jwt import exceptions
 
 
 class Claim:
+
     @classmethod
     def _register(cls, sanicjwt):
-        required = ('key', 'setup', 'verify')
+        required = ("key", "setup", "verify")
         instance = cls()
         if any(not hasattr(instance, x) for x in required):
             raise AttributeError
+
         sanicjwt.instance.auth._custom_claims.add(instance)
 
     def get_key(self):

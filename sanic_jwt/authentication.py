@@ -72,10 +72,11 @@ class BaseAuthentication:
         payload.update(additional)
 
         if self._custom_claims:
-            custom_claims = {
-                x.get_key(): await utils.call(x.setup, payload, user)
-                for x in self._custom_claims
-            }
+            custom_claims = {}
+            for claim in self._custom_claims:
+                custom_claims[claim.get_key()] = await utils.call(
+                    claim.setup, payload, user
+                )
             payload.update(custom_claims)
 
         return payload

@@ -108,17 +108,18 @@ def test_custom_claims_bad(authenticate):
 
 
 def test_custom_claim_non_boolean_return():
+
     class CustomClaim(Claim):
-        key = 'foo'
+        key = "foo"
 
         def setup(self, **kwargs):
-            return 'bar'
+            return "bar"
 
         def verify(self, value):
             return 123
 
     myclaim = CustomClaim()
-    payload = {'foo': 'bar'}
+    payload = {"foo": "bar"}
 
     with pytest.raises(exceptions.InvalidCustomClaim):
         myclaim._verify(payload)

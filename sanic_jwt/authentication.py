@@ -256,7 +256,7 @@ class Authentication(BaseAuthentication):
             if header_prefix():
                 try:
                     prefix, token = header.split(" ")
-                    if prefix != header_prefix():
+                    if prefix != header_prefix() or not token:
                         raise Exception
 
                 except Exception:

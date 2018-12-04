@@ -289,7 +289,7 @@ class Authentication(BaseAuthentication):
         """
         if self.config.cookie_set():
             token = self._get_token_from_cookies(request, refresh_token)
-            if token is not None:
+            if token:
                 return token
 
             else:
@@ -298,7 +298,7 @@ class Authentication(BaseAuthentication):
 
         if self.config.query_string_set():
             token = self._get_token_from_query_string(request, refresh_token)
-            if token is not None:
+            if token:
                 return token
 
             else:
@@ -306,7 +306,8 @@ class Authentication(BaseAuthentication):
                     raise exceptions.MissingAuthorizationQueryArg()
 
         token = self._get_token_from_headers(request, refresh_token)
-        if token is not None:
+
+        if token:
             return token
 
         raise exceptions.MissingAuthorizationHeader()

@@ -334,3 +334,17 @@ class TestEndpointsQueryString(object):
             sanicjwt.config.query_string_refresh_token_name(), None
         ) is None  # there is no new refresh token
         assert sanicjwt.config.query_string_refresh_token_name() not in response.json
+
+    def test_auth_verify_invalid_token(self, app_with_refresh_token):
+        sanic_app, sanicjwt = app_with_refresh_token
+
+        _, response = sanic_app.test_client.get(
+            "/auth/verify?{}=".format(
+                sanicjwt.config.cookie_access_token_name()
+            )
+        )
+        assert response.status == 401
+        assert response.json.get("exception") == "MissingAuthorizationQueryArg"
+        assert "Authorization query argument not present." in response.json.get(
+            "reasons"
+        )

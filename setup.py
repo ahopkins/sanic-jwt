@@ -18,7 +18,7 @@ install_requires = ["pyjwt"]
 
 setup(
     name="sanic-jwt",
-    version="1.2.0",
+    version="1.2.1",
     description="JWT oauth flow for Sanic",
     url="https://github.com/ahopkins/sanic-jwt",
     download_url="https://github.com/ahopkins/sanic-jwt/archive/master.zip",

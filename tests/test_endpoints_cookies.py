@@ -365,3 +365,18 @@ class TestEndpointsCookies(object):
             sanicjwt.config.cookie_refresh_token_name(), None
         ) is None  # there is no new refresh token
         assert sanicjwt.config.cookie_refresh_token_name() not in response.json
+
+    def test_auth_verify_invalid_token(self, app_with_refresh_token):
+        sanic_app, sanicjwt = app_with_refresh_token
+
+        _, response = sanic_app.test_client.get(
+            "/auth/verify",
+            cookies={
+                sanicjwt.config.cookie_access_token_name(): ""
+            },
+        )
+        assert response.status == 401
+        assert response.json.get("exception") == "MissingAuthorizationCookie"
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )

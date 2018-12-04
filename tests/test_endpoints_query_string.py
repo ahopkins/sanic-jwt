@@ -339,7 +339,9 @@ class TestEndpointsQueryString(object):
         sanic_app, sanicjwt = app_with_refresh_token
 
         _, response = sanic_app.test_client.get(
-            "/auth/verify?{}=".format(sanicjwt.config.cookie_access_token_name()),
+            "/auth/verify?{}=".format(
+                sanicjwt.config.cookie_access_token_name()
+            )
         )
         assert response.status == 401
         assert response.json.get("exception") == "MissingAuthorizationQueryArg"

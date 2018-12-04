@@ -71,21 +71,21 @@ def test_auth_verify_missing_token_debug(app):
     assert response.json.get("exception") == "MissingAuthorizationHeader"
     assert "Authorization header not present." in response.json.get("reasons")
 
+
 def test_auth_verify_invalid_token(app):
     sanic_app, _ = app
     _, response = sanic_app.test_client.get(
-        "/auth/verify",
-        headers={"Authorization": "Bearer "}
+        "/auth/verify", headers={"Authorization": "Bearer "}
     )
     assert response.status == 400
     assert response.json.get("exception") == "InvalidAuthorizationHeader"
     assert "Authorization header is invalid." in response.json.get("reasons")
 
+
 def test_auth_verify_invalid_token(app):
     sanic_app, _ = app
     _, response = sanic_app.test_client.get(
-        "/auth/verify",
-        headers={"Authorization": "Bearer "}
+        "/auth/verify", headers={"Authorization": "Bearer "}
     )
     assert response.status == 401
     assert response.json.get("exception") == "MissingAuthorizationHeader"

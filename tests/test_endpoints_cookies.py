@@ -371,9 +371,7 @@ class TestEndpointsCookies(object):
 
         _, response = sanic_app.test_client.get(
             "/auth/verify",
-            cookies={
-                sanicjwt.config.cookie_access_token_name(): ""
-            },
+            cookies={sanicjwt.config.cookie_access_token_name(): ""},
         )
         assert response.status == 401
         assert response.json.get("exception") == "MissingAuthorizationCookie"

@@ -291,6 +291,7 @@ class Authentication(BaseAuthentication):
             token = self._get_token_from_cookies(request, refresh_token)
             if token:
                 return token
+
             else:
                 if self.config.cookie_strict():
                     raise exceptions.MissingAuthorizationCookie()

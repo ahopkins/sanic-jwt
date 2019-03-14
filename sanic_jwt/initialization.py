@@ -17,7 +17,7 @@ from sanic_jwt.responses import Responses
 _Handler = namedtuple(
     "_Handler", ["name", "keys", "exception", "outside_auth_mode"]
 )
-_EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys"])
+_EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys", "is_protected"])
 
 
 def initialize(*args, **kwargs):
@@ -34,16 +34,16 @@ def initialize(*args, **kwargs):
 
 endpoint_mappings = (
     _EndpointMapping(
-        endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"]
+        endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"], False
     ),
     _EndpointMapping(
-        endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"]
+        endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"], True
     ),
-    _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"]),
+    _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"], False),
     _EndpointMapping(
         endpoints.RefreshEndpoint,
         "refresh",
-        ["auth_mode", "refresh_token_enabled"],
+        ["auth_mode", "refresh_token_enabled"], False,
     ),
 )
 
@@ -148,7 +148,7 @@ class Initialize:
         """
         for mapping in endpoint_mappings:
             if all(map(self.config.get, mapping.keys)):
-                self.__add_single_endpoint(mapping.cls, mapping.endpoint)
+                self.__add_single_endpoint(mapping.cls, mapping.endpoint, mapping.is_protected)
 
         self.bp.exception(exceptions.SanicJWTException)(
             self.responses.exception_response
@@ -272,8 +272,10 @@ class Initialize:
     def __load_responses(self):
         self.responses = self.responses_class(self.config, self.instance)
 
-    def __add_single_endpoint(self, endpoint_cls, path_name):
+    def __add_single_endpoint(self, endpoint_cls, path_name, is_protected):
         path_name = getattr(self.config, "path_to_{}".format(path_name))()
+        if is_protected:
+            endpoint_cls.decorators = [self.protected()]
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
             if self.instance.url_prefix:

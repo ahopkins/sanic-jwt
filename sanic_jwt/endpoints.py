@@ -72,7 +72,6 @@ class AuthenticateEndpoint(BaseEndpoint):
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
-    decorators = [protected()]
 
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)

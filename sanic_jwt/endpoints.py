@@ -72,7 +72,6 @@ class AuthenticateEndpoint(BaseEndpoint):
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
-    decorators = [protected()]
 
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
@@ -161,7 +160,9 @@ class RefreshEndpoint(BaseEndpoint):
                 self.instance.auth.retrieve_user, request, payload=payload
             )
         except exceptions.MeEndpointNotSetup:
-            raise exceptions.RefreshTokenNotImplemented
+            message = "Refresh tokens have not been enabled properly."
+            "Perhaps you forgot to initialize with a retrieve_user handler?"
+            raise exceptions.RefreshTokenNotImplemented(message=message)
 
         user_id = await self.instance.auth._get_user_id(user)
         refresh_token = await utils.call(

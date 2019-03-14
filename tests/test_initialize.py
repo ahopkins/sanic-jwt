@@ -233,8 +233,10 @@ def test_initialize_app_and_bp():
     Initialize(instance=bp, app=app, authenticate=lambda: True)
 
     app.blueprint(bp)
-    print("app", app.router.routes_all.keys())
-    print("bp", [x.uri for x in bp.routes])
+
+
+# print("app", app.router.routes_all.keys())
+# print("bp", [x.uri for x in bp.routes])
 
 
 # Result:

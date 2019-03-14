@@ -148,10 +148,8 @@ def app_with_url_prefix(username_table, authenticate):
 
 
 @pytest.yield_fixture
-def app_with_bp(username_table, authenticate):
-
+def app_with_bp_setup_without_init(username_table, authenticate):
     sanic_app = Sanic()
-    sanic_jwt_init = Initialize(sanic_app, authenticate=authenticate)
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -163,11 +161,6 @@ def app_with_bp(username_table, authenticate):
         return json({"protected": True})
 
     sanic_bp = Blueprint("bp", url_prefix="/bp")
-    sanic_app.blueprint(sanic_bp)
-
-    sanic_jwt_init_bp = Initialize(
-        sanic_bp, app=sanic_app, authenticate=authenticate
-    )
 
     @sanic_bp.route("/")
     async def bp_helloworld(request):
@@ -177,6 +170,18 @@ def app_with_bp(username_table, authenticate):
     @protected()
     async def bp_protected_request(request):
         return json({"protected": True})
+
+    yield (sanic_app, sanic_bp)
+
+
+@pytest.yield_fixture
+def app_with_bp(app_with_bp_setup_without_init):
+    sanic_app, sanic_bp = app_with_bp_setup_without_init
+    sanic_jwt_init = Initialize(sanic_app, authenticate=authenticate)
+    sanic_jwt_init_bp = Initialize(
+        sanic_bp, app=sanic_app, authenticate=authenticate
+    )
+    sanic_app.blueprint(sanic_bp)
 
     yield (sanic_app, sanic_jwt_init, sanic_bp, sanic_jwt_init_bp)
 

@@ -72,14 +72,14 @@ def test_auth_verify_missing_token_debug(app):
     assert "Authorization header not present." in response.json.get("reasons")
 
 
-def test_auth_verify_invalid_token(app):
-    sanic_app, _ = app
-    _, response = sanic_app.test_client.get(
-        "/auth/verify", headers={"Authorization": "Bearer "}
-    )
-    assert response.status == 400
-    assert response.json.get("exception") == "InvalidAuthorizationHeader"
-    assert "Authorization header is invalid." in response.json.get("reasons")
+# def test_auth_verify_invalid_token(app):
+#     sanic_app, _ = app
+#     _, response = sanic_app.test_client.get(
+#         "/auth/verify", headers={"Authorization": "Bearer "}
+#     )
+#     assert response.status == 400
+#     assert response.json.get("exception") == "InvalidAuthorizationHeader"
+#     assert "Authorization header is invalid." in response.json.get("reasons")
 
 
 def test_auth_verify_invalid_token(app):
@@ -117,8 +117,9 @@ def test_auth_refresh_not_enabled(app_with_refresh_token):
         "/auth/refresh",
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
+    message = "Refresh tokens have not been enabled properly."
+    "Perhaps you forgot to initialize with a retrieve_user handler?"
+
     assert response.status == 500
     assert response.json.get("exception") == "RefreshTokenNotImplemented"
-    assert "Refresh tokens have not been enabled." in response.json.get(
-        "reasons"
-    )
+    assert message in response.json.get("reasons")

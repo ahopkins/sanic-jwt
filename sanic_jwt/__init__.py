@@ -1,4 +1,4 @@
-__version__ = "1.2.1"
+__version__ = "1.2.2"
 __author__ = "Adam Hopkins"
 __credits__ = "Richard Kuesters"
 

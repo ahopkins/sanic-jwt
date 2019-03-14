@@ -17,7 +17,9 @@ from sanic_jwt.responses import Responses
 _Handler = namedtuple(
     "_Handler", ["name", "keys", "exception", "outside_auth_mode"]
 )
-_EndpointMapping = namedtuple("_EndpointMapping", ["cls", "endpoint", "keys", "is_protected"])
+_EndpointMapping = namedtuple(
+    "_EndpointMapping", ["cls", "endpoint", "keys", "is_protected"]
+)
 
 
 def initialize(*args, **kwargs):
@@ -43,7 +45,8 @@ endpoint_mappings = (
     _EndpointMapping(
         endpoints.RefreshEndpoint,
         "refresh",
-        ["auth_mode", "refresh_token_enabled"], False,
+        ["auth_mode", "refresh_token_enabled"],
+        False,
     ),
 )
 
@@ -148,7 +151,9 @@ class Initialize:
         """
         for mapping in endpoint_mappings:
             if all(map(self.config.get, mapping.keys)):
-                self.__add_single_endpoint(mapping.cls, mapping.endpoint, mapping.is_protected)
+                self.__add_single_endpoint(
+                    mapping.cls, mapping.endpoint, mapping.is_protected
+                )
 
         self.bp.exception(exceptions.SanicJWTException)(
             self.responses.exception_response

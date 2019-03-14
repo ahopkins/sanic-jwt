@@ -5,6 +5,19 @@ Changelog
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 ++++++++++++++++++++++++++
+Version 1.2.2 - 2019-03-14
+++++++++++++++++++++++++++
+
+| **Changed**
+| - `#148 <https://github.com/ahopkins/sanic-jwt/issues/148>`_. Exception message on refresh token intialization
+|
+
+| **Fixed**
+| - `#147 <https://github.com/ahopkins/sanic-jwt/issues/147>`_. ``protected`` decorator properly applied to built in views when initialized on a blueprint
+|
+
+
+++++++++++++++++++++++++++
 Version 1.2.1 - 2018-12-04
 ++++++++++++++++++++++++++
 

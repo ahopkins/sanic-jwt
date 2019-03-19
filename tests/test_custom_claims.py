@@ -20,10 +20,10 @@ def test_custom_claims_payload(app_with_custom_claims):
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token, sanic_jwt.config.secret(), algorithms=sanic_jwt.config.algorithm()
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
 
     assert isinstance(payload, dict)
     assert "username" in payload
@@ -36,12 +36,9 @@ def test_custom_claims(app_with_custom_claims):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
-    )
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 401
@@ -51,19 +48,15 @@ def test_custom_claims(app_with_custom_claims):
         "/auth", json={"username": "user2", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
-    )
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 200
 
 
 def test_custom_claims_bad(authenticate):
-
     class MissingVerifyClaim(Claim):
         key = "username"
 
@@ -77,7 +70,6 @@ def test_custom_claims_bad(authenticate):
             return True
 
     class MissingKeyClaim(Claim):
-
         def setup(self, payload, user):
             return user.username
 
@@ -87,28 +79,21 @@ def test_custom_claims_bad(authenticate):
     with pytest.raises(exceptions.InvalidCustomClaim):
         sanic_app = Sanic()
         Initialize(
-            sanic_app,
-            authenticate=authenticate,
-            custom_claims=[MissingVerifyClaim],
+            sanic_app, authenticate=authenticate, custom_claims=[MissingVerifyClaim]
         )
     with pytest.raises(exceptions.InvalidCustomClaim):
         sanic_app = Sanic()
         Initialize(
-            sanic_app,
-            authenticate=authenticate,
-            custom_claims=[MissingSetupClaim],
+            sanic_app, authenticate=authenticate, custom_claims=[MissingSetupClaim]
         )
     with pytest.raises(exceptions.InvalidCustomClaim):
         sanic_app = Sanic()
         Initialize(
-            sanic_app,
-            authenticate=authenticate,
-            custom_claims=[MissingKeyClaim],
+            sanic_app, authenticate=authenticate, custom_claims=[MissingKeyClaim]
         )
 
 
 def test_custom_claim_non_boolean_return():
-
     class CustomClaim(Claim):
         key = "foo"
 

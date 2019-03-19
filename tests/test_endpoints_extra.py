@@ -5,7 +5,6 @@ from sanic_jwt import BaseEndpoint
 
 
 class MagicLoginHandler(BaseEndpoint):
-
     async def options(self, request):
         return response.text("", status=204)
 
@@ -22,7 +21,8 @@ initialize(
     authenticate=lambda: True,
     class_views=[
         (
-            "/magic-login", MagicLoginHandler
+            "/magic-login",
+            MagicLoginHandler,
         )  # The path will be relative to the url prefix
         # (which defaults to /auth)
     ],
@@ -30,7 +30,6 @@ initialize(
 
 
 class TestEndpointsExtra(object):
-
     def dispatch(self, path, method):
         method = getattr(app.test_client, method)
         request, response = method(path)

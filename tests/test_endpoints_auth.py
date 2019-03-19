@@ -14,11 +14,12 @@ def access_token(app):
 @pytest.fixture
 def payload(app, access_token):
     _, sanic_jwt = app
-    return jwt.decode(access_token, sanic_jwt.config.secret())
+    return jwt.decode(
+        access_token, sanic_jwt.config.secret(), algorithms=sanicjwt.config.algorithm()
+    )
 
 
 class TestEndpointsAuth:
-
     def dispatch(self, path, method, app, access_token):
         sanic_app, sanic_jwt = app
         header_token = "{} {}".format(
@@ -26,8 +27,7 @@ class TestEndpointsAuth:
         )
         method = getattr(sanic_app.test_client, method)
         request, response = method(
-            path,
-            headers={sanic_jwt.config.authorization_header(): header_token},
+            path, headers={sanic_jwt.config.authorization_header(): header_token}
         )
         return request, response
 

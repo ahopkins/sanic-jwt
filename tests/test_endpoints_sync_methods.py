@@ -27,9 +27,7 @@ def app_with_sync_methods(users):
         password = request.json.get("password", None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed(
-                "Missing username or password."
-            )
+            raise exceptions.AuthenticationFailed("Missing username or password.")
 
         user = None
 
@@ -76,9 +74,7 @@ def app_with_sync_methods(users):
     )
 
     sanic_app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
-    sanic_app.config.SANIC_JWT_SECRET = str(
-        binascii.hexlify(os.urandom(32)), "utf-8"
-    )
+    sanic_app.config.SANIC_JWT_SECRET = str(binascii.hexlify(os.urandom(32)), "utf-8")
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -93,7 +89,6 @@ def app_with_sync_methods(users):
 
 
 class TestEndpointsSync(object):
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_sync_methods):
         sanic_app, _ = app_with_sync_methods
@@ -109,17 +104,14 @@ class TestEndpointsSync(object):
         assert response.status == 200
         assert response.json.get("hello") == "world"
 
-    def test_protected_endpoint(
-        self, app_with_sync_methods, authenticated_response
-    ):
+    def test_protected_endpoint(self, app_with_sync_methods, authenticated_response):
         sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
         )
 
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 200
@@ -132,8 +124,7 @@ class TestEndpointsSync(object):
         )
 
         _, response = sanic_app.test_client.get(
-            "/auth/me",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 200
@@ -156,9 +147,7 @@ class TestEndpointsSync(object):
             assert response.json.get("exception") == "InvalidToken"
             assert "Signature has expired." in response.json.get("reasons")
 
-    def test_refresh_token_sync(
-        self, app_with_sync_methods, authenticated_response
-    ):
+    def test_refresh_token_sync(self, app_with_sync_methods, authenticated_response):
         sanic_app, sanicjwt = app_with_sync_methods
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -173,13 +162,11 @@ class TestEndpointsSync(object):
             json={sanicjwt.config.refresh_token_name(): refresh_token},
         )
 
-        new_access_token = response.json.get(
-            sanicjwt.config.access_token_name(), None
-        )
+        new_access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
         assert response.status == 200
         assert new_access_token is not None
-        assert response.json.get(
-            sanicjwt.config.refresh_token_name(), None
-        ) is None  # there is no new refresh token
+        assert (
+            response.json.get(sanicjwt.config.refresh_token_name(), None) is None
+        )  # there is no new refresh token
         assert sanicjwt.config.refresh_token_name() not in response.json

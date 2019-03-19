@@ -23,9 +23,7 @@ def test_store_refresh_token_ommitted():
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
-        Initialize(
-            app, authenticate=lambda: True, retrieve_refresh_token=lambda: True
-        )
+        Initialize(app, authenticate=lambda: True, retrieve_refresh_token=lambda: True)
 
 
 def test_retrieve_refresh_token_ommitted():
@@ -33,9 +31,7 @@ def test_retrieve_refresh_token_ommitted():
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
-        initialize(
-            app, authenticate=lambda: True, store_refresh_token=lambda: True
-        )
+        initialize(app, authenticate=lambda: True, store_refresh_token=lambda: True)
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_defined():
@@ -59,9 +55,7 @@ def test_invalid_classview():
         pass
 
     with pytest.raises(exceptions.InvalidClassViewsFormat):
-        initialize(
-            app, authenticate=lambda: True, class_views=[(object, NotAView)]
-        )
+        initialize(app, authenticate=lambda: True, class_views=[(object, NotAView)])
 
 
 def test_initialize_class_missing_authenticate():
@@ -160,9 +154,7 @@ def test_initialize_class_on_blueprint_with_url_prefix_and_config():
 
 
 def test_initialize_with_custom_endpoint_not_subclassed():
-
     class SubclassHTTPMethodView(HTTPMethodView):
-
         async def options(self, request):
             return text("", status=204)
 
@@ -179,7 +171,6 @@ def test_initialize_with_custom_endpoint_not_subclassed():
 
 
 def test_invalid_configuration_object():
-
     class MyInvalidConfiguration:
         MY_CUSTOM_SETTING = "foo"
 
@@ -189,9 +180,7 @@ def test_invalid_configuration_object():
 
 
 def test_invalid_authentication_object():
-
     class MyInvalidAuthentication:
-
         async def authenticate(*args, **kwargs):
             return True
 
@@ -201,7 +190,6 @@ def test_invalid_authentication_object():
 
 
 def test_invalid_response_object():
-
     class MyInvalidResponses:
         pass
 

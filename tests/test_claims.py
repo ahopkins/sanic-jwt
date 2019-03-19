@@ -10,10 +10,10 @@ def test_unexpired(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token, sanic_jwt.config.secret(), algorithms=sanic_jwt.config.algorithm()
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
     exp = payload.get("exp", None)
 
     assert "exp" in payload
@@ -24,8 +24,7 @@ def test_unexpired(app):
     assert datetime.utcnow() < exp
 
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 200
@@ -37,10 +36,10 @@ def test_expired(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token, sanic_jwt.config.secret(), algorithms=sanic_jwt.config.algorithm()
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
     exp = payload.get("exp", None)
 
     assert "exp" in payload
@@ -52,8 +51,7 @@ def test_expired(app):
         assert datetime.utcnow() > exp
 
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 401
@@ -63,8 +61,7 @@ def test_expired(app):
         # regression test see
         # https://github.com/ahopkins/sanic-jwt/issues/59#issuecomment-380034269
         _, response = sanic_app.test_client.get(
-            "/protected/0/",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected/0/", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 401
@@ -78,10 +75,13 @@ def test_exp_configuration(app_with_extended_exp):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
 
@@ -90,8 +90,7 @@ def test_exp_configuration(app_with_extended_exp):
         assert datetime.utcnow() < exp
 
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
         assert response.status == 200
 
@@ -102,17 +101,19 @@ def test_leeway_configuration(app_with_leeway):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
 
     with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 35 + 1))):
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
@@ -120,8 +121,7 @@ def test_leeway_configuration(app_with_leeway):
 
     with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 35 - 1))):
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
         assert response.status == 200
 
@@ -132,10 +132,13 @@ def test_nbf(app_with_nbf):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
 
@@ -143,8 +146,7 @@ def test_nbf(app_with_nbf):
     assert isinstance(payload.get("nbf"), int)
 
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 401
@@ -153,20 +155,16 @@ def test_nbf(app_with_nbf):
 
     with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 - 10))):
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "The token is not yet valid (nbf)." in response.json.get(
-            "reasons"
-        )
+        assert "The token is not yet valid (nbf)." in response.json.get("reasons")
 
     with freeze_time(datetime.utcnow() + timedelta(seconds=(60 * 5 + 10))):
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 200
@@ -178,17 +176,19 @@ def test_iat(app_with_iat):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
 
     assert "iat" in payload
     assert isinstance(payload.get("iat"), int)
 
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 200
@@ -200,17 +200,19 @@ def test_iss(app_with_iss):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
 
     assert "iss" in payload
     assert isinstance(payload.get("iss"), str)
 
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 200
@@ -223,17 +225,19 @@ def test_aud(app_with_aud):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
 
     assert "aud" in payload
     assert isinstance(payload.get("aud"), str)
 
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 200

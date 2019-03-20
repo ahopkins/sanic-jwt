@@ -37,10 +37,10 @@ def test_expired(app_with_retrieve_user):
     async def my_protected_user(request, user):
         return json({"user_id": user.user_id})
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token, sanic_jwt.config.secret(), algorithms=sanic_jwt.config.algorithm()
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
     exp = payload.get("exp", None)
 
     assert "exp" in payload
@@ -52,8 +52,7 @@ def test_expired(app_with_retrieve_user):
         assert datetime.utcnow() > exp
 
         _, response = sanic_app.test_client.get(
-            "/auth/me",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 401

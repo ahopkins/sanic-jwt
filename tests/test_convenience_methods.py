@@ -14,13 +14,10 @@ def test_is_authenticated_on_properly_authenticated_request(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
-    )
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
 
     request, _ = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     is_authenticated = sanic_app.auth.is_authenticated(request)
@@ -35,13 +32,10 @@ def test_extract_user_id(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
-    )
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
 
     request, _ = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     user_id = sanic_app.auth.extract_user_id(request)

@@ -5,7 +5,6 @@ from sanic_jwt import exceptions, Initialize
 
 
 class MyCustomDict(dict):
-
     async def to_dict(self):
         raise Exception("i am not supposed to be called")
 
@@ -23,9 +22,7 @@ def app_with_dict_test():
         password = request.json.get("password", None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed(
-                "Missing username or password."
-            )
+            raise exceptions.AuthenticationFailed("Missing username or password.")
 
         user = the_user
 
@@ -40,7 +37,6 @@ def app_with_dict_test():
 
 
 class TestEndpointsAsync(object):
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_dict_test):
         app, sanicjwt = app_with_dict_test
@@ -57,8 +53,7 @@ class TestEndpointsAsync(object):
         )
 
         _, response = app.test_client.get(
-            "/auth/me",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
         )
 
         assert response.status == 200

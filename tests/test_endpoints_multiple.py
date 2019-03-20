@@ -5,8 +5,7 @@ import pytest
 def access_tokens(app_with_bp):
     app, app_int, bp, bp_init = app_with_bp
     _, response1 = app.test_client.post(
-        app_int._get_url_prefix(),
-        json={"username": "user1", "password": "abcxyz"},
+        app_int._get_url_prefix(), json={"username": "user1", "password": "abcxyz"}
     )
     _, response2 = app.test_client.post(
         bp_init._get_url_prefix() + "/",

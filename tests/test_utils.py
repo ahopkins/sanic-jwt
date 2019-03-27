@@ -12,7 +12,6 @@ def fcontent():
 
 @pytest.mark.asyncio
 async def test_call():
-
     def sync_func(a, b, c=0):
         return a + b + c
 

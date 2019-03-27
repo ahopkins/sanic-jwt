@@ -36,10 +36,10 @@ def test_auth_proper_credentials(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(
-        sanic_jwt.config.access_token_name(), None
+    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    payload = jwt.decode(
+        access_token, sanic_jwt.config.secret(), algorithms=sanic_jwt.config.algorithm()
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
 
     assert response.status == 200
     assert access_token is not None
@@ -48,8 +48,7 @@ def test_auth_proper_credentials(app):
     assert "exp" in payload
 
     _, response = sanic_app.test_client.get(
-        "/protected",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
     )
     assert response.status == 200
 
@@ -114,8 +113,7 @@ def test_auth_refresh_not_enabled(app_with_refresh_token):
     assert "Authorization header not present." in response.json.get("reasons")
 
     _, response = sanic_app.test_client.post(
-        "/auth/refresh",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/auth/refresh", headers={"Authorization": "Bearer {}".format(access_token)}
     )
     message = "Refresh tokens have not been enabled properly."
     "Perhaps you forgot to initialize with a retrieve_user handler?"

@@ -60,8 +60,7 @@ def test_protected_blueprint():
     assert response.json.get("message") == "hello world"
 
     _, response = app.test_client.get(
-        "/test/user/1",
-        headers={"Authorization": "Bearer {}".format(access_token)},
+        "/test/user/1", headers={"Authorization": "Bearer {}".format(access_token)}
     )
 
     assert response.status == 401

@@ -12,7 +12,6 @@ def access_token(app_with_url_prefix):
 
 
 class TestEndpointsAuth:
-
     def dispatch(self, path, method, app_with_url_prefix, access_token):
         sanic_app, sanic_jwt = app_with_url_prefix
         header_token = "{} {}".format(
@@ -20,8 +19,7 @@ class TestEndpointsAuth:
         )
         method = getattr(sanic_app.test_client, method)
         request, response = method(
-            path,
-            headers={sanic_jwt.config.authorization_header(): header_token},
+            path, headers={sanic_jwt.config.authorization_header(): header_token}
         )
         return request, response
 
@@ -37,9 +35,7 @@ class TestEndpointsAuth:
         assert response.json.get("valid") is True
 
     def test_protected(self, app_with_url_prefix, access_token):
-        _, response = self.get(
-            "/protected/", app_with_url_prefix, access_token
-        )
+        _, response = self.get("/protected/", app_with_url_prefix, access_token)
 
         assert response.status == 200
         assert response.json.get("protected") is True

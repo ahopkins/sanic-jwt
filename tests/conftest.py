@@ -12,7 +12,6 @@ from sanic_jwt.decorators import protected
 
 
 class User:
-
     def __init__(self, id, username, password):
         self.user_id = id
         self.username = username
@@ -40,15 +39,12 @@ def userid_table(users):
 
 @pytest.yield_fixture
 def authenticate(username_table):
-
     async def authenticate(request, *args, **kwargs):
         username = request.json.get("username", None)
         password = request.json.get("password", None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed(
-                "Missing username or password."
-            )
+            raise exceptions.AuthenticationFailed("Missing username or password.")
 
         user = username_table.get(username, None)
         if user is None:
@@ -64,7 +60,6 @@ def authenticate(username_table):
 
 @pytest.yield_fixture
 def retrieve_user(userid_table):
-
     async def retrieve_user(request, payload, *args, **kwargs):
         if payload:
             user_id = payload.get("user_id", None)
@@ -117,11 +112,8 @@ def app_with_refresh_token(username_table, authenticate):
         sanic_app,
         authenticate=authenticate,
         refresh_token_enabled=True,
-        store_refresh_token=lambda user_id,
-        refresh_token,
-        request: True,
-        retrieve_refresh_token=lambda user_id,
-        request: True,
+        store_refresh_token=lambda user_id, refresh_token, request: True,
+        retrieve_refresh_token=lambda user_id, request: True,
     )
 
     yield (sanic_app, sanic_jwt)
@@ -178,9 +170,7 @@ def app_with_bp_setup_without_init(username_table, authenticate):
 def app_with_bp(app_with_bp_setup_without_init):
     sanic_app, sanic_bp = app_with_bp_setup_without_init
     sanic_jwt_init = Initialize(sanic_app, authenticate=authenticate)
-    sanic_jwt_init_bp = Initialize(
-        sanic_bp, app=sanic_app, authenticate=authenticate
-    )
+    sanic_jwt_init_bp = Initialize(sanic_bp, app=sanic_app, authenticate=authenticate)
     sanic_app.blueprint(sanic_bp)
 
     yield (sanic_app, sanic_jwt_init, sanic_bp, sanic_jwt_init_bp)
@@ -210,9 +200,7 @@ def app_with_extended_exp(username_table, authenticate):
 def app_with_leeway(username_table, authenticate):
 
     sanic_app = Sanic()
-    sanic_jwt = Initialize(
-        sanic_app, authenticate=authenticate, leeway=(60 * 5)
-    )
+    sanic_jwt = Initialize(sanic_app, authenticate=authenticate, leeway=(60 * 5))
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -231,10 +219,7 @@ def app_with_nbf(username_table, authenticate):
 
     sanic_app = Sanic()
     sanic_jwt = Initialize(
-        sanic_app,
-        authenticate=authenticate,
-        claim_nbf=True,
-        claim_nbf_delta=(60 * 5),
+        sanic_app, authenticate=authenticate, claim_nbf=True, claim_nbf_delta=(60 * 5)
     )
 
     @sanic_app.route("/")
@@ -253,9 +238,7 @@ def app_with_nbf(username_table, authenticate):
 def app_with_iat(username_table, authenticate):
 
     sanic_app = Sanic()
-    sanic_jwt = Initialize(
-        sanic_app, authenticate=authenticate, claim_iat=True
-    )
+    sanic_jwt = Initialize(sanic_app, authenticate=authenticate, claim_iat=True)
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -331,7 +314,6 @@ def app_with_retrieve_user(retrieve_user, authenticate):
 
 @pytest.yield_fixture
 def app_with_extra_verification(authenticate):
-
     def user2(payload):
         return payload.get("user_id") == 2
 
@@ -339,9 +321,7 @@ def app_with_extra_verification(authenticate):
 
     sanic_app = Sanic()
     sanic_jwt = Initialize(
-        sanic_app,
-        authenticate=authenticate,
-        extra_verifications=extra_verifications,
+        sanic_app, authenticate=authenticate, extra_verifications=extra_verifications
     )
 
     @sanic_app.route("/protected")
@@ -354,7 +334,6 @@ def app_with_extra_verification(authenticate):
 
 @pytest.yield_fixture
 def app_with_custom_claims(authenticate):
-
     class User2Claim(Claim):
         key = "username"
 

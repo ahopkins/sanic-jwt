@@ -50,7 +50,8 @@ defaults = {
     "url_prefix": "/auth",
     "user_id": "user_id",
     "blueprint_name": "auth_bp",
-    "verify_exp": True
+    "verify_exp": True,
+    "login_redirect_url": None,
 }
 
 aliases = {

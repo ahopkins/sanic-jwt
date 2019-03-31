@@ -5,6 +5,8 @@ from copy import deepcopy
 from functools import wraps
 from inspect import isawaitable
 from sanic import Blueprint
+from sanic.response import redirect
+
 
 from . import exceptions
 from . import utils
@@ -58,7 +60,9 @@ async def _do_protection(*args, **kwargs):
         try:
             if instance.auth.config.do_protection():
                 (
-                    is_authenticated, status, reasons
+                    is_authenticated,
+                    status,
+                    reasons,
                 ) = instance.auth._check_authentication(
                     request, request_args=args, request_kwargs=use_kwargs
                 )
@@ -77,11 +81,11 @@ async def _do_protection(*args, **kwargs):
         except exceptions.SanicJWTException as e:
             is_authenticated = False
             status = e.status_code
-            reasons = instance.auth._reasons if (
-                instance.auth._reasons and instance.auth.config.debug()
-            ) else e.args[
-                0
-            ]
+            reasons = (
+                instance.auth._reasons
+                if (instance.auth._reasons and instance.auth.config.debug())
+                else e.args[0]
+            )
 
         if is_authenticated:
             if kwargs.get("return_response", True):
@@ -94,13 +98,18 @@ async def _do_protection(*args, **kwargs):
                 return True, instance
 
         else:
+            if kw.get("redirect_on_fail", False):
+                where_to = kw.get(
+                    "redirect_url", instance.auth.config.login_redirect_url()
+                )
+                if where_to is not None:
+                    return redirect(where_to, status=302)
+
             raise exceptions.Unauthorized(reasons, status_code=status)
 
 
 def protected(initialized_on=None, **kw):
-
     def decorator(f):
-
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             kwargs.update(
@@ -125,9 +134,7 @@ def scoped(
     initialized_on=None,
     **kw
 ):
-
     def decorator(f):
-
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
             protect_kwargs = deepcopy(kwargs)
@@ -189,13 +196,11 @@ def scoped(
 
 
 def inject_user(initialized_on=None, **kw):
-
     def decorator(f):
-
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            if (
-                initialized_on and isinstance(initialized_on, Blueprint)
+            if initialized_on and isinstance(
+                initialized_on, Blueprint
             ):  # noqa
                 instance = initialized_on
             else:

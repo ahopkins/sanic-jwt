@@ -18,7 +18,6 @@ claim_label = {"iss": "issuer", "iat": "iat", "nbf": "nbf", "aud": "audience"}
 
 
 class BaseAuthentication:
-
     def __init__(self, app, config):
         self.app = app
         self.claims = ["exp"]
@@ -115,7 +114,6 @@ class BaseAuthentication:
 
 
 class Authentication(BaseAuthentication):
-
     def _check_authentication(self, request, request_args, request_kwargs):
         """
         Checks a request object to determine if that request contains a valid,
@@ -374,10 +372,14 @@ class Authentication(BaseAuthentication):
             except jwt.exceptions.DecodeError as e:
                 self._reasons = e.args
                 # Make sure that the reasons all end with '.' for consistency
-                reason = [
-                    x if x.endswith(".") else "{}.".format(x)
-                    for x in list(e.args)
-                ] if self.config.debug() else "Auth required."
+                reason = (
+                    [
+                        x if x.endswith(".") else "{}.".format(x)
+                        for x in list(e.args)
+                    ]
+                    if self.config.debug()
+                    else "Auth required."
+                )
                 logger.debug(e.args)
                 is_valid = False
                 payload = None

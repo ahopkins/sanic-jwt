@@ -49,7 +49,9 @@ def test_extend_simple():
         return payload
 
     app = Sanic()
-    sanicjwt = Initialize(app, authenticate=authenticate, extend_payload=my_extender)
+    sanicjwt = Initialize(
+        app, authenticate=authenticate, extend_payload=my_extender
+    )
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -58,7 +60,9 @@ def test_extend_simple():
 
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
     payload = jwt.decode(
-        access_token, sanicjwt.config.secret(), algorithms=sanicjwt.config.algorithm()
+        access_token,
+        sanicjwt.config.secret(),
+        algorithms=sanicjwt.config.algorithm(),
     )
 
     assert "foo" in payload
@@ -72,7 +76,9 @@ def test_extend_with_username():
         return payload
 
     app = Sanic()
-    sanicjwt = Initialize(app, authenticate=authenticate, extend_payload=my_extender)
+    sanicjwt = Initialize(
+        app, authenticate=authenticate, extend_payload=my_extender
+    )
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -81,7 +87,9 @@ def test_extend_with_username():
 
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
     payload = jwt.decode(
-        access_token, sanicjwt.config.secret(), algorithms=sanicjwt.config.algorithm()
+        access_token,
+        sanicjwt.config.secret(),
+        algorithms=sanicjwt.config.algorithm(),
     )
 
     assert "username" in payload
@@ -107,7 +115,9 @@ def test_extend_with_username_as_subclass():
 
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
     payload = jwt.decode(
-        access_token, sanicjwt.config.secret(), algorithms=sanicjwt.config.algorithm()
+        access_token,
+        sanicjwt.config.secret(),
+        algorithms=sanicjwt.config.algorithm(),
     )
 
     assert "username" in payload

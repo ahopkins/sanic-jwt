@@ -73,7 +73,9 @@ def test_async_options(app):
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
     payload = jwt.decode(
-        access_token, sanicjwt.config.secret(), algorithms=sanicjwt.config.algorithm()
+        access_token,
+        sanicjwt.config.secret(),
+        algorithms=sanicjwt.config.algorithm(),
     )
 
     assert "extra_info" in payload

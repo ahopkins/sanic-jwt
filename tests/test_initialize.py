@@ -23,7 +23,9 @@ def test_store_refresh_token_ommitted():
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
-        Initialize(app, authenticate=lambda: True, retrieve_refresh_token=lambda: True)
+        Initialize(
+            app, authenticate=lambda: True, retrieve_refresh_token=lambda: True
+        )
 
 
 def test_retrieve_refresh_token_ommitted():
@@ -31,7 +33,9 @@ def test_retrieve_refresh_token_ommitted():
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
-        initialize(app, authenticate=lambda: True, store_refresh_token=lambda: True)
+        initialize(
+            app, authenticate=lambda: True, store_refresh_token=lambda: True
+        )
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_defined():
@@ -55,7 +59,9 @@ def test_invalid_classview():
         pass
 
     with pytest.raises(exceptions.InvalidClassViewsFormat):
-        initialize(app, authenticate=lambda: True, class_views=[(object, NotAView)])
+        initialize(
+            app, authenticate=lambda: True, class_views=[(object, NotAView)]
+        )
 
 
 def test_initialize_class_missing_authenticate():

@@ -16,7 +16,6 @@ def retrieve_refresh_token(request, user_id, *args, **kwargs):
 
 
 class Register(BaseEndpoint):
-
     async def post(self, request, *args, **kwargs):
         username = "username"
         email = "email"

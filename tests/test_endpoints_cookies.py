@@ -82,7 +82,9 @@ class TestEndpointsCookies(object):
         key = sanicjwt.config.cookie_access_token_name()
         # print(key)
         # print(authenticated_response.cookies.values())
-        access_token_from_cookie = authenticated_response.cookies.get(key, None)
+        access_token_from_cookie = authenticated_response.cookies.get(
+            key, None
+        )
 
         assert access_token_from_cookie is not None
 
@@ -116,7 +118,9 @@ class TestEndpointsCookies(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token
         key = sanicjwt.config.cookie_access_token_name()
-        access_token_from_cookie = authenticated_response.cookies.get(key).value
+        access_token_from_cookie = authenticated_response.cookies.get(
+            key
+        ).value
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             sanicjwt.config.secret(),
@@ -137,8 +141,12 @@ class TestEndpointsCookies(object):
         assert response.json.get("me") is not None
         assert sanicjwt.config.user_id() in response.json.get("me")
 
-        user_id_from_me = response.json.get("me").get(sanicjwt.config.user_id())
-        user_id_from_payload_cookie = payload_cookie.get(sanicjwt.config.user_id())
+        user_id_from_me = response.json.get("me").get(
+            sanicjwt.config.user_id()
+        )
+        user_id_from_payload_cookie = payload_cookie.get(
+            sanicjwt.config.user_id()
+        )
 
         assert response.status == 200
         assert user_id_from_me == user_id_from_payload_cookie
@@ -148,7 +156,9 @@ class TestEndpointsCookies(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token
         key = sanicjwt.config.cookie_access_token_name()
-        access_token_from_cookie = authenticated_response.cookies.get(key).value
+        access_token_from_cookie = authenticated_response.cookies.get(
+            key
+        ).value
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             sanicjwt.config.secret(),
@@ -160,30 +170,42 @@ class TestEndpointsCookies(object):
 
         _, response = sanic_app.test_client.get(
             "/auth/me",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in response.json.get("reasons")
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         _, response = sanic_app.test_client.get(
             "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in response.json.get("reasons")
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         _, response = sanic_app.test_client.get(
             "/auth/verify",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         assert response.status == 401
         assert response.json.get("exception") == "MissingAuthorizationCookie"
-        assert "Authorization cookie not present." in response.json.get("reasons")
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         _, response = sanic_app.test_client.get(
             "/auth/me",
@@ -213,7 +235,9 @@ class TestEndpointsCookies(object):
         sanic_app.auth.config.cookie_strict.update(False)
 
         key = sanicjwt.config.cookie_access_token_name()
-        access_token_from_cookie = authenticated_response.cookies.get(key).value
+        access_token_from_cookie = authenticated_response.cookies.get(
+            key
+        ).value
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             sanicjwt.config.secret(),
@@ -225,7 +249,9 @@ class TestEndpointsCookies(object):
 
         _, response = sanic_app.test_client.get(
             "/auth/me",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         assert response.status == 200
@@ -236,19 +262,25 @@ class TestEndpointsCookies(object):
 
         _, response = sanic_app.test_client.get(
             "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         assert response.status == 200
 
         _, response = sanic_app.test_client.get(
             "/auth/verify",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         _, response = sanic_app.test_client.get(
             "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token_from_cookie)},
+            headers={
+                "Authorization": "Bearer {}".format(access_token_from_cookie)
+            },
         )
 
         assert response.status == 200
@@ -280,11 +312,16 @@ class TestEndpointsCookies(object):
         assert response.status == 200
         assert response.json is not None
 
-        new_access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+        new_access_token = response.json.get(
+            sanicjwt.config.access_token_name(), None
+        )
 
         assert new_access_token is not None
         assert (
-            response.json.get(sanicjwt.config.cookie_refresh_token_name(), None) is None
+            response.json.get(
+                sanicjwt.config.cookie_refresh_token_name(), None
+            )
+            is None
         )  # there is no new refresh token
         assert sanicjwt.config.cookie_refresh_token_name() not in response.json
 
@@ -297,7 +334,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in response.json.get("reasons")
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
         sanicjwt.config.debug.update(True)
         _, response = sanic_app.test_client.post(
@@ -308,7 +347,9 @@ class TestEndpointsCookies(object):
 
         assert response.status == 400
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization cookie not present." in response.json.get("reasons")
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )
 
     def test_refresh_token_with_cookies_not_strict(
         self, app_with_refresh_token, authenticated_response
@@ -332,7 +373,10 @@ class TestEndpointsCookies(object):
 
         assert response.status == 200
         assert (
-            response.json.get(sanicjwt.config.cookie_refresh_token_name(), None) is None
+            response.json.get(
+                sanicjwt.config.cookie_refresh_token_name(), None
+            )
+            is None
         )  # there is no new refresh token
         assert sanicjwt.config.cookie_refresh_token_name() not in response.json
 
@@ -340,8 +384,11 @@ class TestEndpointsCookies(object):
         sanic_app, sanicjwt = app_with_refresh_token
 
         _, response = sanic_app.test_client.get(
-            "/auth/verify", cookies={sanicjwt.config.cookie_access_token_name(): ""}
+            "/auth/verify",
+            cookies={sanicjwt.config.cookie_access_token_name(): ""},
         )
         assert response.status == 401
         assert response.json.get("exception") == "MissingAuthorizationCookie"
-        assert "Authorization cookie not present." in response.json.get("reasons")
+        assert "Authorization cookie not present." in response.json.get(
+            "reasons"
+        )

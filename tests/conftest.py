@@ -44,7 +44,9 @@ def authenticate(username_table):
         password = request.json.get("password", None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed("Missing username or password.")
+            raise exceptions.AuthenticationFailed(
+                "Missing username or password."
+            )
 
         user = username_table.get(username, None)
         if user is None:
@@ -170,7 +172,9 @@ def app_with_bp_setup_without_init(username_table, authenticate):
 def app_with_bp(app_with_bp_setup_without_init):
     sanic_app, sanic_bp = app_with_bp_setup_without_init
     sanic_jwt_init = Initialize(sanic_app, authenticate=authenticate)
-    sanic_jwt_init_bp = Initialize(sanic_bp, app=sanic_app, authenticate=authenticate)
+    sanic_jwt_init_bp = Initialize(
+        sanic_bp, app=sanic_app, authenticate=authenticate
+    )
     sanic_app.blueprint(sanic_bp)
 
     yield (sanic_app, sanic_jwt_init, sanic_bp, sanic_jwt_init_bp)
@@ -200,7 +204,9 @@ def app_with_extended_exp(username_table, authenticate):
 def app_with_leeway(username_table, authenticate):
 
     sanic_app = Sanic()
-    sanic_jwt = Initialize(sanic_app, authenticate=authenticate, leeway=(60 * 5))
+    sanic_jwt = Initialize(
+        sanic_app, authenticate=authenticate, leeway=(60 * 5)
+    )
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -219,7 +225,10 @@ def app_with_nbf(username_table, authenticate):
 
     sanic_app = Sanic()
     sanic_jwt = Initialize(
-        sanic_app, authenticate=authenticate, claim_nbf=True, claim_nbf_delta=(60 * 5)
+        sanic_app,
+        authenticate=authenticate,
+        claim_nbf=True,
+        claim_nbf_delta=(60 * 5),
     )
 
     @sanic_app.route("/")
@@ -238,7 +247,9 @@ def app_with_nbf(username_table, authenticate):
 def app_with_iat(username_table, authenticate):
 
     sanic_app = Sanic()
-    sanic_jwt = Initialize(sanic_app, authenticate=authenticate, claim_iat=True)
+    sanic_jwt = Initialize(
+        sanic_app, authenticate=authenticate, claim_iat=True
+    )
 
     @sanic_app.route("/")
     async def helloworld(request):
@@ -321,7 +332,9 @@ def app_with_extra_verification(authenticate):
 
     sanic_app = Sanic()
     sanic_jwt = Initialize(
-        sanic_app, authenticate=authenticate, extra_verifications=extra_verifications
+        sanic_app,
+        authenticate=authenticate,
+        extra_verifications=extra_verifications,
     )
 
     @sanic_app.route("/protected")

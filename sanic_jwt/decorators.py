@@ -6,6 +6,7 @@ from functools import wraps
 from inspect import isawaitable
 from sanic import Blueprint
 from sanic.views import HTTPMethodView
+from sanic.response import redirect
 
 from . import exceptions
 from . import utils
@@ -97,6 +98,13 @@ async def _do_protection(*args, **kwargs):
                 return True, instance
 
         else:
+            if kw.get("redirect_on_fail", False):
+                where_to = kw.get(
+                    "redirect_url", instance.auth.config.login_redirect_url()
+                )
+                if where_to is not None:
+                    return redirect(where_to, status=302)
+
             raise exceptions.Unauthorized(reasons, status_code=status)
 
 

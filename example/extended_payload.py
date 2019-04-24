@@ -5,7 +5,6 @@ from sanic_jwt import Initialize
 
 
 class User:
-
     def __init__(self, id, username, password):
         self.user_id = id
         self.username = username
@@ -25,7 +24,6 @@ userid_table = {u.user_id: u for u in users}
 
 
 class MyAuthentication(Authentication):
-
     async def extend_payload(self, payload, *args, **kwargs):
         payload.update({"app_name": self.app.name})
         return payload

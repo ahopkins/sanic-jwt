@@ -47,11 +47,11 @@ def validate_single_scope(
         if is_valid:
             break
 
-    outcome = override(
-        is_valid, required, user_scopes, require_all_actions
-    ) if callable(
-        override
-    ) else is_valid
+    outcome = (
+        override(is_valid, required, user_scopes, require_all_actions)
+        if callable(override)
+        else is_valid
+    )
     return outcome
 
 

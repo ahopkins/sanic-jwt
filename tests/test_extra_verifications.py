@@ -10,9 +10,12 @@ def test_extra_verification_passing(app_with_extra_verification):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 401
@@ -22,9 +25,12 @@ def test_extra_verification_passing(app_with_extra_verification):
         "/auth", json={"username": "user2", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -53,10 +59,13 @@ def test_extra_verification_non_boolean_return(authenticate):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
 
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 500
@@ -84,10 +93,13 @@ def test_extra_verification_non_callable(authenticate):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
 
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 500

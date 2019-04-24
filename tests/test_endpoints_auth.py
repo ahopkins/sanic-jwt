@@ -15,7 +15,9 @@ def access_token(app):
 def payload(app, access_token):
     _, sanic_jwt = app
     return jwt.decode(
-        access_token, sanic_jwt.config.secret(), algorithms=sanicjwt.config.algorithm()
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanicjwt.config.algorithm(),
     )
 
 
@@ -27,7 +29,8 @@ class TestEndpointsAuth:
         )
         method = getattr(sanic_app.test_client, method)
         request, response = method(
-            path, headers={sanic_jwt.config.authorization_header(): header_token}
+            path,
+            headers={sanic_jwt.config.authorization_header(): header_token},
         )
         return request, response
 

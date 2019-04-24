@@ -37,7 +37,9 @@ def app_with_async_methods():
         password = request.json.get("password", None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed("Missing username or password.")
+            raise exceptions.AuthenticationFailed(
+                "Missing username or password."
+            )
 
         user = None
 
@@ -120,14 +122,17 @@ class TestEndpointsAsync(object):
         assert response.status == 200
         assert response.json.get("hello") == "world"
 
-    def test_protected_endpoint(self, app_with_async_methods, authenticated_response):
+    def test_protected_endpoint(
+        self, app_with_async_methods, authenticated_response
+    ):
         app, sanicjwt = app_with_async_methods
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
         )
 
         _, response = app.test_client.get(
-            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+            "/protected",
+            headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
         assert response.status == 200
@@ -140,13 +145,16 @@ class TestEndpointsAsync(object):
         )
 
         _, response = app.test_client.get(
-            "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
+            "/auth/me",
+            headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
         assert response.status == 200
         assert response.json.get("me").get("user_id") == "0x1"
 
-    def test_refresh_token_async(self, app_with_async_methods, authenticated_response):
+    def test_refresh_token_async(
+        self, app_with_async_methods, authenticated_response
+    ):
         app, sanicjwt = app_with_async_methods
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -164,11 +172,14 @@ class TestEndpointsAsync(object):
         assert response.json is not None
         assert sanicjwt.config.access_token_name() in response.json
 
-        new_access_token = response.json.get(sanicjwt.config.access_token_name(), None)
+        new_access_token = response.json.get(
+            sanicjwt.config.access_token_name(), None
+        )
 
         assert response.status == 200
         assert new_access_token is not None
         assert (
-            response.json.get(sanicjwt.config.refresh_token_name(), None) is None
+            response.json.get(sanicjwt.config.refresh_token_name(), None)
+            is None
         )  # there is no new refresh token
         assert sanicjwt.config.refresh_token_name() not in response.json

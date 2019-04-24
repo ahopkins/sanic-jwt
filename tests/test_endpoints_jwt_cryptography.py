@@ -61,7 +61,8 @@ def test_jwt_rsa_crypto_from_path_object(public_rsa_key, private_rsa_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -95,7 +96,8 @@ def test_jwt_rsapss_crypto_from_path_object(public_rsa_key, private_rsa_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -129,7 +131,8 @@ def test_jwt_ec_crypto_from_path_object(public_ec_key, private_ec_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -164,14 +167,17 @@ def test_jwt_rsa_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
     assert response.json.get("protected") is True
 
 
-def test_jwt_rsapss_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key):
+def test_jwt_rsapss_crypto_from_fullpath_as_str(
+    public_rsa_key, private_rsa_key
+):
     app = Sanic()
 
     class MyConfig(Configuration):
@@ -200,7 +206,8 @@ def test_jwt_rsapss_crypto_from_fullpath_as_str(public_rsa_key, private_rsa_key)
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -235,7 +242,8 @@ def test_jwt_ec_crypto_from_fullpath_as_str(public_ec_key, private_ec_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -269,7 +277,8 @@ def test_jwt_rsa_crypto_from_str(public_rsa_key, private_rsa_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -303,7 +312,8 @@ def test_jwt_rsapss_crypto_from_str(public_rsa_key, private_rsa_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -337,7 +347,8 @@ def test_jwt_ec_crypto_from_str(public_ec_key, private_ec_key):
     assert access_token is not None
 
     _, response = app.test_client.get(
-        "/protected/", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -394,7 +405,10 @@ def test_jwt_crypto_very_long_path():
 def test_jwt_crypto_missing_private_key(public_rsa_key):
     with pytest.raises(exceptions.RequiredKeysNotFound):
         Initialize(
-            Sanic(), authenticate=lambda: True, secret=public_rsa_key, algorithm="RS256"
+            Sanic(),
+            authenticate=lambda: True,
+            secret=public_rsa_key,
+            algorithm="RS256",
         )
 
 

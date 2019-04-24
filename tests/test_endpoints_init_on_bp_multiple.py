@@ -66,23 +66,33 @@ def test_protected_blueprints():
     assert response1.status == 200
     assert response2.status == 200
 
-    access_token_1 = response1.json.get(sanicjwt1.config.access_token_name(), None)
-    access_token_2 = response2.json.get(sanicjwt2.config.access_token_name(), None)
+    access_token_1 = response1.json.get(
+        sanicjwt1.config.access_token_name(), None
+    )
+    access_token_2 = response2.json.get(
+        sanicjwt2.config.access_token_name(), None
+    )
 
     assert access_token_1 is not None
     assert access_token_2 is not None
 
-    wrong_token_grab_1 = response1.json.get(sanicjwt2.config.access_token_name(), None)
-    wrong_token_grab_2 = response2.json.get(sanicjwt1.config.access_token_name(), None)
+    wrong_token_grab_1 = response1.json.get(
+        sanicjwt2.config.access_token_name(), None
+    )
+    wrong_token_grab_2 = response2.json.get(
+        sanicjwt1.config.access_token_name(), None
+    )
 
     assert wrong_token_grab_1 is None
     assert wrong_token_grab_2 is None
 
     _, response1 = app.test_client.get(
-        "/test1/", headers={"Authorization": "Bearer {}".format(access_token_1)}
+        "/test1/",
+        headers={"Authorization": "Bearer {}".format(access_token_1)},
     )
     _, response2 = app.test_client.get(
-        "/test2/", cookies={sanicjwt2.config.cookie_access_token_name(): access_token_2}
+        "/test2/",
+        cookies={sanicjwt2.config.cookie_access_token_name(): access_token_2},
     )
 
     assert response1.status == 200
@@ -91,10 +101,12 @@ def test_protected_blueprints():
     assert response2.json.get("version") == 2
 
     _, response1 = app.test_client.get(
-        "/test1/", headers={"Authorization": "Bearer {}".format(access_token_2)}
+        "/test1/",
+        headers={"Authorization": "Bearer {}".format(access_token_2)},
     )
     _, response2 = app.test_client.get(
-        "/test2/", cookies={sanicjwt2.config.cookie_access_token_name(): access_token_1}
+        "/test2/",
+        cookies={sanicjwt2.config.cookie_access_token_name(): access_token_1},
     )
 
     assert response1.status == 401
@@ -116,14 +128,20 @@ def test_protected_blueprints_debug():
         "/test2/a", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token_1 = response1.json.get(sanicjwt1.config.access_token_name(), None)
-    access_token_2 = response2.json.get(sanicjwt2.config.access_token_name(), None)
+    access_token_1 = response1.json.get(
+        sanicjwt1.config.access_token_name(), None
+    )
+    access_token_2 = response2.json.get(
+        sanicjwt2.config.access_token_name(), None
+    )
 
     _, response1 = app.test_client.get(
-        "/test1/", headers={"Authorization": "Bearer {}".format(access_token_2)}
+        "/test1/",
+        headers={"Authorization": "Bearer {}".format(access_token_2)},
     )
     _, response2 = app.test_client.get(
-        "/test2/", cookies={sanicjwt2.config.cookie_access_token_name(): access_token_1}
+        "/test2/",
+        cookies={sanicjwt2.config.cookie_access_token_name(): access_token_1},
     )
 
     assert response1.status == 400

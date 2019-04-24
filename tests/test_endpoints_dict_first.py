@@ -22,7 +22,9 @@ def app_with_dict_test():
         password = request.json.get("password", None)
 
         if not username or not password:
-            raise exceptions.AuthenticationFailed("Missing username or password.")
+            raise exceptions.AuthenticationFailed(
+                "Missing username or password."
+            )
 
         user = the_user
 
@@ -53,7 +55,8 @@ class TestEndpointsAsync(object):
         )
 
         _, response = app.test_client.get(
-            "/auth/me", headers={"Authorization": "Bearer {}".format(access_token)}
+            "/auth/me",
+            headers={"Authorization": "Bearer {}".format(access_token)},
         )
 
         assert response.status == 200

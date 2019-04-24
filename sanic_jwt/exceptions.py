@@ -166,13 +166,11 @@ class InitializationFailure(SanicJWTException):
 
 
 class Unauthorized(SanicJWTException, SanicUnauthorized):
-
     def __init__(self, message="Auth required.", **kwargs):
         super().__init__(message, scheme="Bearer", **kwargs)
 
 
 class InvalidClassViewsFormat(SanicJWTException):
-
     def __init__(
         self,
         message="class_views should follow this format ('<SOME ROUTE>', "
@@ -183,10 +181,10 @@ class InvalidClassViewsFormat(SanicJWTException):
 
 
 class InvalidConfiguration(SanicJWTException):
-
     def __init__(self, message="", **kwargs):
-        message = "An invalid setting was passed to the Sanic JWT " "configuration: " + str(
-            message
+        message = (
+            "An invalid setting was passed to the Sanic JWT "
+            "configuration: " + str(message)
         )
         super().__init__(message, **kwargs)
 
@@ -195,12 +193,14 @@ class InvalidPayload(SanicJWTException):
     status_code = 500
 
     def __init__(self, message="", **kwargs):
-        message = "Payload must be a dictionary with a key mapped to " "SANIC_JWT_USER_ID"
+        message = (
+            "Payload must be a dictionary with a key mapped to "
+            "SANIC_JWT_USER_ID"
+        )
         super().__init__(message, **kwargs)
 
 
 class RequiredKeysNotFound(SanicJWTException):
-
     def __init__(
         self,
         message="You must provide both (valid) SANIC_JWT_PUBLIC_KEY and "
@@ -212,7 +212,6 @@ class RequiredKeysNotFound(SanicJWTException):
 
 
 class ProvidedPathNotFound(SanicJWTException):
-
     def __init__(
         self, message="The Path object given is not a valid file", **kwargs
     ):
@@ -220,7 +219,6 @@ class ProvidedPathNotFound(SanicJWTException):
 
 
 class LoopNotRunning(SanicJWTException):
-
     def __init__(
         self, message="The asyncio loop is not currently running", **kwargs
     ):

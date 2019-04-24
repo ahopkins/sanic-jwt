@@ -25,9 +25,11 @@ def build_claim_iat(attr, *args, **kwargs):
 
 def build_claim_nbf(attr, config, *args, **kwargs):
     seconds = config.leeway() + config.claim_nbf_delta()
-    return datetime.datetime.utcnow() + datetime.timedelta(
-        seconds=seconds
-    ) if attr else None
+    return (
+        datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
+        if attr
+        else None
+    )
 
 
 def build_claim_aud(attr, *args, **kwargs):

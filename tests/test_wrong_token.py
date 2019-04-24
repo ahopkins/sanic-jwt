@@ -7,11 +7,14 @@ def test_wrong_token(app):
     payload = {"foo": "bar"}
 
     access_token = jwt.encode(
-        payload, sanic_jwt.config.secret(), algorithm=sanic_jwt.config.algorithm()
+        payload,
+        sanic_jwt.config.secret(),
+        algorithm=sanic_jwt.config.algorithm(),
     ).decode("utf-8")
 
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     print(response.json)

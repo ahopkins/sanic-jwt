@@ -5,7 +5,6 @@ from pathlib import Path
 
 
 class User:
-
     def __init__(self, id, username, password):
         self.user_id = id
         self.username = username
@@ -23,12 +22,16 @@ users = [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
 username_table = {u.username: u for u in users}
 userid_table = {u.user_id: u for u in users}
 
-public_key = Path(
-    __file__
-).parent / ".." / "tests" / "resources" / "rsa-test-public.pem"
-private_key = Path(
-    __file__
-).parent / ".." / "tests" / "resources" / "rsa-test-key.pem"
+public_key = (
+    Path(__file__).parent
+    / ".."
+    / "tests"
+    / "resources"
+    / "rsa-test-public.pem"
+)
+private_key = (
+    Path(__file__).parent / ".." / "tests" / "resources" / "rsa-test-key.pem"
+)
 
 
 async def authenticate(request, *args, **kwargs):

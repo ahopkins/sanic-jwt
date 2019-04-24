@@ -79,7 +79,9 @@ def test_custom_endpoints_as_args():
     assert response.status == 200
     assert response.json.get("hello") == msg.format("verify")
 
-    _, response = app.test_client.post("/auth/refresh", json={"not": "important"})
+    _, response = app.test_client.post(
+        "/auth/refresh", json={"not": "important"}
+    )
 
     assert response.status == 200
     assert response.json.get("hello") == msg.format("refresh")

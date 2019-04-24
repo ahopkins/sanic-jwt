@@ -65,7 +65,11 @@ def test_payload_without_correct_key():
 
     app = Sanic()
 
-    Initialize(app, authenticate=authenticate, authentication_class=WrongAuthentication)
+    Initialize(
+        app,
+        authenticate=authenticate,
+        authentication_class=WrongAuthentication,
+    )
 
     _, response = app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
@@ -80,7 +84,9 @@ def test_payload_not_a_dict():
     app = Sanic()
 
     Initialize(
-        app, authenticate=authenticate, authentication_class=AnotherWrongAuthentication
+        app,
+        authenticate=authenticate,
+        authentication_class=AnotherWrongAuthentication,
     )
 
     _, response = app.test_client.post(
@@ -97,13 +103,16 @@ def test_wrong_header(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
 
     assert response.status == 200
     assert access_token is not None
 
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Foobar {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Foobar {}".format(access_token)},
     )
 
     assert response.status == 401
@@ -120,7 +129,9 @@ def test_tricky_debug_option_true(app):
     @sanic_app.route("/another_protected")
     @sanic_jwt.protected(debug=lambda: True)
     def another_protected(request):
-        return json({"protected": True, "is_debug": request.app.auth.config.debug()})
+        return json(
+            {"protected": True, "is_debug": request.app.auth.config.debug()}
+        )
 
     # @sanic_app.exception(Exception)
     # def in_case_of_exception(request, exception):
@@ -132,13 +143,16 @@ def test_tricky_debug_option_true(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
 
     assert response.status == 200
     assert access_token is not None
 
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200
@@ -165,7 +179,9 @@ def test_tricky_debug_option_false(app):
     @sanic_app.route("/another_protected")
     @sanic_jwt.protected(debug=lambda: False)
     def another_protected(request):
-        return json({"protected": True, "is_debug": request.app.auth.config.debug()})
+        return json(
+            {"protected": True, "is_debug": request.app.auth.config.debug()}
+        )
 
     # @sanic_app.exception(Exception)
     # def in_case_of_exception(request, exception):
@@ -177,13 +193,16 @@ def test_tricky_debug_option_false(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
 
     assert response.status == 200
     assert access_token is not None
 
     _, response = sanic_app.test_client.get(
-        "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+        "/protected",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200

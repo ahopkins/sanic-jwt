@@ -4,7 +4,6 @@ from .base import BaseDerivative
 
 
 class Responses(BaseDerivative):
-
     @staticmethod
     async def get_access_token_output(request, user, config, instance):
         access_token = await instance.auth.generate_access_token(user)
@@ -60,11 +59,11 @@ class Responses(BaseDerivative):
 
     @staticmethod
     def exception_response(request, exception):
-        reasons = exception.args[0] if isinstance(
-            exception.args[0], list
-        ) else [
+        reasons = (
             exception.args[0]
-        ]
+            if isinstance(exception.args[0], list)
+            else [exception.args[0]]
+        )
         return json(
             {"reasons": reasons, "exception": exception.__class__.__name__},
             status=exception.status_code,

@@ -8,7 +8,11 @@ def app_with_retrieve_user_on_bp(
 ):
     app, bp = app_with_bp_setup_without_init
     sanicjwt = Initialize(
-        bp, app=app, authenticate=authenticate, retrieve_user=retrieve_user, debug=True
+        bp,
+        app=app,
+        authenticate=authenticate,
+        retrieve_user=retrieve_user,
+        debug=True,
     )
     app.blueprint(bp)
     return app, sanicjwt, bp

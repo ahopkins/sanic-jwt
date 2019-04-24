@@ -22,5 +22,5 @@ black:
 	black ./ -l 79 --safe
 
 release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	python setup.py sdist bdist_wheel
+	twine upload dist/*

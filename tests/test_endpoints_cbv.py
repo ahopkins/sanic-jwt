@@ -58,8 +58,18 @@ class ProtectedView(HTTPMethodView):
         return json({"protected": True})
 
 
+class PartiallyProtectedView(HTTPMethodView):
+    async def get(self, request):
+        return json({"protected": True})
+
+    @protected()
+    async def patch(self, request):
+        return json({"protected": True})
+
+
 sanic_app.add_route(PublicView.as_view(), "/")
 sanic_app.add_route(ProtectedView.as_view(), "/protected")
+sanic_app.add_route(PartiallyProtectedView.as_view(), "/partially")
 
 
 class TestEndpointsCBV(object):
@@ -71,7 +81,20 @@ class TestEndpointsCBV(object):
         _, response = sanic_app.test_client.get("/protected")
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization header not present." in response.json.get("reasons")
+        assert "Authorization header not present." in response.json.get(
+            "reasons"
+        )
+
+    def test_partially_protected(self):
+        _, response = sanic_app.test_client.get("/partially")
+        assert response.status == 200
+
+        _, response = sanic_app.test_client.patch("/partially")
+        assert response.status == 401
+        assert response.json.get("exception") == "Unauthorized"
+        assert "Authorization header not present." in response.json.get(
+            "reasons"
+        )
 
     def test_auth_invalid_method(self):
         _, response = sanic_app.test_client.get("/auth")
@@ -83,7 +106,9 @@ class TestEndpointsCBV(object):
             "/auth", json={"username": "user1", "password": "abcxyz"}
         )
 
-        access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+        access_token = response.json.get(
+            sanic_jwt.config.access_token_name(), None
+        )
         payload = jwt.decode(
             access_token,
             sanic_jwt.config.secret(),
@@ -97,6 +122,13 @@ class TestEndpointsCBV(object):
         assert "exp" in payload
 
         _, response = sanic_app.test_client.get(
-            "/protected", headers={"Authorization": "Bearer {}".format(access_token)}
+            "/protected",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+        assert response.status == 200
+
+        _, response = sanic_app.test_client.patch(
+            "/partially",
+            headers={"Authorization": "Bearer {}".format(access_token)},
         )
         assert response.status == 200

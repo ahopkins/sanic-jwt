@@ -37,7 +37,6 @@ def test_extra_verification_passing(app_with_extra_verification):
 
 
 def test_extra_verification_non_boolean_return(authenticate):
-
     def bad_return(payload):
         return 123
 

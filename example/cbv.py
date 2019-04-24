@@ -7,7 +7,6 @@ from sanic.views import HTTPMethodView
 
 
 class User:
-
     def __init__(self, id, username, password):
         self.user_id = id
         self.username = username
@@ -48,7 +47,6 @@ initialize(app, authenticate=authenticate)
 
 
 class PublicView(HTTPMethodView):
-
     def get(self, request):
         return json({"hello": "world"})
 

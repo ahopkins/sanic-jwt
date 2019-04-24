@@ -80,7 +80,9 @@ auth_mode_agnostic_handlers = (_Handler("retrieve_user", None, None, True),)
 handlers = auth_mode_handlers + auth_mode_agnostic_handlers
 
 init_classes = (
-    "configuration_class", "authentication_class", "responses_class"
+    "configuration_class",
+    "authentication_class",
+    "responses_class",
 )
 
 
@@ -92,6 +94,7 @@ class Initialize:
     dictionary, or has a `to_dict` method. The resulting dictionary MUST
     have a key/value for a unique user id.
     """
+
     authentication_class = Authentication
     configuration_class = Configuration
     responses_class = Responses
@@ -172,9 +175,8 @@ class Initialize:
             class_views = self.kwargs.pop("class_views")
 
             for route, view in class_views:
-                if (
-                    issubclass(view, endpoints.BaseEndpoint)
-                    and isinstance(route, str)
+                if issubclass(view, endpoints.BaseEndpoint) and isinstance(
+                    route, str
                 ):
                     self.bp.add_route(
                         view.as_view(
@@ -194,7 +196,10 @@ class Initialize:
         and / or `Responses`) have been overwitten and if they're still valid
         """
         # msg took from BaseAuthentication
-        msg = "Sanic JWT was not initialized properly. It did not received " "an instance of {}"
+        msg = (
+            "Sanic JWT was not initialized properly. It did not received "
+            "an instance of {}"
+        )
         if not issubclass(self.authentication_class, Authentication):
             raise exceptions.InitializationFailure(
                 message=msg.format("Authentication")
@@ -219,7 +224,9 @@ class Initialize:
         # Initialize instance of the Authentication class
         self.instance.auth = self.authentication_class(self.app, config=config)
 
-        init_handlers = handlers if config.auth_mode() else auth_mode_agnostic_handlers
+        init_handlers = (
+            handlers if config.auth_mode() else auth_mode_agnostic_handlers
+        )
 
         for handler in init_handlers:
             if handler.keys is None:

@@ -39,7 +39,11 @@ def test_auth_proper_credentials(app):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+    )
 
     assert response.status == 200
     assert access_token is not None

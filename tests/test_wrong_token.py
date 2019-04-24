@@ -10,9 +10,7 @@ def test_wrong_token(app):
         payload,
         sanic_jwt.config.secret(),
         algorithm=sanic_jwt.config.algorithm(),
-    ).decode(
-        "utf-8"
-    )
+    ).decode("utf-8")
 
     _, response = sanic_app.test_client.get(
         "/protected",

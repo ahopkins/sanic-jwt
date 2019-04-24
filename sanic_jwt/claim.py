@@ -2,7 +2,6 @@ from sanic_jwt import exceptions
 
 
 class Claim:
-
     @classmethod
     def _register(cls, sanicjwt):
         required = ("key", "setup", "verify")

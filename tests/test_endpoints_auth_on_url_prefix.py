@@ -12,7 +12,6 @@ def access_token(app_with_url_prefix):
 
 
 class TestEndpointsAuth:
-
     def dispatch(self, path, method, app_with_url_prefix, access_token):
         sanic_app, sanic_jwt = app_with_url_prefix
         header_token = "{} {}".format(

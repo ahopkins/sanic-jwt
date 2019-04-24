@@ -93,7 +93,6 @@ def app_with_sync_methods(users):
 
 
 class TestEndpointsSync(object):
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_sync_methods):
         sanic_app, _ = app_with_sync_methods
@@ -179,7 +178,8 @@ class TestEndpointsSync(object):
 
         assert response.status == 200
         assert new_access_token is not None
-        assert response.json.get(
-            sanicjwt.config.refresh_token_name(), None
-        ) is None  # there is no new refresh token
+        assert (
+            response.json.get(sanicjwt.config.refresh_token_name(), None)
+            is None
+        )  # there is no new refresh token
         assert sanicjwt.config.refresh_token_name() not in response.json

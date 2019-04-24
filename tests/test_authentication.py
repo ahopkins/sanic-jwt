@@ -6,13 +6,11 @@ from sanic_jwt import Authentication, exceptions, Initialize
 
 
 class WrongAuthentication(Authentication):
-
     async def build_payload(self, user, *args, **kwargs):
         return {"not_user_id": 1}
 
 
 class AnotherWrongAuthentication(Authentication):
-
     async def build_payload(self, user, *args, **kwargs):
         return list(range(5))
 
@@ -23,7 +21,6 @@ class AuthenticationWithNoMethod(Authentication):
 
 
 class AuthenticationInClassBody(Authentication):
-
     async def authenticate(self, request, *args, **kwargs):
         return {"user_id": 1}
 

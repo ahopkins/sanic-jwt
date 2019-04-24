@@ -16,7 +16,6 @@ ALL_METHODS = ["GET", "OPTIONS"]
 
 
 class TestMethodView(HTTPMethodView):
-
     async def options(self, *args, **kwargs):
         return text("ok")
 
@@ -33,7 +32,6 @@ bp.add_route(Tester.as_view(), "/test", methods=ALL_METHODS)
 
 
 class CustomAuth(Authentication):
-
     async def authenticate(self, request, *args, **kwargs):
         return {"username": "Rich", "password": "not secure"}
 
@@ -74,7 +72,11 @@ def test_async_options(app):
 
     access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
-    payload = jwt.decode(access_token, sanicjwt.config.secret())
+    payload = jwt.decode(
+        access_token,
+        sanicjwt.config.secret(),
+        algorithms=sanicjwt.config.algorithm(),
+    )
 
     assert "extra_info" in payload
     assert payload.get("extra_info") == "awesome!"

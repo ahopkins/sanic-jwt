@@ -1,14 +1,29 @@
 from setuptools import setup, find_packages
 from os import path
+import codecs
+import re
 
 here = path.abspath(path.dirname(__file__))
 
-extras_require = {
-    "docs": [
-        # 'sphinx_rtd_theme',
-        "Sphinx"
-    ]
-}
+
+def open_local(paths, mode="r", encoding="utf8"):
+    p = path.join(here, *paths)
+    return codecs.open(p, mode, encoding)
+
+
+with open_local(["sanic_jwt", "__init__.py"], encoding="latin1") as fp:
+    try:
+        version = re.findall(
+            r"^__version__ = \"([^']+)\"\r?$", fp.read(), re.M
+        )[0]
+    except IndexError:
+        raise RuntimeError("Unable to determine version.")
+
+with open_local(["README.md"]) as rm:
+    long_description = rm.read()
+
+
+extras_require = {"docs": ["Sphinx"]}
 
 extras_require["all"] = []
 for reqs in extras_require.values():
@@ -18,8 +33,10 @@ install_requires = ["pyjwt"]
 
 setup(
     name="sanic-jwt",
-    version="1.2.2",
+    version="1.3.0",
     description="JWT oauth flow for Sanic",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
     url="https://github.com/ahopkins/sanic-jwt",
     download_url="https://github.com/ahopkins/sanic-jwt/archive/master.zip",
     author="Adam Hopkins",

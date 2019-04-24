@@ -78,7 +78,6 @@ def test_configuration_initialize_class_with_getter():
     app = Sanic()
 
     class MyConfig(Configuration):
-
         def set_access_token_name(self):
             return "return-level"
 
@@ -94,7 +93,6 @@ def test_configuration_initialize_class_as_argument():
     app = Sanic()
 
     class MyConfig(Configuration):
-
         def set_access_token_name(self):
             return "return-level"
 
@@ -143,7 +141,6 @@ def test_configuration_dynamic_config():
     auth_header_key = "x-authorization-header"
 
     class MyConfig(Configuration):
-
         def get_authorization_header(self, request):
             if auth_header_key in request.headers:
                 return request.headers.get(auth_header_key)
@@ -281,7 +278,6 @@ def test_configuration_custom_class_and_config_item_as_method():
     app = Sanic()
 
     class MyConfig(Configuration):
-
         def set_access_token_name(self):
             return ConfigItem("config-item-function-level")
 

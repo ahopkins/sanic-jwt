@@ -7,7 +7,6 @@ from sanic_jwt.decorators import protected, scoped
 
 
 class User:
-
     def __init__(self, id, username, password, scopes):
         self.id = id
         self.username = username
@@ -188,7 +187,6 @@ def app_with_scopes_destructure(app_with_scopes_base):
 
 
 class TestEndpointsSync(object):
-
     @pytest.yield_fixture
     def user1(self, app_with_scopes):
         sanic_app, _ = app_with_scopes

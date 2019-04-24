@@ -7,31 +7,26 @@ msg = "custom {} endpoint"
 
 
 class MyAuthenticateEndpoint(BaseEndpoint):
-
     async def post(self, request, *args, **kwargs):
         return json({"hello": msg.format("authentication")})
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
-
     async def get(self, request, *args, **kwargs):
         return json({"hello": msg.format("retrieve user")})
 
 
 class VerifyEndpoint(BaseEndpoint):
-
     async def get(self, request, *args, **kwargs):
         return json({"hello": msg.format("verify")})
 
 
 class RefreshEndpoint(BaseEndpoint):
-
     async def post(self, request, *args, **kwargs):
         return json({"hello": msg.format("refresh")})
 
 
 class MyAuthentication(Authentication):
-
     async def store_refresh_token(self, *args, **kwargs):
         return
 

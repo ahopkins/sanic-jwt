@@ -73,7 +73,6 @@ app.config.SANIC_JWT_CLAIM_AUD = "bar:foo"
 
 
 class User:
-
     def __init__(self, id, username, password):
         setattr(self, "user_id", id)
         self.username = username

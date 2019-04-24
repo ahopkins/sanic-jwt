@@ -9,7 +9,6 @@ from .decorators import protected
 
 
 class BaseEndpoint(BaseDerivative, HTTPMethodView):
-
     def __init__(self, responses, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.responses = responses
@@ -28,7 +27,6 @@ class BaseEndpoint(BaseDerivative, HTTPMethodView):
 
 
 class AuthenticateEndpoint(BaseEndpoint):
-
     async def post(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
@@ -72,7 +70,6 @@ class AuthenticateEndpoint(BaseEndpoint):
 
 
 class RetrieveUserEndpoint(BaseEndpoint):
-
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
@@ -120,7 +117,6 @@ class RetrieveUserEndpoint(BaseEndpoint):
 
 
 class VerifyEndpoint(BaseEndpoint):
-
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 

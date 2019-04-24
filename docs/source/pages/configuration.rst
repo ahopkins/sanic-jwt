@@ -307,6 +307,14 @@ Alias for ``cookie_access_token_name``
 | **Default**: ``60 * 3``, aka 3 minutes
 |
 
+----------
+``login_redirect_url``
+----------
+
+| **Purpose**: Provide a default URL for authentication failure redirections on static pages.
+| **Default**: ``/index.html``
+|
+
 ------------------------
 ``path_to_authenticate``
 ------------------------

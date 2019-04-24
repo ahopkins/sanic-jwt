@@ -13,7 +13,11 @@ def test_unexpired(app):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+    )
     exp = payload.get("exp", None)
 
     assert "exp" in payload
@@ -40,7 +44,11 @@ def test_expired(app):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+    )
     exp = payload.get("exp", None)
 
     assert "exp" in payload
@@ -81,7 +89,12 @@ def test_exp_configuration(app_with_extended_exp):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
+    )
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
 
@@ -105,7 +118,12 @@ def test_leeway_configuration(app_with_leeway):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
+    )
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
 
@@ -135,7 +153,12 @@ def test_nbf(app_with_nbf):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
+    )
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
 
@@ -181,7 +204,12 @@ def test_iat(app_with_iat):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
+    )
 
     assert "iat" in payload
     assert isinstance(payload.get("iat"), int)
@@ -203,7 +231,12 @@ def test_iss(app_with_iss):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
+    )
 
     assert "iss" in payload
     assert isinstance(payload.get("iss"), str)
@@ -226,7 +259,12 @@ def test_aud(app_with_aud):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret(), verify=False)
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+        verify=False,
+    )
 
     assert "aud" in payload
     assert isinstance(payload.get("aud"), str)

@@ -23,7 +23,11 @@ def test_custom_claims_payload(app_with_custom_claims):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+    )
 
     assert isinstance(payload, dict)
     assert "username" in payload
@@ -63,7 +67,6 @@ def test_custom_claims(app_with_custom_claims):
 
 
 def test_custom_claims_bad(authenticate):
-
     class MissingVerifyClaim(Claim):
         key = "username"
 
@@ -77,7 +80,6 @@ def test_custom_claims_bad(authenticate):
             return True
 
     class MissingKeyClaim(Claim):
-
         def setup(self, payload, user):
             return user.username
 
@@ -108,7 +110,6 @@ def test_custom_claims_bad(authenticate):
 
 
 def test_custom_claim_non_boolean_return():
-
     class CustomClaim(Claim):
         key = "foo"
 

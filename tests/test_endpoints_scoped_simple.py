@@ -16,7 +16,6 @@ async def scoped(request):
 
 
 class TestEndpointsScoped(object):
-
     def test_scoped_empty(self):
         _, response = app.test_client.get("/scoped_empty")
         assert response.status == 401

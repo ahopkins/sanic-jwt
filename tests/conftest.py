@@ -12,7 +12,6 @@ from sanic_jwt.decorators import protected
 
 
 class User:
-
     def __init__(self, id, username, password):
         self.user_id = id
         self.username = username
@@ -40,7 +39,6 @@ def userid_table(users):
 
 @pytest.yield_fixture
 def authenticate(username_table):
-
     async def authenticate(request, *args, **kwargs):
         username = request.json.get("username", None)
         password = request.json.get("password", None)
@@ -64,7 +62,6 @@ def authenticate(username_table):
 
 @pytest.yield_fixture
 def retrieve_user(userid_table):
-
     async def retrieve_user(request, payload, *args, **kwargs):
         if payload:
             user_id = payload.get("user_id", None)
@@ -117,11 +114,8 @@ def app_with_refresh_token(username_table, authenticate):
         sanic_app,
         authenticate=authenticate,
         refresh_token_enabled=True,
-        store_refresh_token=lambda user_id,
-        refresh_token,
-        request: True,
-        retrieve_refresh_token=lambda user_id,
-        request: True,
+        store_refresh_token=lambda user_id, refresh_token, request: True,
+        retrieve_refresh_token=lambda user_id, request: True,
     )
 
     yield (sanic_app, sanic_jwt)
@@ -331,7 +325,6 @@ def app_with_retrieve_user(retrieve_user, authenticate):
 
 @pytest.yield_fixture
 def app_with_extra_verification(authenticate):
-
     def user2(payload):
         return payload.get("user_id") == 2
 
@@ -354,7 +347,6 @@ def app_with_extra_verification(authenticate):
 
 @pytest.yield_fixture
 def app_with_custom_claims(authenticate):
-
     class User2Claim(Claim):
         key = "username"
 

@@ -184,7 +184,6 @@ def test_inject_user_on_instance_non_async(app_with_retrieve_user):
 
 
 def test_inject_user_with_auth_mode_off(app_with_retrieve_user):
-
     async def retrieve_user(request, payload, *args, **kwargs):
         return {"user_id": 123}
 
@@ -219,3 +218,80 @@ def test_inject_user_with_auth_mode_off(app_with_retrieve_user):
     _, response = microservice_app.test_client.get("/protected/user")
 
     assert response.status == 401
+
+
+def test_redirect_without_url(app):
+    sanic_app, sanic_jwt = app
+
+    @sanic_app.route("/protected/static")
+    @sanic_jwt.protected(redirect_on_fail=True)
+    async def my_protected_static(request):
+        return text("", status=200)
+
+    _, response = sanic_app.test_client.get("/protected/static")
+
+    assert response.status == 401
+
+
+def test_redirect_with_decorator_url(app):
+    sanic_app, sanic_jwt = app
+
+    @sanic_app.route("/protected/static")
+    @sanic_jwt.protected(redirect_on_fail=True, redirect_url="/unprotected")
+    async def my_protected_static(request):
+        return text("", status=200)
+
+    @sanic_app.route("/unprotected")
+    async def my_unprotected_goto(request):
+        return text("unprotected content", status=200)
+
+    _, response = sanic_app.test_client.get("/protected/static")
+
+    assert response.status == 200 and response.text == "unprotected content"
+
+
+def test_redirect_with_configured_url():
+    sanic_app = Sanic()
+    sanic_jwt = Initialize(
+        sanic_app, auth_mode=False, login_redirect_url="/unprotected"
+    )
+
+    @sanic_app.route("/protected/static")
+    @sanic_jwt.protected(redirect_on_fail=True)
+    async def my_protected_static(request):
+        return text("", status=200)
+
+    @sanic_app.route("/unprotected")
+    async def my_unprotected_goto(request):
+        return text("unprotected content", status=200)
+
+    _, response = sanic_app.test_client.get("/protected/static")
+
+    assert response.status == 200 and response.text == "unprotected content"
+
+
+def test_authenticated_redirect(app_with_retrieve_user):
+    sanic_app, sanic_jwt = app_with_retrieve_user
+    _, response = sanic_app.test_client.post(
+        "/auth", json={"username": "user1", "password": "abcxyz"}
+    )
+
+    @sanic_app.route("/protected/static")
+    @sanic_jwt.protected(redirect_on_fail=True)
+    async def my_protected_static(request):
+        return text("protected content", status=200)
+
+    @sanic_app.route("/unprotected")
+    async def my_unprotected_goto(request):
+        return text("unprotected content", status=200)
+
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
+
+    _, response = sanic_app.test_client.get(
+        "/protected/static",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 200 and response.text == "protected content"

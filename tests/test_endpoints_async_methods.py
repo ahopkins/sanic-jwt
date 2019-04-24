@@ -11,7 +11,6 @@ from sanic_jwt.decorators import protected
 
 
 class User(object):
-
     def __init__(self, id, username, password):
         self.id = id
         self.username = username
@@ -108,7 +107,6 @@ def app_with_async_methods():
 
 
 class TestEndpointsAsync(object):
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_async_methods):
         app, sanicjwt = app_with_async_methods
@@ -180,7 +178,8 @@ class TestEndpointsAsync(object):
 
         assert response.status == 200
         assert new_access_token is not None
-        assert response.json.get(
-            sanicjwt.config.refresh_token_name(), None
-        ) is None  # there is no new refresh token
+        assert (
+            response.json.get(sanicjwt.config.refresh_token_name(), None)
+            is None
+        )  # there is no new refresh token
         assert sanicjwt.config.refresh_token_name() not in response.json

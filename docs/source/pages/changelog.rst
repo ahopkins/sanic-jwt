@@ -5,6 +5,16 @@ Changelog
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 ++++++++++++++++++++++++++
+Version 1.3.0 - 2019-04-24
+++++++++++++++++++++++++++
+
+| **Added**
+| - `#40 <https://github.com/ahopkins/sanic-jwt/issues/40>`_. Page redirection for static page protection
+| - Support to be able to individually protect class-based view methods without the `decorators` property
+|
+
+
+++++++++++++++++++++++++++
 Version 1.2.2 - 2019-03-14
 ++++++++++++++++++++++++++
 

@@ -40,7 +40,11 @@ def test_expired(app_with_retrieve_user):
     access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
-    payload = jwt.decode(access_token, sanic_jwt.config.secret())
+    payload = jwt.decode(
+        access_token,
+        sanic_jwt.config.secret(),
+        algorithms=sanic_jwt.config.algorithm(),
+    )
     exp = payload.get("exp", None)
 
     assert "exp" in payload

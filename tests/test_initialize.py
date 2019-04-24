@@ -160,9 +160,7 @@ def test_initialize_class_on_blueprint_with_url_prefix_and_config():
 
 
 def test_initialize_with_custom_endpoint_not_subclassed():
-
     class SubclassHTTPMethodView(HTTPMethodView):
-
         async def options(self, request):
             return text("", status=204)
 
@@ -179,7 +177,6 @@ def test_initialize_with_custom_endpoint_not_subclassed():
 
 
 def test_invalid_configuration_object():
-
     class MyInvalidConfiguration:
         MY_CUSTOM_SETTING = "foo"
 
@@ -189,9 +186,7 @@ def test_invalid_configuration_object():
 
 
 def test_invalid_authentication_object():
-
     class MyInvalidAuthentication:
-
         async def authenticate(*args, **kwargs):
             return True
 
@@ -201,7 +196,6 @@ def test_invalid_authentication_object():
 
 
 def test_invalid_response_object():
-
     class MyInvalidResponses:
         pass
 

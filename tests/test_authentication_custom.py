@@ -6,9 +6,7 @@ from sanic_jwt import Authentication, Initialize
 
 @pytest.yield_fixture
 def app1():
-
     class MyAuthentication(Authentication):
-
         async def store_refresh_token(self, *args, **kwargs):
             return
 
@@ -34,9 +32,7 @@ def app1():
 
 @pytest.yield_fixture
 def app2():
-
     class MyAuthentication(Authentication):
-
         async def store_refresh_token(self, *args, **kwargs):
             return
 

@@ -32,6 +32,7 @@ defaults = {
     "expiration_delta": 60 * 5 * 6,
     "generate_refresh_token": utils.generate_token,
     "leeway": 60 * 3,
+    "login_redirect_url": "/index.html",
     "path_to_authenticate": "/",
     "path_to_refresh": "/refresh",
     "path_to_retrieve_user": "/me",
@@ -50,11 +51,13 @@ defaults = {
     "url_prefix": "/auth",
     "user_id": "user_id",
     "blueprint_name": "auth_bp",
-    "verify_exp": True
+    "verify_exp": True,
+    "login_redirect_url": None,
 }
 
 aliases = {
-    "cookie_access_token_name": "cookie_token_name", "secret": "public_key"
+    "cookie_access_token_name": "cookie_token_name",
+    "secret": "public_key",
 }
 
 ignore_keys = (
@@ -95,7 +98,6 @@ def _update_config_item(key, item_aliases, instance):
 
 
 class ConfigItem:
-
     def __init__(
         self,
         value,
@@ -150,7 +152,6 @@ class ConfigItem:
 
 
 class Configuration:
-
     def __iter__(self):  # noqa
         for key in self.config_keys:
             yield getattr(self, key)
@@ -181,9 +182,8 @@ class Configuration:
 
             # check if a configuration key is set
             # and is an instance of ConfigItem
-            if (
-                hasattr(instance, key)
-                and isinstance(getattr(instance, key), ConfigItem)
+            if hasattr(instance, key) and isinstance(
+                getattr(instance, key), ConfigItem
             ):
                 _update_config_item(key, item_aliases, instance)
             # check if a configuration key is set with a value
@@ -285,9 +285,8 @@ class Configuration:
 
     def _validate_secret(self):
         logger.debug("validating provided secret")
-        if (
-            self.secret() is None
-            or (isinstance(self.secret(), str) and self.secret().strip() == "")
+        if self.secret() is None or (
+            isinstance(self.secret(), str) and self.secret().strip() == ""
         ):
             raise exceptions.InvalidConfiguration(
                 "the SANIC_JWT_SECRET parameter cannot be None nor an empty "
@@ -296,14 +295,11 @@ class Configuration:
 
     def _validate_keys(self):
         logger.debug("validating keys (if needed)")
-        if (
-            utils.algorithm_is_asymmetric(self.algorithm())
-            and (
-                self.private_key() is None
-                or (
-                    isinstance(self.private_key(), str)
-                    and self.private_key().strip() == ""
-                )
+        if utils.algorithm_is_asymmetric(self.algorithm()) and (
+            self.private_key() is None
+            or (
+                isinstance(self.private_key(), str)
+                and self.private_key().strip() == ""
             )
         ):
             raise exceptions.RequiredKeysNotFound

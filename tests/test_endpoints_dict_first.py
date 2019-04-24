@@ -5,7 +5,6 @@ from sanic_jwt import exceptions, Initialize
 
 
 class MyCustomDict(dict):
-
     async def to_dict(self):
         raise Exception("i am not supposed to be called")
 
@@ -40,7 +39,6 @@ def app_with_dict_test():
 
 
 class TestEndpointsAsync(object):
-
     @pytest.yield_fixture
     def authenticated_response(self, app_with_dict_test):
         app, sanicjwt = app_with_dict_test

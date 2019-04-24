@@ -5,7 +5,6 @@ from sanic_jwt import Authentication, exceptions, Initialize
 
 
 class MyAuthentication(Authentication):
-
     async def authenticate(self, request, *args, **kwargs):
         username = request.json.get("username", None)
         password = request.json.get("password", None)

@@ -1,13 +1,9 @@
-from sanic import Blueprint
-from sanic import Sanic
+from sanic import Blueprint, Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
 
 import pytest
-
-from sanic_jwt import Initialize
-from sanic_jwt import exceptions
-from sanic_jwt import initialize
+from sanic_jwt import exceptions, Initialize, initialize
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_ommitted():

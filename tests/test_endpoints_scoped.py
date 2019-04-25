@@ -1,7 +1,7 @@
-import pytest
 from sanic import Sanic
 from sanic.response import json, text
 
+import pytest
 from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected, scoped
 
@@ -147,6 +147,11 @@ def app_with_scopes_base():
     @scoped(client_id_async_scope)
     async def protected_route9(request, id):
         return json({"protected": True, "scoped": True, "id": id})
+
+    @sanic_app.route("/protected/scoped/10")
+    @scoped(None)
+    async def protected_route10(request):
+        return json({"protected": False, "scoped": False})
 
     yield sanic_app
 
@@ -345,6 +350,11 @@ class TestEndpointsSync(object):
             "reasons"
         )
 
+        _, response = sanic_app.test_client.get("/protected/scoped/10")
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
+
     def test_scopes_user1(self, app_with_scopes, user1):
         sanic_app, sanicjwt = app_with_scopes
         access_token = user1.json.get(
@@ -466,6 +476,15 @@ class TestEndpointsSync(object):
         assert response.json.get("exception") == "Unauthorized"
         assert "Invalid scope." in response.json.get("reasons")
 
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/10",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
+
     def test_scopes_user2(self, app_with_scopes, user2):
         sanic_app, sanicjwt = app_with_scopes
         access_token = user2.json.get(
@@ -585,6 +604,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
         assert "Invalid scope." in response.json.get("reasons")
 
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/10",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
+
     def test_scopes_user3(self, app_with_scopes, user3):
         sanic_app, sanicjwt = app_with_scopes
         access_token = user3.json.get(
@@ -702,6 +730,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
         assert response.json.get("exception") == "Unauthorized"
         assert "Invalid scope." in response.json.get("reasons")
+
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/10",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
 
     def test_scopes_user4(self, app_with_scopes, user4):
         sanic_app, sanicjwt = app_with_scopes
@@ -842,6 +879,15 @@ class TestEndpointsSync(object):
         assert response.json.get("exception") == "Unauthorized"
         assert "Invalid scope." in response.json.get("reasons")
 
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/10",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
+
     def test_scopes_user5(self, app_with_scopes, user5):
         sanic_app, sanicjwt = app_with_scopes
         access_token = user5.json.get(
@@ -960,6 +1006,15 @@ class TestEndpointsSync(object):
         assert response.status == 403
         assert response.json.get("exception") == "Unauthorized"
         assert "Invalid scope." in response.json.get("reasons")
+
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/10",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
 
     def test_scopes_user6(self, app_with_scopes, user6):
         sanic_app, sanicjwt = app_with_scopes
@@ -1080,6 +1135,15 @@ class TestEndpointsSync(object):
         assert response.json.get("exception") == "Unauthorized"
         assert "Invalid scope." in response.json.get("reasons")
 
+        _, response = sanic_app.test_client.get(
+            "/protected/scoped/10",
+            headers={"Authorization": "Bearer {}".format(access_token)},
+        )
+
+        assert response.status == 200
+        assert response.json.get("protected") is False
+        assert response.json.get("scoped") is False
+
 
 def test_no_user_scopes(app_with_scopes):
     sanic_app, sanicjwt = app_with_scopes
@@ -1103,6 +1167,15 @@ def test_no_user_scopes(app_with_scopes):
     assert response.status == 403
     assert response.json.get("exception") == "Unauthorized"
     assert "Invalid scope." in response.json.get("reasons")
+
+    _, response = sanic_app.test_client.get(
+        "/protected/scoped/10",
+        headers={"Authorization": "Bearer {}".format(access_token)},
+    )
+
+    assert response.status == 200
+    assert response.json.get("protected") is False
+    assert response.json.get("scoped") is False
 
 
 def test_scoped_option(app_with_scopes):

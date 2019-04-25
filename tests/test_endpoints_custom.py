@@ -1,7 +1,7 @@
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import Initialize, Authentication, BaseEndpoint
+from sanic_jwt import Authentication, BaseEndpoint, Initialize
 
 msg = "custom {} endpoint"
 

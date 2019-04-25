@@ -1,5 +1,5 @@
-from sanic_jwt import Initialize
 import pytest
+from sanic_jwt import Initialize
 
 
 @pytest.fixture

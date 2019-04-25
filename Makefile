@@ -20,6 +20,7 @@ test:
 
 black:
 	black ./ -l 79 --safe
+	isort -rc sanic_jwt tests
 
 release: clean
 	python setup.py sdist bdist_wheel

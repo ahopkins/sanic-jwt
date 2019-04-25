@@ -1,15 +1,14 @@
 import binascii
 import os
 import uuid
-
 from datetime import datetime, timedelta
-from freezegun import freeze_time
+
 from sanic import Sanic
 from sanic.response import json
 
 import pytest
-from sanic_jwt import Initialize
-from sanic_jwt import exceptions
+from freezegun import freeze_time
+from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 

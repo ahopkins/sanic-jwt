@@ -1,8 +1,7 @@
-from sanic import Sanic
-from sanic_jwt import Initialize
-from sanic_jwt import Authentication
-from sanic_jwt import exceptions
 import jwt
+from sanic import Sanic
+
+from sanic_jwt import Authentication, exceptions, Initialize
 
 # import pytest
 

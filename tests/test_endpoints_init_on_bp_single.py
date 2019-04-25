@@ -1,9 +1,9 @@
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
+
 from sanic_jwt import Initialize
-from sanic_jwt.decorators import protected
-from sanic_jwt.decorators import scoped
+from sanic_jwt.decorators import protected, scoped
 
 blueprint = Blueprint("Test")
 

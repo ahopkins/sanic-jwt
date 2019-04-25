@@ -1,10 +1,12 @@
+from datetime import datetime, timedelta
+
 import jwt
-import pytest
 from sanic import Sanic
 from sanic.response import json
-from datetime import datetime, timedelta
+
+import pytest
 from freezegun import freeze_time
-from sanic_jwt import Authentication, Initialize, exceptions, protected
+from sanic_jwt import Authentication, exceptions, Initialize, protected
 
 
 @pytest.yield_fixture

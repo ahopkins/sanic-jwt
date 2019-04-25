@@ -1,9 +1,8 @@
 import jwt
-import pytest
 from sanic import Sanic
-from sanic_jwt import Initialize
-from sanic_jwt import Claim
-from sanic_jwt import exceptions
+
+import pytest
+from sanic_jwt import Claim, exceptions, Initialize
 
 
 def test_claim_initialized_properly(app_with_custom_claims):

@@ -1,13 +1,8 @@
+from sanic import Blueprint, Sanic
+from sanic.response import json, text
+
 import pytest
-
-from sanic import Blueprint
-from sanic import Sanic
-from sanic.response import json
-from sanic.response import text
-
-from sanic_jwt import Initialize
-from sanic_jwt import Claim
-from sanic_jwt import exceptions
+from sanic_jwt import Claim, exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 

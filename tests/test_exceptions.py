@@ -1,4 +1,5 @@
 from sanic.exceptions import abort
+
 from sanic_jwt.decorators import protected
 
 

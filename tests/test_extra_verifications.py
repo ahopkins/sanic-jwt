@@ -1,7 +1,7 @@
 from sanic import Sanic
 from sanic.response import json
-from sanic_jwt import Initialize
-from sanic_jwt import protected
+
+from sanic_jwt import Initialize, protected
 
 
 def test_extra_verification_passing(app_with_extra_verification):

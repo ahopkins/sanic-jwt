@@ -1,7 +1,7 @@
-from sanic import Sanic, response
+from sanic import response, Sanic
 from sanic.response import json
-from sanic_jwt import initialize
-from sanic_jwt import BaseEndpoint
+
+from sanic_jwt import BaseEndpoint, initialize
 
 
 class MagicLoginHandler(BaseEndpoint):

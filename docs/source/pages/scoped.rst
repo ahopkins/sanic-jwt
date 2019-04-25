@@ -187,6 +187,10 @@ If you have initialized Sanic JWT on a ``Blueprint``, then you will need to pass
     async def users(request, id):
         ...
 
+.. note::
+
+    If you provide a ``False`` or ``None`` value to the ``@scoped`` decorator, it will effectively remove **all** protection. This means all requests, whether authenticated or not, will be accepted.
+
 Parameters
 ~~~~~~~~~~
 

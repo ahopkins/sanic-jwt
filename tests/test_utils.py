@@ -1,8 +1,8 @@
-import pytest
-from sanic_jwt import utils
-from sanic_jwt import exceptions
-from pathlib import Path
 from os import path
+from pathlib import Path
+
+import pytest
+from sanic_jwt import exceptions, utils
 
 
 @pytest.fixture

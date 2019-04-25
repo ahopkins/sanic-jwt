@@ -5,6 +5,18 @@ Changelog
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
 ++++++++++++++++++++++++++
+Version 1.3.1 - 2019-04-25
+++++++++++++++++++++++++++
+
+| **Added**
+| - Support for ``False`` and ``None`` scopes.
+
+| **Changed**
+| - Use ``request.args`` instead of ``request.query_args`` to resolve `Depracation Warning <https://sanic.readthedocs.io/en/19.03.1/sanic/request_data.html#request-data>`_.
+|
+
+
+++++++++++++++++++++++++++
 Version 1.3.0 - 2019-04-24
 ++++++++++++++++++++++++++
 

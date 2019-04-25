@@ -1,17 +1,17 @@
 import inspect
-import jwt
 import logging
 import warnings
+from datetime import datetime, timedelta
 
-from .exceptions import InvalidCustomClaimError
-from .exceptions import InvalidVerification
-from .exceptions import InvalidVerificationError
-from .exceptions import SanicJWTException
-from datetime import datetime
-from datetime import timedelta
+import jwt
 
-from . import exceptions
-from . import utils
+from . import exceptions, utils
+from .exceptions import (
+    InvalidCustomClaimError,
+    InvalidVerification,
+    InvalidVerificationError,
+    SanicJWTException
+)
 
 logger = logging.getLogger(__name__)
 claim_label = {"iss": "issuer", "iat": "iat", "nbf": "nbf", "aud": "audience"}
@@ -279,7 +279,7 @@ class Authentication(BaseAuthentication):
         query_string_token_name = getattr(
             self.config, query_string_token_name_key
         )
-        return request.raw_args.get(query_string_token_name(), None)
+        return request.args.get(query_string_token_name(), None)
 
     def _get_token(self, request, refresh_token=False):
         """

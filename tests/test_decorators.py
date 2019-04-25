@@ -1,11 +1,9 @@
 from sanic import Sanic
 from sanic.blueprints import Blueprint
-from sanic.response import json
-from sanic.response import text
+from sanic.response import json, text
+
 from sanic_jwt import Initialize
-from sanic_jwt.decorators import protected
-from sanic_jwt.decorators import scoped
-from sanic_jwt.decorators import inject_user
+from sanic_jwt.decorators import inject_user, protected, scoped
 
 
 def test_forgotten_initialized_on_protected():

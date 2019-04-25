@@ -4,12 +4,12 @@ https://github.com/ahopkins/sanic-jwt/issues/110#issue-330031252
 """
 
 
-import pytest
+import jwt
 from sanic import Blueprint, Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
 
-import jwt
+import pytest
 from sanic_jwt import Authentication, initialize, protected
 
 ALL_METHODS = ["GET", "OPTIONS"]

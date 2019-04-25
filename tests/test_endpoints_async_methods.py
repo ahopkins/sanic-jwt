@@ -5,8 +5,7 @@ from sanic import Sanic
 from sanic.response import json
 
 import pytest
-from sanic_jwt import Initialize
-from sanic_jwt import exceptions
+from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 

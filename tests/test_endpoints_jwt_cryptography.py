@@ -2,11 +2,11 @@ import binascii
 import os
 from pathlib import Path
 
-import pytest
 from sanic import Sanic
 from sanic.response import json
 
-from sanic_jwt import Configuration, Initialize, exceptions
+import pytest
+from sanic_jwt import Configuration, exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 

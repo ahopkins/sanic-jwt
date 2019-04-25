@@ -1,17 +1,15 @@
 import logging
-
 from contextlib import contextmanager
 from copy import deepcopy
 from functools import wraps
 from inspect import isawaitable
-from sanic import Blueprint
-from sanic.views import HTTPMethodView
-from sanic.response import redirect
 
-from . import exceptions
-from . import utils
-from .cache import clear_cache
-from .cache import to_cache
+from sanic import Blueprint
+from sanic.response import redirect
+from sanic.views import HTTPMethodView
+
+from . import exceptions, utils
+from .cache import clear_cache, to_cache
 from .validators import validate_scopes
 
 logger = logging.getLogger(__name__)
@@ -139,48 +137,60 @@ def scoped(
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
-            protect_kwargs = deepcopy(kwargs)
-            protect_kwargs.update(
-                {
-                    "initialized_on": initialized_on,
-                    "kw": kw,
-                    "request": request,
-                    "f": f,
-                    "return_response": False,
-                }
-            )
-            _, instance = await _do_protection(*args, **protect_kwargs)
+            if issubclass(request.__class__, HTTPMethodView):
+                request = args[0]
 
-            if request.method == "OPTIONS":
-                return instance
-
-            user_scopes = instance.auth.extract_scopes(request)
-            override = instance.auth.override_scope_validator
-            destructure = instance.auth.destructure_scopes
-            if user_scopes is None:
-                # If there are no defined scopes in the payload,
-                # deny access
-                is_authorized = False
-                status = 403
-                reasons = "Invalid scope."
-                raise exceptions.Unauthorized(reasons, status_code=status)
-
-            else:
-                is_authorized = await validate_scopes(
-                    request,
-                    scopes,
-                    user_scopes,
-                    require_all=require_all,
-                    require_all_actions=require_all_actions,
-                    override=override,
-                    destructure=destructure,
-                    request_args=args,
-                    request_kwargs=kwargs,
+            if scopes is not None and scopes is not False:
+                protect_kwargs = deepcopy(kwargs)
+                protect_kwargs.update(
+                    {
+                        "initialized_on": initialized_on,
+                        "kw": kw,
+                        "request": request,
+                        "f": f,
+                        "return_response": False,
+                    }
                 )
-                if not is_authorized:
+                _, instance = await _do_protection(*args, **protect_kwargs)
+
+                if request.method == "OPTIONS":
+                    return instance
+
+                user_scopes = instance.auth.extract_scopes(request)
+                override = instance.auth.override_scope_validator
+                destructure = instance.auth.destructure_scopes
+                if user_scopes is None:
+                    # If there are no defined scopes in the payload,
+                    # deny access
+                    is_authorized = False
                     status = 403
                     reasons = "Invalid scope."
+
+                    # TODO:
+                    # - add login_redirect_url
                     raise exceptions.Unauthorized(reasons, status_code=status)
+
+                else:
+                    is_authorized = await validate_scopes(
+                        request,
+                        scopes,
+                        user_scopes,
+                        require_all=require_all,
+                        require_all_actions=require_all_actions,
+                        override=override,
+                        destructure=destructure,
+                        request_args=args,
+                        request_kwargs=kwargs,
+                    )
+                    if not is_authorized:
+                        status = 403
+                        reasons = "Invalid scope."
+
+                        # TODO:
+                        # - add login_redirect_url
+                        raise exceptions.Unauthorized(
+                            reasons, status_code=status
+                        )
 
             # the user is authorized.
             # run the handler method and return the response
@@ -201,6 +211,9 @@ def inject_user(initialized_on=None, **kw):
     def decorator(f):
         @wraps(f)
         async def decorated_function(request, *args, **kwargs):
+            if issubclass(request.__class__, HTTPMethodView):
+                request = args[0]
+
             if initialized_on and isinstance(
                 initialized_on, Blueprint
             ):  # noqa

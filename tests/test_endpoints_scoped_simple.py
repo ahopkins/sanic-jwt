@@ -1,9 +1,8 @@
 from sanic import Sanic
 from sanic.response import json
+
 from sanic_jwt import initialize
-
 from sanic_jwt.decorators import scoped
-
 
 app = Sanic()
 initialize(app, authenticate=lambda: True)

@@ -33,7 +33,7 @@ install_requires = ["pyjwt"]
 
 setup(
     name="sanic-jwt",
-    version="1.3.0",
+    version=version,
     description="JWT oauth flow for Sanic",
     long_description=long_description,
     long_description_content_type="text/markdown",

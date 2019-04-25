@@ -1,6 +1,6 @@
-import pytest
 from sanic import Sanic
 
+import pytest
 from sanic_jwt import exceptions, Initialize
 
 

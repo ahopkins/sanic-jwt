@@ -1,10 +1,10 @@
 import binascii
 import os
 
-import jwt
 from sanic import Sanic
 from sanic.response import json
 
+import jwt
 import pytest
 from sanic_jwt import Initialize, protected
 

@@ -10,7 +10,7 @@ from .exceptions import (
     InvalidCustomClaimError,
     InvalidVerification,
     InvalidVerificationError,
-    SanicJWTException,
+    SanicJWTException
 )
 
 logger = logging.getLogger(__name__)

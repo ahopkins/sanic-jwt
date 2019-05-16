@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import jwt
-
 from freezegun import freeze_time
 
 

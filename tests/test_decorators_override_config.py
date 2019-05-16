@@ -1,10 +1,10 @@
 from datetime import datetime, timedelta
 
-import jwt
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
 
+import jwt
 from freezegun import freeze_time
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
@@ -92,6 +92,4 @@ def test_decorators_override_configuration_defaults():
         "/test/scoped", headers={"Foobar": "Bearer {}".format(access_token)}
     )
 
-    assert response.status == 403
-    assert "Invalid scope." in response.json.get("reasons")
-    assert response.json.get("exception") == "Unauthorized"
+    assert response.status == 200

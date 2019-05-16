@@ -1,6 +1,6 @@
-import jwt
 from sanic import Sanic
 
+import jwt
 import pytest
 from sanic_jwt import Claim, exceptions, Initialize
 

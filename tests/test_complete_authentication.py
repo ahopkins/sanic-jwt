@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
-import jwt
 from sanic import Sanic
 from sanic.response import json
 
+import jwt
 import pytest
 from freezegun import freeze_time
 from sanic_jwt import Authentication, exceptions, Initialize, protected

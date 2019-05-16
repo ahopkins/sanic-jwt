@@ -156,33 +156,14 @@ def scoped(
                 if request.method == "OPTIONS":
                     return instance
 
-                user_scopes = instance.auth.extract_scopes(request)
-                override = instance.auth.override_scope_validator
-                destructure = instance.auth.destructure_scopes
-                if user_scopes is None:
-                    # If there are no defined scopes in the payload,
-                    # deny access
-                    is_authorized = False
-                    status = 403
-                    reasons = "Invalid scope."
-
-                    # TODO:
-                    # - add login_redirect_url
-                    raise exceptions.Unauthorized(reasons, status_code=status)
-
-                else:
-                    is_authorized = await validate_scopes(
-                        request,
-                        scopes,
-                        user_scopes,
-                        require_all=require_all,
-                        require_all_actions=require_all_actions,
-                        override=override,
-                        destructure=destructure,
-                        request_args=args,
-                        request_kwargs=kwargs,
-                    )
-                    if not is_authorized:
+                with instant_config(instance, request=request, **kw):
+                    user_scopes = instance.auth.extract_scopes(request)
+                    override = instance.auth.override_scope_validator
+                    destructure = instance.auth.destructure_scopes
+                    if user_scopes is None:
+                        # If there are no defined scopes in the payload,
+                        # deny access
+                        is_authorized = False
                         status = 403
                         reasons = "Invalid scope."
 
@@ -191,6 +172,28 @@ def scoped(
                         raise exceptions.Unauthorized(
                             reasons, status_code=status
                         )
+
+                    else:
+                        is_authorized = await validate_scopes(
+                            request,
+                            scopes,
+                            user_scopes,
+                            require_all=require_all,
+                            require_all_actions=require_all_actions,
+                            override=override,
+                            destructure=destructure,
+                            request_args=args,
+                            request_kwargs=kwargs,
+                        )
+                        if not is_authorized:
+                            status = 403
+                            reasons = "Invalid scope."
+
+                            # TODO:
+                            # - add login_redirect_url
+                            raise exceptions.Unauthorized(
+                                reasons, status_code=status
+                            )
 
             # the user is authorized.
             # run the handler method and return the response

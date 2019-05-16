@@ -14,14 +14,13 @@ def open_local(paths, mode="r", encoding="utf8"):
 with open_local(["sanic_jwt", "__init__.py"], encoding="latin1") as fp:
     try:
         version = re.findall(
-            r"^__version__ = \"([^']+)\"\r?$", fp.read(), re.M
+            r"^__version__ = \"([0-9\.]+)\"", fp.read(), re.M
         )[0]
     except IndexError:
         raise RuntimeError("Unable to determine version.")
 
 with open_local(["README.md"]) as rm:
     long_description = rm.read()
-
 
 extras_require = {"docs": ["Sphinx"]}
 

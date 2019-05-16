@@ -15,6 +15,13 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+clean:
+	find . ! -path "./.eggs/*" -name "*.pyc" -exec rm {} \;
+	find . ! -path "./.eggs/*" -name "*.pyo" -exec rm {} \;
+	find . ! -path "./.eggs/*" -name ".coverage" -exec rm {} \;
+	rm -rf build/* > /dev/null 2>&1
+	rm -rf dist/* > /dev/null 2>&1
+
 test:
 	python setup.py test
 

@@ -56,7 +56,7 @@ class AuthenticateEndpoint(BaseEndpoint):
 
         output = await self.do_output(output)
 
-        resp = self.responses.get_token_reponse(
+        resp = self.responses.get_token_response(
             request,
             access_token,
             output,

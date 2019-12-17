@@ -102,7 +102,7 @@ class BaseAuthentication:
         user_scopes,
         require_all_actions,
         *args,
-        **kwargs
+        **kwargs,
     ):
         return is_valid
 
@@ -169,7 +169,7 @@ class Authentication(BaseAuthentication):
             algorithms=[algorithm],
             verify=verify,
             options={"verify_exp": self.config.verify_exp()},
-            **kwargs
+            **kwargs,
         )
         return decoded
 
@@ -319,7 +319,7 @@ class Authentication(BaseAuthentication):
         request_args=None,
         request_kwargs=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Verify that a request object is authenticated.

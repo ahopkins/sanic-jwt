@@ -20,6 +20,7 @@ defaults = {
     "cookie_access_token_name": "access_token",
     "cookie_domain": "",
     "cookie_httponly": True,
+    "cookie_path": "/",
     "cookie_refresh_token_name": "refresh_token",
     "cookie_set": False,
     "cookie_strict": True,

@@ -49,7 +49,9 @@ class BaseAuthentication:
     async def build_payload(self, user, *args, **kwargs):
         return await self._get_user_id(user, asdict=True)
 
-    async def add_claims(self, payload, user, *args, **kwargs):
+    async def add_claims(
+        self, payload, user, inline_claims=None, *args, **kwargs
+    ):
         """
         Injects standard claims into the payload for: exp, iss, iat, nbf, aud.
         And, custom claims, if they exist
@@ -77,6 +79,15 @@ class BaseAuthentication:
                     claim.setup, payload, user
                 )
             payload.update(custom_claims)
+
+        if inline_claims:
+            claims = {}
+            for claim in inline_claims:
+                instance = claim()
+                claims[instance.get_key()] = await utils.call(
+                    instance.setup, payload, user
+                )
+            payload.update(claims)
 
         return payload
 
@@ -141,7 +152,7 @@ class Authentication(BaseAuthentication):
 
         return is_valid, status, reasons
 
-    def _decode(self, token, verify=True):
+    def _decode(self, token, verify=True, inline_claims=None):
         """
         Take a JWT and return a decoded payload. Optionally, will verify
         the claims on the token.
@@ -171,12 +182,21 @@ class Authentication(BaseAuthentication):
             options={"verify_exp": self.config.verify_exp()},
             **kwargs,
         )
+
+        if verify:
+            if self._extra_verifications:
+                self._verify_extras(decoded)
+            if self._custom_claims or inline_claims:
+                self._verify_custom_claims(
+                    decoded, inline_claims=inline_claims
+                )
+
         return decoded
 
     def _get_algorithm(self):
         return self.config.algorithm()
 
-    async def _get_payload(self, user):
+    async def _get_payload(self, user, inline_claims=None):
         """
         Given a user object, create a payload and extend it as configured.
         """
@@ -188,7 +208,9 @@ class Authentication(BaseAuthentication):
         ):
             raise exceptions.InvalidPayload
 
-        payload = await utils.call(self.add_claims, payload, user)
+        payload = await utils.call(
+            self.add_claims, payload, user, inline_claims
+        )
 
         extend_payload_args = inspect.getfullargspec(self.extend_payload)
         args = [payload]
@@ -346,12 +368,6 @@ class Authentication(BaseAuthentication):
         if token:
             try:
                 payload = self._decode(token, verify=verify)
-
-                if verify:
-                    if self._extra_verifications:
-                        self._verify_extras(payload)
-                    if self._custom_claims:
-                        self._verify_custom_claims(payload)
             except (
                 jwt.exceptions.ExpiredSignatureError,
                 jwt.exceptions.InvalidIssuerError,
@@ -406,9 +422,13 @@ class Authentication(BaseAuthentication):
             if verified is False:
                 raise InvalidVerificationError()
 
-    def _verify_custom_claims(self, payload):
-        for claim in self._custom_claims:
-            claim._verify(payload)
+    def _verify_custom_claims(self, payload, inline_claims=None):
+        if self._custom_claims:
+            for claim in self._custom_claims:
+                claim._verify(payload)
+        if inline_claims:
+            for claim in inline_claims:
+                claim()._verify(payload)
 
     def extract_payload(self, request, verify=True, *args, **kwargs):
         """
@@ -438,11 +458,11 @@ class Authentication(BaseAuthentication):
         user_id_attribute = self.config.user_id()
         return payload.get(user_id_attribute, None)
 
-    async def generate_access_token(self, user):
+    async def generate_access_token(self, user, custom_claims=None):
         """
         Generate an access token for a given user.
         """
-        payload = await self._get_payload(user)
+        payload = await self._get_payload(user, inline_claims=custom_claims)
         secret = self._get_secret(True)
         algorithm = self._get_algorithm()
 
@@ -497,3 +517,11 @@ class Authentication(BaseAuthentication):
             "sanic_jwt.Authentication.extract_scopes()."
         )
         return self.extract_scopes(request)
+
+    def verify_token(self, token, return_payload=False, custom_claims=None):
+        """
+        Perform an inline verification of a token.
+        """
+
+        payload = self._decode(token, inline_claims=custom_claims)
+        return payload if return_payload else bool(payload)

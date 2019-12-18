@@ -237,6 +237,14 @@ Settings
 | **Default**: ``True``
 |
 
+-----------------
+``cookie_path``
+-----------------
+
+| **Purpose**: The path to associate a cookie with.
+| **Default**: ``'/'``
+|
+
 -----------------------------
 ``cookie_refresh_token_name``
 -----------------------------

@@ -1,6 +1,7 @@
 import inspect
 import logging
 import warnings
+from contextlib import contextmanager
 from datetime import datetime, timedelta
 
 import jwt
@@ -525,3 +526,9 @@ class Authentication(BaseAuthentication):
 
         payload = self._decode(token, inline_claims=custom_claims)
         return payload if return_payload else bool(payload)
+
+    @contextmanager
+    def override(self, **kwargs):
+        self.config._do_overrides(**kwargs)
+        yield
+        self.config._do_overrides(cleanup=True, **kwargs)

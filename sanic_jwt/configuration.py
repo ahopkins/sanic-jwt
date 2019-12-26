@@ -107,6 +107,8 @@ class ConfigItem:
         self._item_name = item_name
         self._config = config
         self._inject_request = inject_request
+        self._override = False
+        self._override_value = None
 
         if aliases is not None and isinstance(aliases, (list, tuple, set)):
             self._aliases = aliases
@@ -117,6 +119,9 @@ class ConfigItem:
         self._value = value
 
     def __call__(self, **kwargs):
+        if self._override:
+            return self._override_value
+
         if asyncio.get_event_loop().is_running():
             if is_cached(self._item_name):
                 return get_cached(self._item_name)
@@ -228,6 +233,11 @@ class Configuration:
             "_all_config_keys",
             _config_keys + list(_aliases.values()),
         )
+        setattr(
+            instance,
+            "_config_alias_mapping",
+            {alias: key for key, alias in _aliases.items()},
+        )
 
         return instance
 
@@ -254,6 +264,10 @@ class Configuration:
     def config_aliases_keys(self):
         return self._config_aliases_keys
 
+    @property
+    def config_alias_mapping(self):
+        return self._config_alias_mapping
+
     def __init__(self, app_config, **kwargs):
         for key, value in kwargs.items():
             self._merge(key, value)
@@ -261,6 +275,7 @@ class Configuration:
         self._validate_secret()
         self._validate_keys()
         self._load_keys()
+        self._overrides = None
 
     def _merge(self, key, value):
         if key in self.config_keys:
@@ -314,6 +329,18 @@ class Configuration:
                 raise exceptions.RequiredKeysNotFound
 
             raise exc  # noqa
+
+    def _do_overrides(self, cleanup=False, **kwargs):
+        for key, value in kwargs.items():
+            if key in self.config_keys:
+                item = getattr(self, key)
+                item._override = False if cleanup else True
+                item._override_value = None if cleanup else value
+            elif key in self.config_aliases_keys:
+                correct_key = self.config_alias_mapping.get(key)
+                item = getattr(self, correct_key)
+                item._override = False if cleanup else True
+                item._override_value = None if cleanup else value
 
     @staticmethod
     def extract_presets(app_config):

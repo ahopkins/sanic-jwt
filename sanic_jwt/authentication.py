@@ -459,13 +459,20 @@ class Authentication(BaseAuthentication):
         user_id_attribute = self.config.user_id()
         return payload.get(user_id_attribute, None)
 
-    async def generate_access_token(self, user, custom_claims=None):
+    async def generate_access_token(
+        self, user, extend_payload=None, custom_claims=None
+    ):
         """
         Generate an access token for a given user.
         """
         payload = await self._get_payload(user, inline_claims=custom_claims)
         secret = self._get_secret(True)
         algorithm = self._get_algorithm()
+
+        if extend_payload:
+            payload = await utils.call(
+                extend_payload, payload=payload, user=user
+            )
 
         return jwt.encode(payload, secret, algorithm=algorithm).decode("utf-8")
 

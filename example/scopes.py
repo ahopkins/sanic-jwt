@@ -63,8 +63,12 @@ async def my_scope_extender(user, *args, **kwargs):
 
 
 app = Sanic()
-app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = my_scope_extender
-initialize(app, authenticate=authenticate, retrieve_user=retrieve_user)
+initialize(
+    app,
+    authenticate=authenticate,
+    retrieve_user=retrieve_user,
+    add_scopes_to_payload=my_scope_extender,
+)
 # initialize(app, authenticate=authenticate, retrieve_user=retrieve_user, add_scopes_to_payload=my_scope_extender)
 
 

@@ -10,7 +10,7 @@ from sanic_jwt import Initialize, protected
 
 
 @pytest.yield_fixture
-def app_with_refresh_token(users, authenticate):
+def app_with_refresh_token_and_cookie(users, authenticate):
 
     cache = {}
 
@@ -66,8 +66,8 @@ def app_with_refresh_token(users, authenticate):
 
 class TestEndpointsCookies(object):
     @pytest.yield_fixture
-    def authenticated_response(self, app_with_refresh_token):
-        sanic_app, sanicjwt = app_with_refresh_token
+    def authenticated_response(self, app_with_refresh_token_and_cookie):
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         _, response = sanic_app.test_client.post(
             "/auth", json={"username": "user1", "password": "abcxyz"}
         )
@@ -75,21 +75,19 @@ class TestEndpointsCookies(object):
         yield response
 
     def test_authenticate_and_read_response_cookie(
-        self, app_with_refresh_token, authenticated_response
+        self, app_with_refresh_token_and_cookie, authenticated_response
     ):
-        _, sanicjwt = app_with_refresh_token
+        _, sanicjwt = app_with_refresh_token_and_cookie
         key = sanicjwt.config.cookie_access_token_name()
-        # print(key)
-        # print(authenticated_response.cookies.values())
+
         access_token_from_cookie = authenticated_response.cookies.get(
             key, None
         )
 
         assert access_token_from_cookie is not None
 
-        access_token_from_cookie = access_token_from_cookie.value
         access_token_from_json = authenticated_response.json.get(
-            sanicjwt.config.access_token_name(), None
+            sanicjwt.config.access_token_name()
         )
 
         assert access_token_from_cookie is not None
@@ -113,13 +111,11 @@ class TestEndpointsCookies(object):
         assert sanicjwt.config.user_id() in payload_cookie
 
     def test_using_token_as_cookie(
-        self, app_with_refresh_token, authenticated_response
+        self, app_with_refresh_token_and_cookie, authenticated_response
     ):
-        sanic_app, sanicjwt = app_with_refresh_token
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         key = sanicjwt.config.cookie_access_token_name()
-        access_token_from_cookie = authenticated_response.cookies.get(
-            key
-        ).value
+        access_token_from_cookie = authenticated_response.cookies.get(key)
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             sanicjwt.config.secret(),
@@ -151,13 +147,11 @@ class TestEndpointsCookies(object):
         assert user_id_from_me == user_id_from_payload_cookie
 
     def test_using_token_as_header_strict(
-        self, app_with_refresh_token, authenticated_response
+        self, app_with_refresh_token_and_cookie, authenticated_response
     ):
-        sanic_app, sanicjwt = app_with_refresh_token
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         key = sanicjwt.config.cookie_access_token_name()
-        access_token_from_cookie = authenticated_response.cookies.get(
-            key
-        ).value
+        access_token_from_cookie = authenticated_response.cookies.get(key)
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             sanicjwt.config.secret(),
@@ -227,16 +221,14 @@ class TestEndpointsCookies(object):
         assert response.json.get("protected")
 
     def test_using_token_as_header_not_strict(
-        self, app_with_refresh_token, authenticated_response
+        self, app_with_refresh_token_and_cookie, authenticated_response
     ):
-        sanic_app, sanicjwt = app_with_refresh_token
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.cookie_strict.update(False)
         sanic_app.auth.config.cookie_strict.update(False)
 
         key = sanicjwt.config.cookie_access_token_name()
-        access_token_from_cookie = authenticated_response.cookies.get(
-            key
-        ).value
+        access_token_from_cookie = authenticated_response.cookies.get(key)
         payload_cookie = jwt.decode(
             access_token_from_cookie,
             sanicjwt.config.secret(),
@@ -286,9 +278,9 @@ class TestEndpointsCookies(object):
         assert response.json.get("protected")
 
     def test_refresh_token_with_cookies_strict(
-        self, app_with_refresh_token, authenticated_response
+        self, app_with_refresh_token_and_cookie, authenticated_response
     ):
-        sanic_app, sanicjwt = app_with_refresh_token
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.debug.update(True)
         sanicjwt.config.cookie_strict.update(True)
         sanic_app.auth.config.cookie_strict.update(True)
@@ -351,9 +343,9 @@ class TestEndpointsCookies(object):
         )
 
     def test_refresh_token_with_cookies_not_strict(
-        self, app_with_refresh_token, authenticated_response
+        self, app_with_refresh_token_and_cookie, authenticated_response
     ):
-        sanic_app, sanicjwt = app_with_refresh_token
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.cookie_strict.update(False)
         sanic_app.auth.config.cookie_strict.update(False)
 
@@ -379,8 +371,10 @@ class TestEndpointsCookies(object):
         )  # there is no new refresh token
         assert sanicjwt.config.cookie_refresh_token_name() not in response.json
 
-    def test_auth_verify_invalid_token(self, app_with_refresh_token):
-        sanic_app, sanicjwt = app_with_refresh_token
+    def test_auth_verify_invalid_token(
+        self, app_with_refresh_token_and_cookie
+    ):
+        sanic_app, sanicjwt = app_with_refresh_token_and_cookie
 
         _, response = sanic_app.test_client.get(
             "/auth/verify",
@@ -391,3 +385,43 @@ class TestEndpointsCookies(object):
         assert "Authorization cookie not present." in response.json.get(
             "reasons"
         )
+
+
+@pytest.mark.xfail(
+    reason="Sanic does not yet allow for customizing the domain on the test_client"
+)
+def test_config_with_cookie_domain(users, authenticate):
+    domain = "cookie.yum"
+    sanic_app = Sanic()
+    Initialize(
+        sanic_app,
+        authenticate=authenticate,
+        cookie_set=True,
+        cookie_domain=domain,
+    )
+
+    _, response = sanic_app.test_client.post(
+        "/auth",
+        json={"username": "user1", "password": "abcxyz"},
+        raw_cookies=True,
+    )
+
+    cookie = response.raw_cookies.get("access_token")
+    assert cookie.domain == domain
+
+
+def test_config_with_cookie_path(users, authenticate):
+    path = "/auth"
+    sanic_app = Sanic()
+    Initialize(
+        sanic_app, authenticate=authenticate, cookie_set=True, cookie_path=path
+    )
+
+    _, response = sanic_app.test_client.post(
+        "/auth",
+        json={"username": "user1", "password": "abcxyz"},
+        raw_cookies=True,
+    )
+
+    cookie = response.raw_cookies.get("access_token")
+    assert cookie.path == path

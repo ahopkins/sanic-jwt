@@ -318,3 +318,41 @@ def test_disable_protection():
 
     assert response.status == 200
     assert response.json.get("protected") == "yes"
+
+
+def test_configuration_with_override():
+    app = Sanic()
+
+    sanicjwt = Initialize(
+        app, authenticate=lambda: True, access_token_name="customtoken"
+    )
+
+    assert sanicjwt.config.access_token_name() == "customtoken"
+
+    with app.auth.override(access_token_name="foobar"):
+        assert sanicjwt.config.access_token_name() == "foobar"
+
+    assert sanicjwt.config.access_token_name() == "customtoken"
+
+
+def test_configuration_with_override_on_aliased():
+    app = Sanic()
+
+    sanicjwt = Initialize(app, authenticate=lambda: True,)
+
+    assert sanicjwt.config.public_key() == "This is a big secret. Shhhhh"
+    assert sanicjwt.config.secret() == "This is a big secret. Shhhhh"
+
+    with app.auth.override(secret="foobar"):
+        assert sanicjwt.config.public_key() == "foobar"
+        assert sanicjwt.config.secret() == "foobar"
+
+    assert sanicjwt.config.public_key() == "This is a big secret. Shhhhh"
+    assert sanicjwt.config.secret() == "This is a big secret. Shhhhh"
+
+    with app.auth.override(public_key="foobar"):
+        assert sanicjwt.config.public_key() == "foobar"
+        assert sanicjwt.config.secret() == "foobar"
+
+    assert sanicjwt.config.public_key() == "This is a big secret. Shhhhh"
+    assert sanicjwt.config.secret() == "This is a big secret. Shhhhh"

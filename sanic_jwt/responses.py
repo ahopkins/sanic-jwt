@@ -3,6 +3,16 @@ from sanic.response import json
 from .base import BaseDerivative
 
 
+def _set_cookie(response, key, value, config):
+    response.cookies[key] = value
+    response.cookies[key]["httponly"] = config.cookie_httponly()
+    response.cookies[key]["path"] = config.cookie_path()
+
+    domain = config.cookie_domain()
+    if domain:
+        response.cookies[key]["domain"] = domain
+
+
 class Responses(BaseDerivative):
     @staticmethod
     async def get_access_token_output(request, user, config, instance):
@@ -20,15 +30,11 @@ class Responses(BaseDerivative):
 
         if config.cookie_set():
             key = config.cookie_access_token_name()
-            response.cookies[key] = access_token
-            response.cookies[key]["domain"] = config.cookie_domain()
-            response.cookies[key]["httponly"] = config.cookie_httponly()
+            _set_cookie(response, key, access_token, config)
 
             if refresh_token and config.refresh_token_enabled():
                 key = config.cookie_refresh_token_name()
-                response.cookies[key] = refresh_token
-                response.cookies[key]["domain"] = config.cookie_domain()
-                response.cookies[key]["httponly"] = config.cookie_httponly()
+                _set_cookie(response, key, refresh_token, config)
 
         return response
 

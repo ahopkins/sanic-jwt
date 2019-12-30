@@ -228,7 +228,7 @@ What if we wanted a ``/register`` endpoint? It could easily be added like this:
                 self.config.refresh_token_name(): refresh_token
             })
 
-            response = self.responses.get_token_reponse(
+            response = self.responses.get_token_response(
                 request,
                 access_token,
                 output,

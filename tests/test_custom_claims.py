@@ -85,6 +85,9 @@ def test_custom_claims_bad(authenticate):
         def verify(self, payload, value):
             return True
 
+    class BogusClaim:
+        pass
+
     with pytest.raises(exceptions.InvalidCustomClaim):
         sanic_app = Sanic()
         Initialize(
@@ -105,6 +108,11 @@ def test_custom_claims_bad(authenticate):
             sanic_app,
             authenticate=authenticate,
             custom_claims=[MissingKeyClaim],
+        )
+    with pytest.raises(exceptions.InvalidCustomClaim):
+        sanic_app = Sanic()
+        Initialize(
+            sanic_app, authenticate=authenticate, custom_claims=[BogusClaim]
         )
 
 

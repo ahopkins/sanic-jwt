@@ -321,6 +321,10 @@ class Initialize:
         elif isinstance(instance, Blueprint):
             if app is not None:
                 return app
+            message = "Sanic JWT was not initialized properly. When "
+            "instantiating on a sanic.Blueprint you must pass your app "
+            "instance: Initialize(bp, app=app, ...)"
+            raise exceptions.InitializationFailure(message=message)
 
         raise exceptions.InitializationFailure
 

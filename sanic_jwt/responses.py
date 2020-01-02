@@ -23,7 +23,7 @@ class Responses(BaseDerivative):
         return access_token, output
 
     @staticmethod
-    def get_token_reponse(
+    def get_token_response(
         request, access_token, output, config, refresh_token=None
     ):
         response = json(output)

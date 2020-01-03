@@ -1,4 +1,5 @@
 import jwt
+import pytest
 
 
 def test_unprotected(app):
@@ -86,6 +87,10 @@ def test_auth_verify_missing_token_debug(app):
 #     assert "Authorization header is invalid." in response.json.get("reasons")
 
 
+@pytest.mark.xfail(
+    raises=ValueError,
+    reason="Request deliberately has an invalid header value. Do not need h11 to also report that",
+)
 def test_auth_verify_invalid_token(app):
     sanic_app, _ = app
     _, response = sanic_app.test_client.get(

@@ -102,6 +102,17 @@ This brings up an important point. If you go with the getter method, then in ord
 
 As you can see, the getter method is passed the ``request`` object as a parameter.
 
+------------------
+Temporary override
+------------------
+
+Sometimes you may need to only change a value for a brief moment. There is an ``auth.override()`` method that allows you to handle these situations seemlesly. Anything executed inside the ``with`` statement will have the modified value.
+
+.. code-block:: python
+
+    with app.auth.override(expiration_delta=1440):
+        token = app.auth.generate_access_token(user)
+
 ------------
 
 ++++++++
@@ -235,6 +246,14 @@ Settings
 
 | **Purpose**: It enables HTTP only cookies. **HIGHLY recommended that you do not turn this off, unless you know what you are doing.**
 | **Default**: ``True``
+|
+
+-----------------
+``cookie_path``
+-----------------
+
+| **Purpose**: The path to associate a cookie with.
+| **Default**: ``'/'``
 |
 
 -----------------------------

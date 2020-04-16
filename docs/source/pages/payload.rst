@@ -245,3 +245,45 @@ Sometimes you may want to hide payload content. So it should be useful if you ca
     app.config.ENCRYPT_SALT = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksa"  # This is optional
 
     Initialize(app, authentication_class=AuthenticationEncrypted)
+
+
+Once the Payload is encrypted you may want to include all information data into Payload. You can do that by setting app config *FULL_USER_INFO*:
+
+.. code-block:: python
+
+    from sanic import Sanic
+    from sanic_jwt import AuthenticationEncrypted, Initialize
+
+    app = Sanic()
+    app.config.ENCRYPT_PASSWORD = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksaKSKSKS"
+    app.config.ENCRYPT_SALT = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksa"  # This is optional
+    app.config.FULL_USER_INFO = True
+
+    class User:
+
+        def __init__(self, user_id: str, name: str):
+            self.user_id = user_id
+            self.name = name
+
+        def to_dict(self):
+            return self.__dict__
+
+
+    async def authenticate(request):
+        return User(user_id=uuid.uuid4().hex, "custom name")
+
+    async def retrieve_user(request, payload, *args, **kwargs):
+        return User(**payload)
+
+    Initialize(app,
+               authenticate=authenticate,
+               retrieve_user=retrieve_user,
+               authentication_class=AuthenticationEncrypted)
+
+.. code-block:: console
+
+    > curl -X POST http://localhost:8000/auth
+    {"access_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.Z0FBQUFBQmVtRGdDQXNvSDJHaXl0Y0lMajlRWkJwT1hQUmdZQ2VJdF93d0wwZ1lWX3BWbmN6eU9IQWUzTDBFT2RvQXhLQ08tSk93d2ZYX0xmUy04M0ZjV1BWWDMxS201U2V5T09wYWVwN0MwVGE4bkF6d0duNkZTVlBzWmFYUXlfeldQSXlMcWdWUXdlcmNsT01VOF9IYWZVTF9nWmFzR2J4MDRNVUxsMll3SURGbkI2ZzNmejZFNDZXNzVCMUNNME1kRnNHY19kbXBBZnpWR0ZHYVdPR0E4elprem5jbmNlN01NMVFqdDBjUDBjeENaUy01ZmJyVT0.HuDaQ7xwFe4YjfYY40cSHnMzwJduMY9x8Lcoq9Y0Om0"}%
+    > TOKEN=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.Z0FBQUFBQmVtRGdDQXNvSDJHaXl0Y0lMajlRWkJwT1hQUmdZQ2VJdF93d0wwZ1lWX3BWbmN6eU9IQWUzTDBFT2RvQXhLQ08tSk93d2ZYX0xmUy04M0ZjV1BWWDMxS201U2V5T09wYWVwN0MwVGE4bkF6d0duNkZTVlBzWmFYUXlfeldQSXlMcWdWUXdlcmNsT01VOF9IYWZVTF9nWmFzR2J4MDRNVUxsMll3SURGbkI2ZzNmejZFNDZXNzVCMUNNME1kRnNHY19kbXBBZnpWR0ZHYVdPR0E4elprem5jbmNlN01NMVFqdDBjUDBjeENaUy01ZmJyVT0.HuDaQ7xwFe4YjfYY40cSHnMzwJduMY9x8Lcoq9Y0Om0
+    > curl -X GET -H "Authorization: Bearer $TOKEN" http://localhost:8000/auth/me
+    {"me":{"user_id":"85bbf574f9c1469da89de82a934fec96","exp":1587035913,"name":"custom name"}}

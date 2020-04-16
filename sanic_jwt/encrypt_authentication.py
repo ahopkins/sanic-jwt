@@ -178,6 +178,7 @@ class AuthenticationEncrypted(Authentication):
 
         self.encrypt_password = app.config.get("ENCRYPT_PASSWORD", None)
         self.encrypt_salt = app.config.get("ENCRYPT_SALT", None)
+        self.full_user_info = app.config.get("FULL_USER_INFO", False)
 
         if not self.encrypt_password:
             raise ValueError("Password not defined! Please set "
@@ -253,3 +254,17 @@ class AuthenticationEncrypted(Authentication):
                           algorithm=algorithm,
                           encrypt_password=self.encrypt_password,
                           encrypt_salt=self.encrypt_salt).decode("utf-8")
+
+    async def _get_payload(self, user, inline_claims=None):
+        payload = await super(AuthenticationEncrypted, self)._get_payload(
+            user,
+            inline_claims
+        )
+
+        if self.full_user_info:
+            if hasattr(user, "to_dict"):
+                payload.update(user.to_dict())
+            else:
+                payload.update(user)
+
+        return payload

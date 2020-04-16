@@ -244,4 +244,4 @@ Sometimes you may want to hide payload content. So it should be useful if you ca
     app.config.ENCRYPT_PASSWORD = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksaKSKSKS"
     app.config.ENCRYPT_SALT = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksa"  # This is optional
 
-    Initialize(app, authentication_class=JWEAuthentication)
+    Initialize(app, authentication_class=AuthenticationEncrypted)

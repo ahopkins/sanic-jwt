@@ -8,7 +8,7 @@ ENCRYPT_SALT) into the Sanic app config.
 >>> app = Sanic()
 >>> app.config.ENCRYPT_PASSWORD = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksa"
 >>> import sanic_jwt import AuthenticationEncrypted, Initialize
->>> Initialize(app, authentication_class=JWEAuthentication)
+>>> Initialize(app, authentication_class=AuthenticationEncrypted)
 
 """
 import jwt

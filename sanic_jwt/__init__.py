@@ -5,6 +5,7 @@ __credits__ = "Richard Kuesters"
 import logging
 
 from .authentication import Authentication
+from .encrypt_authentication import AuthenticationEncrypted
 from .claim import Claim
 from .configuration import Configuration
 from .decorators import inject_user, protected, scoped
@@ -17,6 +18,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 __all__ = [
     "Authentication",
+    "AuthenticationEncrypted",
     "BaseEndpoint",
     "Claim",
     "Configuration",

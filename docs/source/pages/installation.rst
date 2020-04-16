@@ -9,3 +9,7 @@ Install from pypi using::
 Not much else to say. Depending upon whether or not you change the encryption algorithm, you may be prompted to also install `cryptography <https://github.com/pyca/cryptography>`_. But, we only do that if you know you will need it. ::
 
     pip install cryptography
+
+.. warning::
+
+    If you want to use encrypted payloads you need cryptography module

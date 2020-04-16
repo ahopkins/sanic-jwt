@@ -227,3 +227,21 @@ If you decide to use an RSA or an EC algorithm, then you **must** provide Sanic 
         public_key=public_ec_key,
         private_key=private_ec_key,
         algorithm='ES256')
+
+
++++++++++++++++++
+Encrypted Payload
++++++++++++++++++
+
+Sometimes you may want to hide payload content. So it should be useful if you can encrypt this content. Sanic-jwt provides Fernet encryption of the Payload. You must provider the encryption key and (optionally a salt value).
+
+.. code-block:: python
+
+    from sanic import Sanic
+    from sanic_jwt import AuthenticationEncrypted, Initialize
+
+    app = Sanic()
+    app.config.ENCRYPT_PASSWORD = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksaKSKSKS"
+    app.config.ENCRYPT_SALT = "ASDFAsdfkjalsdfjlkasdfjlkasdjflksa"  # This is optional
+
+    Initialize(app, authentication_class=JWEAuthentication)

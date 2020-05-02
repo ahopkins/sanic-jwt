@@ -13,7 +13,8 @@ _Handler = namedtuple(
     "_Handler", ["name", "keys", "exception", "outside_auth_mode"]
 )
 _EndpointMapping = namedtuple(
-    "_EndpointMapping", ["cls", "endpoint", "keys", "is_protected"]
+    "_EndpointMapping",
+    ["cls", "endpoint", "keys", "is_protected", "protected_kwargs"],
 )
 
 
@@ -31,17 +32,28 @@ def initialize(*args, **kwargs):
 
 endpoint_mappings = (
     _EndpointMapping(
-        endpoints.AuthenticateEndpoint, "authenticate", ["auth_mode"], False
+        endpoints.AuthenticateEndpoint,
+        "authenticate",
+        ["auth_mode"],
+        False,
+        {},
     ),
     _EndpointMapping(
-        endpoints.RetrieveUserEndpoint, "retrieve_user", ["auth_mode"], True
+        endpoints.RetrieveUserEndpoint,
+        "retrieve_user",
+        ["auth_mode"],
+        True,
+        {},
     ),
-    _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"], False),
+    _EndpointMapping(
+        endpoints.VerifyEndpoint, "verify", ["auth_mode"], False, {}
+    ),
     _EndpointMapping(
         endpoints.RefreshEndpoint,
         "refresh",
         ["auth_mode", "refresh_token_enabled"],
-        False,
+        True,
+        {"verify_exp": False},
     ),
 )
 
@@ -150,7 +162,10 @@ class Initialize:
         for mapping in endpoint_mappings:
             if all(map(self.config.get, mapping.keys)):
                 self.__add_single_endpoint(
-                    mapping.cls, mapping.endpoint, mapping.is_protected
+                    mapping.cls,
+                    mapping.endpoint,
+                    mapping.is_protected,
+                    mapping.protected_kwargs,
                 )
 
         self.bp.exception(exceptions.SanicJWTException)(
@@ -279,10 +294,12 @@ class Initialize:
     def __load_responses(self):
         self.responses = self.responses_class(self.config, self.instance)
 
-    def __add_single_endpoint(self, endpoint_cls, path_name, is_protected):
+    def __add_single_endpoint(
+        self, endpoint_cls, path_name, is_protected, protected_kwargs
+    ):
         path_name = getattr(self.config, "path_to_{}".format(path_name))()
         if is_protected:
-            endpoint_cls.decorators = [self.protected()]
+            endpoint_cls.decorators = [self.protected(**protected_kwargs)]
         if self.instance_is_blueprint:
             path_name = self._get_url_prefix() + path_name
             if self.instance.url_prefix:

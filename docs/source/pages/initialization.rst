@@ -77,7 +77,7 @@ What if we ONLY want the authentication on some subset of our web application? S
 
     app = Sanic()
     bp = Blueprint('my_blueprint')
-    Initialize(bp, authenticate=lambda: True)
+    Initialize(bp, app=app, authenticate=lambda: True)
     app.blueprint(bp)
 
 .. warning::

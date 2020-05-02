@@ -41,7 +41,7 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-sanic_app = Sanic()
+sanic_app = Sanic("sanic-jwt-test")
 sanic_jwt = Initialize(sanic_app, authenticate=authenticate)
 
 

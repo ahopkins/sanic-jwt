@@ -22,7 +22,7 @@ async def authenticate2(request, *args, **kwargs):
     return {"user_id": 2}
 
 
-app = Sanic()
+app = Sanic("sanic-jwt-test")
 
 
 @app.get("/", strict_slashes=True)

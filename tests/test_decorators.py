@@ -19,7 +19,7 @@ def test_forgotten_initialized_on_protected():
     async def scoped_endpoint(request):
         return json({"scoped": True})
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     sanicjwt = Initialize(blueprint, app=app, authenticate=lambda x: True)
 
@@ -185,7 +185,7 @@ def test_inject_user_with_auth_mode_off(app_with_retrieve_user):
     async def retrieve_user(request, payload, *args, **kwargs):
         return {"user_id": 123}
 
-    microservice_app = Sanic()
+    microservice_app = Sanic("sanic-jwt-test")
     microservice_sanic_jwt = Initialize(
         microservice_app, auth_mode=False, retrieve_user=retrieve_user
     )
@@ -249,7 +249,7 @@ def test_redirect_with_decorator_url(app):
 
 
 def test_redirect_with_configured_url():
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanic_jwt = Initialize(
         sanic_app, auth_mode=False, login_redirect_url="/unprotected"
     )

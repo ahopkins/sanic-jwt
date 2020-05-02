@@ -8,7 +8,7 @@ from sanic_jwt.configuration import ConfigItem
 
 def test_configuration_initialize_method_default():
     try:
-        app = Sanic()
+        app = Sanic("sanic-jwt-test")
         initialize(app, authenticate=lambda: True)
     except Exception as e:
         pytest.fail("Raised exception: {}".format(e))
@@ -16,14 +16,14 @@ def test_configuration_initialize_method_default():
 
 def test_configuration_initialize_class_default():
     try:
-        app = Sanic()
+        app = Sanic("sanic-jwt-test")
         Initialize(app, authenticate=lambda: True)
     except Exception as e:
         pytest.fail("Raised exception: {}".format(e))
 
 
 def test_configuration_initialize_class_app_level():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_ACCESS_TOKEN_NAME = "app-level"
     sanicjwt = Initialize(app, authenticate=lambda: True)
 
@@ -32,7 +32,7 @@ def test_configuration_initialize_class_app_level():
 
 
 def test_configuration_initialize_class_config_level_custom_classes():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_ACCESS_TOKEN_NAME = "app-level"
 
     class MyConfig(Configuration):
@@ -47,7 +47,7 @@ def test_configuration_initialize_class_config_level_custom_classes():
 
 
 def test_configuration_initialize_class_instance_level():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_ACCESS_TOKEN_NAME = "app-level"
 
     sanicjwt = Initialize(
@@ -58,7 +58,7 @@ def test_configuration_initialize_class_instance_level():
 
 
 def test_configuration_initialize_class_instance_level_custom_classes():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_ACCESS_TOKEN_NAME = "app-level"
 
     class MyConfig(Configuration):
@@ -75,7 +75,7 @@ def test_configuration_initialize_class_instance_level_custom_classes():
 
 
 def test_configuration_initialize_class_with_getter():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class MyConfig(Configuration):
         def set_access_token_name(self):
@@ -90,7 +90,7 @@ def test_configuration_initialize_class_with_getter():
 
 
 def test_configuration_initialize_class_as_argument():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class MyConfig(Configuration):
         def set_access_token_name(self):
@@ -104,7 +104,7 @@ def test_configuration_initialize_class_as_argument():
 
 
 def test_configuration_warning_non_callable(caplog):
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class MyConfig(Configuration):
         set_access_token_name = "return-level"
@@ -124,7 +124,7 @@ def test_configuration_warning_non_callable(caplog):
 
 
 def test_configuration_warning_non_valid_key(caplog):
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     Initialize(app, foobar="baz", authenticate=lambda: True)
 
@@ -137,7 +137,7 @@ def test_configuration_warning_non_valid_key(caplog):
 
 
 def test_configuration_dynamic_config():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     auth_header_key = "x-authorization-header"
 
     class MyConfig(Configuration):
@@ -191,7 +191,7 @@ def test_configuration_dynamic_config():
 
 
 def test_deprecated_handler_payload_scopes():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_HANDLER_PAYLOAD_SCOPES = lambda *a, **kw: {}
 
     with pytest.raises(exceptions.InvalidConfiguration):
@@ -199,7 +199,7 @@ def test_deprecated_handler_payload_scopes():
 
 
 def test_deprecated_payload_handler():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_PAYLOAD_HANDLER = lambda *a, **kw: {}
 
     with pytest.raises(exceptions.InvalidConfiguration):
@@ -207,7 +207,7 @@ def test_deprecated_payload_handler():
 
 
 def test_deprecated_handler_payload_extend():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_HANDLER_PAYLOAD_EXTEND = lambda *a, **kw: {}
 
     with pytest.raises(exceptions.InvalidConfiguration):
@@ -215,7 +215,7 @@ def test_deprecated_handler_payload_extend():
 
 
 def test_empty_string_authorization_prefix():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     authorization_header = "custom-authorization-header"
     authorization_header_prefix = ""
 
@@ -262,7 +262,7 @@ def test_empty_string_authorization_prefix():
 
 
 def test_configuration_custom_class_and_config_item():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class MyConfig(Configuration):
         access_token_name = ConfigItem("config-item-level")
@@ -275,7 +275,7 @@ def test_configuration_custom_class_and_config_item():
 
 
 def test_configuration_custom_class_and_config_item_as_method():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class MyConfig(Configuration):
         def set_access_token_name(self):
@@ -289,7 +289,7 @@ def test_configuration_custom_class_and_config_item_as_method():
 
 
 def test_configuration_invalid_claim():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class MyConfig(Configuration):
         claim_foo = "bar"
@@ -302,7 +302,7 @@ def test_configuration_invalid_claim():
 
 
 def test_disable_protection():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     async def authenticate(request, *args, **kwargs):
         return {"user_id": 1}
@@ -321,7 +321,7 @@ def test_disable_protection():
 
 
 def test_configuration_with_override():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     sanicjwt = Initialize(
         app, authenticate=lambda: True, access_token_name="customtoken"
@@ -336,7 +336,7 @@ def test_configuration_with_override():
 
 
 def test_configuration_with_override_on_aliased():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     sanicjwt = Initialize(app, authenticate=lambda: True,)
 

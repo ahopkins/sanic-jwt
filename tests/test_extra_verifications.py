@@ -42,7 +42,7 @@ def test_extra_verification_non_boolean_return(authenticate):
 
     extra_verifications = [bad_return]
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanic_jwt = Initialize(
         sanic_app,
         debug=True,
@@ -76,7 +76,7 @@ def test_extra_verification_non_callable(authenticate):
 
     extra_verifications = [123]
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanic_jwt = Initialize(
         sanic_app,
         debug=True,

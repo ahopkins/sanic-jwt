@@ -64,7 +64,7 @@ def app_with_sync_methods(users):
         else:
             return None
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         sanic_app,
         authenticate=authenticate,

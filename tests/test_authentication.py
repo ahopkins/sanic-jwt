@@ -31,7 +31,7 @@ async def authenticate(request, *args, **kwargs):
 
 def test_authentication_subclass_without_authenticate_parameter():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     with pytest.raises(exceptions.AuthenticateNotImplemented):
 
@@ -40,7 +40,7 @@ def test_authentication_subclass_without_authenticate_parameter():
 
 def test_authentication_subclass_with_autenticate_not_as_method():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     with pytest.raises(exceptions.AuthenticateNotImplemented):
 
@@ -49,7 +49,7 @@ def test_authentication_subclass_with_autenticate_not_as_method():
 
 def test_authentication_subbclass_with_method_in_class():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     sanicjwt = Initialize(app, authentication_class=AuthenticationInClassBody)
 
@@ -63,7 +63,7 @@ def test_authentication_subbclass_with_method_in_class():
 
 def test_payload_without_correct_key():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     Initialize(
         app,
@@ -81,7 +81,7 @@ def test_payload_without_correct_key():
 
 def test_payload_not_a_dict():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     Initialize(
         app,

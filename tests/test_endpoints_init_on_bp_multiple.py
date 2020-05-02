@@ -25,7 +25,7 @@ async def authenticate(request, *args, **kwargs):
     return {"user_id": 1}
 
 
-app = Sanic()
+app = Sanic("sanic-jwt-test")
 
 
 sanicjwt1 = Initialize(blueprint1, app=app, authenticate=authenticate)

@@ -81,7 +81,7 @@ def my_destructure_scopes(scopes, *args, **kwargs):
 @pytest.yield_fixture
 def app_with_scopes_base():
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
 
     @sanic_app.route("/")
     async def test(request):

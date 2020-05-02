@@ -30,7 +30,7 @@ def app_with_dict_test():
 
         return user
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         sanic_app, authenticate=authenticate, retrieve_user=retrieve_user
     )

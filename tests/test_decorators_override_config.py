@@ -21,7 +21,7 @@ async def my_scope_extender(user, *args, **kwargs):
 def test_decorators_override_configuration_defaults():
     blueprint = Blueprint("Test")
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     sanicjwt = Initialize(
         blueprint,

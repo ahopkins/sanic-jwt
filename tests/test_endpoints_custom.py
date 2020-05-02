@@ -47,7 +47,7 @@ custom_endpoints = [
 
 def test_custom_endpoints_as_args():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         app,
         authentication_class=MyAuthentication,

@@ -89,28 +89,28 @@ def test_custom_claims_bad(authenticate):
         pass
 
     with pytest.raises(exceptions.InvalidCustomClaim):
-        sanic_app = Sanic()
+        sanic_app = Sanic("sanic-jwt-test")
         Initialize(
             sanic_app,
             authenticate=authenticate,
             custom_claims=[MissingVerifyClaim],
         )
     with pytest.raises(exceptions.InvalidCustomClaim):
-        sanic_app = Sanic()
+        sanic_app = Sanic("sanic-jwt-test")
         Initialize(
             sanic_app,
             authenticate=authenticate,
             custom_claims=[MissingSetupClaim],
         )
     with pytest.raises(exceptions.InvalidCustomClaim):
-        sanic_app = Sanic()
+        sanic_app = Sanic("sanic-jwt-test")
         Initialize(
             sanic_app,
             authenticate=authenticate,
             custom_claims=[MissingKeyClaim],
         )
     with pytest.raises(exceptions.InvalidCustomClaim):
-        sanic_app = Sanic()
+        sanic_app = Sanic("sanic-jwt-test")
         Initialize(
             sanic_app, authenticate=authenticate, custom_claims=[BogusClaim]
         )

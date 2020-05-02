@@ -82,7 +82,7 @@ def app_with_async_methods():
 
     secret = str(binascii.hexlify(os.urandom(32)), "utf-8")
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         sanic_app,
         authenticate=authenticate,

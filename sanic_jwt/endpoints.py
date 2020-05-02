@@ -140,8 +140,6 @@ class VerifyEndpoint(BaseEndpoint):
 
 
 class RefreshEndpoint(BaseEndpoint):
-    decorators = [protected(verify_exp=False)]
-
     async def post(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 

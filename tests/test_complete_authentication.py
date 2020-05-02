@@ -72,7 +72,7 @@ def my_authentication_class(users, cache):
 
 @pytest.yield_fixture
 def sanic_app(users, my_authentication_class, cache):
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
 
     @sanic_app.route("/")
     async def helloworld(request):

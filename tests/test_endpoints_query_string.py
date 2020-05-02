@@ -35,7 +35,7 @@ def app_with_refresh_token(users, authenticate):
 
     secret = str(binascii.hexlify(os.urandom(32)), "utf-8")
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         sanic_app,
         authenticate=authenticate,

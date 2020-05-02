@@ -10,7 +10,7 @@ async def authenticate(request, *args, **kwargs):
 
 
 blueprint = Blueprint("Test")
-app = Sanic()
+app = Sanic("sanic-jwt-test")
 sanicjwt = Initialize(blueprint, app=app, authenticate=authenticate)
 
 

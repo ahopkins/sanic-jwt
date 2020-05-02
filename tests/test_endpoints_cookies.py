@@ -35,7 +35,7 @@ def app_with_refresh_token_and_cookie(users, authenticate):
 
     secret = str(binascii.hexlify(os.urandom(32)), "utf-8")
 
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         sanic_app,
         authenticate=authenticate,
@@ -392,7 +392,7 @@ class TestEndpointsCookies(object):
 )
 def test_config_with_cookie_domain(users, authenticate):
     domain = "cookie.yum"
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     Initialize(
         sanic_app,
         authenticate=authenticate,
@@ -412,7 +412,7 @@ def test_config_with_cookie_domain(users, authenticate):
 
 def test_config_with_cookie_path(users, authenticate):
     path = "/auth"
-    sanic_app = Sanic()
+    sanic_app = Sanic("sanic-jwt-test")
     Initialize(
         sanic_app, authenticate=authenticate, cookie_set=True, cookie_path=path
     )

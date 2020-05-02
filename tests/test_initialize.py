@@ -7,7 +7,7 @@ from sanic_jwt import exceptions, Initialize, initialize
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_ommitted():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     # app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
@@ -15,7 +15,7 @@ def test_store_refresh_token_and_retrieve_refresh_token_ommitted():
 
 
 def test_store_refresh_token_ommitted():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
@@ -25,7 +25,7 @@ def test_store_refresh_token_ommitted():
 
 
 def test_retrieve_refresh_token_ommitted():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
@@ -35,7 +35,7 @@ def test_retrieve_refresh_token_ommitted():
 
 
 def test_store_refresh_token_and_retrieve_refresh_token_defined():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     initialize(
@@ -49,7 +49,7 @@ def test_store_refresh_token_and_retrieve_refresh_token_defined():
 
 
 def test_invalid_classview():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class NotAView(object):
         pass
@@ -61,21 +61,21 @@ def test_invalid_classview():
 
 
 def test_initialize_class_missing_authenticate():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     with pytest.raises(exceptions.AuthenticateNotImplemented):
         Initialize(app)
 
 
 def test_initialize_class():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     Initialize(app, authenticate=lambda: True)
 
     assert True
 
 
 def test_initialize_class_on_blueprint_missing_app():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp = Blueprint("test")
     app.blueprint(bp)
 
@@ -84,7 +84,7 @@ def test_initialize_class_on_blueprint_missing_app():
 
 
 def test_initialize_class_on_blueprint():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp = Blueprint("test")
     app.blueprint(bp)
 
@@ -94,7 +94,7 @@ def test_initialize_class_on_blueprint():
 
 
 def test_initialize_class_on_non_app_or_bp():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     class NotAnAppOrBP(object):
         pass
@@ -106,7 +106,7 @@ def test_initialize_class_on_non_app_or_bp():
 
 
 def test_initialize_class_on_multiple_blueprints():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp1 = Blueprint("test1")
     app.blueprint(bp1)
     bp2 = Blueprint("test2")
@@ -122,7 +122,7 @@ def test_initialize_class_on_multiple_blueprints():
 
 
 def test_initialize_class_on_app_and_blueprint():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp = Blueprint("test")
     app.blueprint(bp)
 
@@ -136,7 +136,7 @@ def test_initialize_class_on_app_and_blueprint():
 
 
 def test_initialize_class_on_blueprint_with_url_prefix():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp = Blueprint("test", url_prefix="/test")
     app.blueprint(bp)
 
@@ -146,7 +146,7 @@ def test_initialize_class_on_blueprint_with_url_prefix():
 
 
 def test_initialize_class_on_blueprint_with_url_prefix_and_config():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp = Blueprint("test", url_prefix="/test")
     app.blueprint(bp)
 
@@ -163,7 +163,7 @@ def test_initialize_with_custom_endpoint_not_subclassed():
         async def get(self, request):
             return text("ok")
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     with pytest.raises(exceptions.InvalidClassViewsFormat):
         Initialize(
             app,
@@ -176,7 +176,7 @@ def test_invalid_configuration_object():
     class MyInvalidConfiguration:
         MY_CUSTOM_SETTING = "foo"
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(app, configuration_class=MyInvalidConfiguration)
 
@@ -186,7 +186,7 @@ def test_invalid_authentication_object():
         async def authenticate(*args, **kwargs):
             return True
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(app, authentication_class=MyInvalidAuthentication)
 
@@ -195,13 +195,13 @@ def test_invalid_response_object():
     class MyInvalidResponses:
         pass
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(app, responses_class=MyInvalidResponses)
 
 
 def test_initialize_compat():
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     initialize(app, lambda: True)
 
@@ -210,7 +210,7 @@ def test_initialize_compat():
 
 def test_invalid_initialization_object():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
 
     with pytest.raises(exceptions.InitializationFailure):
         Initialize(object, app=app, authenticate=lambda: True)
@@ -218,7 +218,7 @@ def test_invalid_initialization_object():
 
 def test_initialize_app_and_bp():
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     bp = Blueprint("bp", url_prefix="/bpapi")
     Initialize(instance=bp, app=app, authenticate=lambda: True)
 

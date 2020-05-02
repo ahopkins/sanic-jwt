@@ -1,7 +1,7 @@
+import pytest
 from sanic import Blueprint, Sanic
 from sanic.response import json, text
 
-import pytest
 from sanic_jwt import Claim, exceptions, Initialize
 from sanic_jwt.decorators import protected
 

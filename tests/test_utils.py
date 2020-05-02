@@ -2,6 +2,7 @@ from os import path
 from pathlib import Path
 
 import pytest
+
 from sanic_jwt import exceptions, utils
 
 

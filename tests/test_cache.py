@@ -1,4 +1,5 @@
 import pytest
+
 from sanic_jwt import exceptions
 from sanic_jwt.cache import is_cached
 

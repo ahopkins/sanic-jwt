@@ -1,8 +1,8 @@
+import pytest
 from sanic import Blueprint, Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
 
-import pytest
 from sanic_jwt import exceptions, Initialize, initialize
 
 

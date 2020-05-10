@@ -47,7 +47,7 @@ def test_extend_simple():
         payload.update({"foo": "bar"})
         return payload
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         app, authenticate=authenticate, extend_payload=my_extender
     )
@@ -74,7 +74,7 @@ def test_extend_with_username():
         payload.update({"username": username})
         return payload
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         app, authenticate=authenticate, extend_payload=my_extender
     )
@@ -102,7 +102,7 @@ def test_extend_with_username_as_subclass():
             payload.update({"username": username})
             return payload
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     sanicjwt = Initialize(
         app, authenticate=authenticate, authentication_class=MyAuthentication
     )
@@ -128,7 +128,7 @@ def test_extend_with_mising_claim():
         del payload["nbf"]
         return payload
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     Initialize(
         app,
         authenticate=authenticate,

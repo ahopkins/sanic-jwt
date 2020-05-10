@@ -22,7 +22,7 @@ def app1():
         def extract_payload(self, request, verify=True, *args, **kwargs):
             return
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     Initialize(
         app, authentication_class=MyAuthentication, refresh_token_enabled=True
     )
@@ -48,7 +48,7 @@ def app2():
         def extract_payload(self, request, verify=True, *args, **kwargs):
             return {}
 
-    app = Sanic()
+    app = Sanic("sanic-jwt-test")
     Initialize(
         app, authentication_class=MyAuthentication, refresh_token_enabled=True
     )

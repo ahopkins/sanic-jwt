@@ -4,7 +4,7 @@ from sanic.response import json
 from sanic_jwt import initialize
 from sanic_jwt.decorators import scoped
 
-app = Sanic()
+app = Sanic("sanic-jwt-test")
 initialize(app, authenticate=lambda: True)
 
 

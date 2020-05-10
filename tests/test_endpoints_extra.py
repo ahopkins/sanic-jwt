@@ -15,7 +15,7 @@ class MagicLoginHandler(BaseEndpoint):
         return json(response)
 
 
-app = Sanic()
+app = Sanic("sanic-jwt-test")
 initialize(
     app,
     authenticate=lambda: True,

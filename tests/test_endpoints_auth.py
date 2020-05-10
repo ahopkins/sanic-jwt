@@ -17,7 +17,7 @@ def payload(app, access_token):
     return jwt.decode(
         access_token,
         sanic_jwt.config.secret(),
-        algorithms=sanicjwt.config.algorithm(),
+        algorithms=sanic_jwt.config.algorithm(),
     )
 
 

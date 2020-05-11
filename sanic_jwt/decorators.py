@@ -61,7 +61,7 @@ async def _do_protection(*args, **kwargs):
                     is_authenticated,
                     status,
                     reasons,
-                ) = instance.auth._check_authentication(
+                ) = await instance.auth._check_authentication(
                     request, request_args=args, request_kwargs=use_kwargs
                 )
             else:
@@ -100,6 +100,7 @@ async def _do_protection(*args, **kwargs):
                 where_to = kw.get(
                     "redirect_url", instance.auth.config.login_redirect_url()
                 )
+
                 if where_to is not None:
                     return redirect(where_to, status=302)
 
@@ -157,7 +158,7 @@ def scoped(
                     return instance
 
                 with instant_config(instance, request=request, **kw):
-                    user_scopes = instance.auth.extract_scopes(request)
+                    user_scopes = await instance.auth.extract_scopes(request)
                     override = instance.auth.override_scope_validator
                     destructure = instance.auth.destructure_scopes
                     if user_scopes is None:
@@ -230,7 +231,7 @@ def inject_user(initialized_on=None, **kw):
                         f, request, *args, **kwargs
                     )  # noqa
 
-                payload = instance.auth.extract_payload(request, verify=False)
+                payload = await instance.auth.extract_payload(request, verify=False)
                 user = await utils.call(
                     instance.auth.retrieve_user, request, payload
                 )

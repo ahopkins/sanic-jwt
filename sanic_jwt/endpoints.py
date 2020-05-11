@@ -77,7 +77,7 @@ class RetrieveUserEndpoint(BaseEndpoint):
             # out of the `Authentication` class, so it won't happen "easily".
             raise exceptions.MeEndpointNotSetup()  # noqa
 
-        payload = self.instance.auth.extract_payload(request)
+        payload = await self.instance.auth.extract_payload(request)
         user = await utils.call(
             self.instance.auth.retrieve_user, request, payload
         )
@@ -118,7 +118,7 @@ class VerifyEndpoint(BaseEndpoint):
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
-        is_valid, status, reason = self.instance.auth._verify(
+        is_valid, status, reason = await self.instance.auth._verify(
             request, raise_missing=True, *args, **kwargs
         )
 
@@ -145,7 +145,7 @@ class RefreshEndpoint(BaseEndpoint):
 
         # TODO:
         # - Add more exceptions
-        payload = self.instance.auth.extract_payload(request, verify=False)
+        payload = await self.instance.auth.extract_payload(request, verify=False)
 
         try:
             user = await utils.call(

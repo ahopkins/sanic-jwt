@@ -70,6 +70,13 @@ def retrieve_user(userid_table):
 
 
 @pytest.yield_fixture
+def retrieve_user_secret():
+    async def retrieve_user_secret(user_id, **kwargs):
+        return f"foobar<{user_id}>"
+    yield retrieve_user_secret
+
+
+@pytest.yield_fixture
 def app(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -112,6 +119,25 @@ def app_with_refresh_token(username_table, authenticate):
         store_refresh_token=lambda user_id, refresh_token, request: True,
         retrieve_refresh_token=lambda user_id, request: True,
     )
+
+    yield (sanic_app, sanic_jwt)
+
+
+@pytest.yield_fixture
+def app_with_user_secrets(username_table, authenticate, retrieve_user_secret):
+
+    sanic_app = Sanic("sanic-jwt-test")
+    sanic_jwt = Initialize(
+        sanic_app,
+        authenticate=authenticate,
+        user_secret_enabled=True,
+        retrieve_user_secret=retrieve_user_secret,
+    )
+
+    @sanic_app.route("/protected")
+    @protected()
+    async def protected_request(request):
+        return json({"protected": True})
 
     yield (sanic_app, sanic_jwt)
 

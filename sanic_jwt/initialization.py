@@ -79,6 +79,12 @@ auth_mode_handlers = (
         exceptions.ScopesNotImplemented(),
         False,
     ),
+    _Handler(
+        "retrieve_user_secret",
+        ["user_secret_enabled"],
+        exceptions.UserSecretNotImplemented(),
+        False,
+    ),
     _Handler("override_scope_validator", None, None, False),
     _Handler("destructure_scopes", None, None, False),
     _Handler("extend_payload", None, None, False),

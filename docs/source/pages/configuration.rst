@@ -476,6 +476,14 @@ Alias for ``secret``
 | **Default**: ``'user_id'``
 |
 
+-----------
+``user_secret_enabled``
+-----------
+
+| **Purpose**: Whether or not you will be providing secrets per user.
+| **Default**: ``False``
+|
+
 --------------
 ``verify_exp``
 --------------

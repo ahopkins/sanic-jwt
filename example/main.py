@@ -1,15 +1,10 @@
 import csv
 import os
-from aoiklivereload import LiveReloader
 from sanic import Sanic
 from sanic.response import json
 from sanic_jwt import exceptions
 from sanic_jwt import initialize
 from sanic_jwt.decorators import protected
-
-
-reloader = LiveReloader()
-reloader.start_watcher_thread()
 
 
 def store_refresh_token(*args, **kwargs):
@@ -22,21 +17,21 @@ def store_refresh_token(*args, **kwargs):
     save_users()
 
 
-def retrieve_user(request, *args, **kwargs):
+async def retrieve_user(request, *args, **kwargs):
     if "user_id" in kwargs:
         user_id = kwargs.get("user_id")
     else:
         if "payload" in kwargs:
             payload = kwargs.get("payload")
         else:
-            payload = request.app.auth.extract_payload(request)
+            payload = await request.app.auth.extract_payload(request)
         user_id = payload.get("user_id")
     user = userid_table.get(user_id)
     return user
 
 
-def retrieve_refresh_token(request, *args, **kwargs):
-    user = request.app.auth.retrieve_user(request, **kwargs)
+async def retrieve_refresh_token(request, *args, **kwargs):
+    user = await request.app.auth.retrieve_user(request, **kwargs)
     return user.refresh_token
 
 
@@ -57,7 +52,7 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-app = Sanic()
+app = Sanic(__name__)
 initialize(
     app,
     authenticate=authenticate,
@@ -90,7 +85,7 @@ class User:
         ]
         return output
 
-    def to_dict(self):
+    def __json__(self):
         return {"user_id": self.user_id}
 
 
@@ -135,4 +130,4 @@ async def protected(request):
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8888)
+    app.run(host="127.0.0.1", port=8888, debug=True)

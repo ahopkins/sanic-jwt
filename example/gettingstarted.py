@@ -6,7 +6,7 @@ async def authenticate(request):
     return dict(user_id="some_id")
 
 
-app = Sanic()
+app = Sanic(__name__)
 Initialize(app, authenticate=authenticate)
 
 

@@ -253,9 +253,28 @@ You should now have an endpoint at ``/auth/me`` that will return a serialized fo
         }
     }
 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+5. ``retrieve_user_secret`` \*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Purpose**: It is a handler to retrieve or generate a unique secret for a user. All JWTs are encoded using a secret, and this allows for you to provide a unique secret for encoding per user. You **must** also initialize with ``user_secret_enabled``.
+
+**Example**:
+
+.. code-block:: python
+
+    async def retrieve_user_secret(user_id):
+        return f"my-super-safe-dynamically-generated-secret|{user_id}"
+
+    Initialize(
+        app,
+        authenticate=lambda: True,
+        retrieve_user_secret=retrieve_user_secret)
+
+.. warning:: \* This parameter is *not* required. However, if you decide to enable user secrets (by setting ``user_secret_enabled=True`` in your configurations) then the application will raise a ``UserSecretNotImplemented`` exception if you forget to implement this.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-5. ``add_scopes_to_payload`` \*
+6. ``add_scopes_to_payload`` \*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Purpose**: It is a handler to add scopes to an access token. See :doc:`scoped` for more information.
@@ -278,7 +297,7 @@ For now, all you need to do is return a ``list`` of one or more ``strings``.
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-6. ``override_scope_validator`` \*
+7. ``override_scope_validator`` \*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Purpose**: It is a handler to override the default scope validation. See :doc:`scoped` for more information.
@@ -310,7 +329,7 @@ This could be useful if you decide to bake some additional logic into your scope
 
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-7. ``destructure_scopes``
+8. ``destructure_scopes``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Purpose**: It is a handler that allows you to manipulate and handle the scopes before they are validated.
@@ -336,7 +355,7 @@ Sometimes, you may find the need to manipulate the scopes before they are valida
 
 
 ~~~~~~~~~~~~~~~~~~~~~
-8. ``extend_payload``
+9. ``extend_payload``
 ~~~~~~~~~~~~~~~~~~~~~
 
 **Purpose**: It is a handler to allow the developer to modify the payload by adding additional claims to it before it is bundled up and packaged inside a JWT.

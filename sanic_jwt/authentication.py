@@ -107,6 +107,9 @@ class BaseAuthentication:
     async def add_scopes_to_payload(self, *args, **kwargs):
         raise exceptions.ScopesNotImplemented()  # noqa
 
+    async def retrieve_user_secret(self, *args, **kwargs):
+        raise exceptions.UserSecretNotImplemented()  # noqa
+
     def override_scope_validator(  # noqa
         self,
         is_valid,
@@ -158,7 +161,7 @@ class Authentication(BaseAuthentication):
         Take a JWT and return a decoded payload. Optionally, will verify
         the claims on the token.
         """
-        secret = await self._get_secret()
+        secret = await self._get_secret(token=token)
         algorithm = self._get_algorithm()
         kwargs = {}
 
@@ -239,13 +242,24 @@ class Authentication(BaseAuthentication):
         """
         return self._get_token(request, refresh_token=True)
 
-    async def _get_secret(self, encode=False):
-        # TODO:
-        # - Ability to have per user secrets
+    async def _get_secret(self, token=None, payload=None, encode=False):
         if not hasattr(self, "_is_asymmetric"):
             self._is_asymmetric = utils.algorithm_is_asymmetric(
                 self._get_algorithm()
             )
+
+        if self.config.user_secret_enabled():
+            if not payload:
+                algorithm = self._get_algorithm()
+                payload = jwt.decode(token, verify=False,
+                                     algorithms=[algorithm])
+            user_id = payload.get("user_id")
+            return await utils.call(
+                self.retrieve_user_secret,
+                user_id=user_id,
+                encode=self._is_asymmetric and encode
+            )
+
         if self._is_asymmetric and encode:
             return self.config.private_key()
 
@@ -466,7 +480,7 @@ class Authentication(BaseAuthentication):
         Generate an access token for a given user.
         """
         payload = await self._get_payload(user, inline_claims=custom_claims)
-        secret = await self._get_secret(True)
+        secret = await self._get_secret(payload=payload, encode=True)
         algorithm = self._get_algorithm()
 
         if extend_payload:

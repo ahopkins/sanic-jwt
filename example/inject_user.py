@@ -25,8 +25,8 @@ username_table = {u.username: u for u in users}
 userid_table = {u.user_id: u for u in users}
 
 
-def retrieve_user(request, *args, **kwargs):
-    payload = request.app.auth.extract_payload(request)
+async def retrieve_user(request, *args, **kwargs):
+    payload = await request.app.auth.extract_payload(request)
     if not payload or "user_id" not in payload:
         return {}
 
@@ -52,7 +52,7 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-app = Sanic()
+app = Sanic(__name__)
 sanic_jwt = Initialize(
     app, authenticate=authenticate, retrieve_user=retrieve_user
 )

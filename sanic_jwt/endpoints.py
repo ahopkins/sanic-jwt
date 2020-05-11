@@ -89,6 +89,8 @@ class RetrieveUserEndpoint(BaseEndpoint):
                 me = user
             elif hasattr(user, "to_dict"):
                 me = await utils.call(user.to_dict)
+            elif hasattr(user, "__json__"):
+                me = await utils.call(user.__json__)
             else:
                 # implementations ago there was an error where "me" was
                 # being used before assignment, so this exception is raised.

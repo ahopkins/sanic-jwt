@@ -62,7 +62,7 @@ class MyConfig(Configuration):
 
 
 class MyAuthentication(Authentication):
-    def _verify(
+    async def _verify(
         self,
         request,
         return_payload=False,
@@ -88,7 +88,7 @@ class MyAuthentication(Authentication):
 
             # In production, probably should have some exception handling Here
             # in case the permakey is an empty string or some other bad value
-            payload = self._decode(permakey, verify=verify)
+            payload = await self._decode(permakey, verify=verify)
 
             # Sometimes, the application will call _verify(...return_payload=True)
             # So, let's make sure to handle this scenario.
@@ -99,7 +99,7 @@ class MyAuthentication(Authentication):
             user_id = payload.get("user_id", None)
             user = userid_table.get(user_id)
 
-            # If wer cannot find a user, then this method should return
+            # If we cannot find a user, then this method should return
             # is_valid == False
             # reason == some text for why
             # status == some status code, probably a 401
@@ -120,7 +120,7 @@ class MyAuthentication(Authentication):
 
             return is_valid, status, reason
         else:
-            return super()._verify(
+            return await super()._verify(
                 request=request,
                 return_payload=return_payload,
                 verify=verify,
@@ -230,4 +230,4 @@ if __name__ == "__main__":
         print(USERS)
         return json(userid_table)
 
-    app.run(debug=True)
+    app.run(debug=True, port=8888)

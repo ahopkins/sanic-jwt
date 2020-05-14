@@ -107,6 +107,9 @@ class BaseAuthentication:
     async def add_scopes_to_payload(self, *args, **kwargs):
         raise exceptions.ScopesNotImplemented()  # noqa
 
+    async def retrieve_user_secret(self, *args, **kwargs):
+        raise exceptions.UserSecretNotImplemented()  # noqa
+
     def override_scope_validator(  # noqa
         self,
         is_valid,
@@ -126,7 +129,7 @@ class BaseAuthentication:
 
 
 class Authentication(BaseAuthentication):
-    def _check_authentication(self, request, request_args, request_kwargs):
+    async def _check_authentication(self, request, request_args, request_kwargs):
         """
         Checks a request object to determine if that request contains a valid,
         and authenticated JWT.
@@ -137,7 +140,7 @@ class Authentication(BaseAuthentication):
         3. Reasons (if any) for a potential authentication failure
         """
         try:
-            is_valid, status, reasons = self._verify(
+            is_valid, status, reasons = await self._verify(
                 request,
                 request_args=request_args,
                 request_kwargs=request_kwargs,
@@ -153,12 +156,12 @@ class Authentication(BaseAuthentication):
 
         return is_valid, status, reasons
 
-    def _decode(self, token, verify=True, inline_claims=None):
+    async def _decode(self, token, verify=True, inline_claims=None):
         """
         Take a JWT and return a decoded payload. Optionally, will verify
         the claims on the token.
         """
-        secret = self._get_secret()
+        secret = await self._get_secret(token=token)
         algorithm = self._get_algorithm()
         kwargs = {}
 
@@ -239,13 +242,24 @@ class Authentication(BaseAuthentication):
         """
         return self._get_token(request, refresh_token=True)
 
-    def _get_secret(self, encode=False):
-        # TODO:
-        # - Ability to have per user secrets
+    async def _get_secret(self, token=None, payload=None, encode=False):
         if not hasattr(self, "_is_asymmetric"):
             self._is_asymmetric = utils.algorithm_is_asymmetric(
                 self._get_algorithm()
             )
+
+        if self.config.user_secret_enabled():
+            if not payload:
+                algorithm = self._get_algorithm()
+                payload = jwt.decode(token, verify=False,
+                                     algorithms=[algorithm])
+            user_id = payload.get("user_id")
+            return await utils.call(
+                self.retrieve_user_secret,
+                user_id=user_id,
+                encode=self._is_asymmetric and encode
+            )
+
         if self._is_asymmetric and encode:
             return self.config.private_key()
 
@@ -333,7 +347,7 @@ class Authentication(BaseAuthentication):
 
         raise exceptions.MissingAuthorizationHeader()
 
-    def _verify(
+    async def _verify(
         self,
         request,
         return_payload=False,
@@ -368,7 +382,7 @@ class Authentication(BaseAuthentication):
 
         if token:
             try:
-                payload = self._decode(token, verify=verify)
+                payload = await self._decode(token, verify=verify)
             except (
                 jwt.exceptions.ExpiredSignatureError,
                 jwt.exceptions.InvalidIssuerError,
@@ -431,31 +445,31 @@ class Authentication(BaseAuthentication):
             for claim in inline_claims:
                 claim()._verify(payload)
 
-    def extract_payload(self, request, verify=True, *args, **kwargs):
+    async def extract_payload(self, request, verify=True, *args, **kwargs):
         """
         Extract a payload from a request object.
         """
-        payload = self._verify(
+        payload = await self._verify(
             request, return_payload=True, verify=verify, *args, **kwargs
         )
         return payload
 
-    def extract_scopes(self, request):
+    async def extract_scopes(self, request):
         """
         Extract scopes from a request object.
         """
-        payload = self.extract_payload(request)
+        payload = await self.extract_payload(request)
         if not payload:
             return None
 
         scopes_attribute = self.config.scopes_name()
         return payload.get(scopes_attribute, None)
 
-    def extract_user_id(self, request):
+    async def extract_user_id(self, request):
         """
         Extract a user id from a request object.
         """
-        payload = self.extract_payload(request)
+        payload = await self.extract_payload(request)
         user_id_attribute = self.config.user_id()
         return payload.get(user_id_attribute, None)
 
@@ -466,7 +480,7 @@ class Authentication(BaseAuthentication):
         Generate an access token for a given user.
         """
         payload = await self._get_payload(user, inline_claims=custom_claims)
-        secret = self._get_secret(True)
+        secret = await self._get_secret(payload=payload, encode=True)
         algorithm = self._get_algorithm()
 
         if extend_payload:
@@ -490,48 +504,24 @@ class Authentication(BaseAuthentication):
         )
         return refresh_token
 
-    async def get_access_token(self, user):  # noqa
-        warnings.warn(
-            "Using sanic_jwt.Authentication.get_access_token(), "
-            "which will be depracated in the future. Switch to "
-            "sanic_jwt.Authentication.generate_access_token()."
-        )
-        return await self.generate_access_token(user)
-
-    async def get_refresh_token(self, request, user):  # noqa
-        warnings.warn(
-            "Using sanic_jwt.Authentication.get_refresh_token(), "
-            "which will be depracated in the future. Switch to "
-            "sanic_jwt.Authentication.generate_refresh_token()."
-        )
-        return await self.generate_refresh_token(request, user)
-
-    def is_authenticated(self, request):
+    async def is_authenticated(self, request):
         """
         Checks a request object to determine if that request contains a valid,
         and authenticated JWT.
         """
-        is_valid, *_ = self._verify(request)
+        is_valid, *_ = await self._verify(request)
 
         return is_valid
 
     async def retrieve_refresh_token_from_request(self, request):
         return await self._get_refresh_token(request)
 
-    def retrieve_scopes(self, request):  # noqa
-        warnings.warn(
-            "Using sanic_jwt.Authentication.retrieve_scopes(), "
-            "which will be depracated in the future. Switch to "
-            "sanic_jwt.Authentication.extract_scopes()."
-        )
-        return self.extract_scopes(request)
-
-    def verify_token(self, token, return_payload=False, custom_claims=None):
+    async def verify_token(self, token, return_payload=False, custom_claims=None):
         """
         Perform an inline verification of a token.
         """
 
-        payload = self._decode(token, inline_claims=custom_claims)
+        payload = await self._decode(token, inline_claims=custom_claims)
         return payload if return_payload else bool(payload)
 
     @contextmanager

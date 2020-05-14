@@ -1,6 +1,6 @@
 from sanic import Sanic
 from sanic.blueprints import Blueprint
-from sanic.response import json, text
+from sanic.response import json, text, html
 
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import inject_user, protected, scoped
@@ -221,14 +221,21 @@ def test_inject_user_with_auth_mode_off(app_with_retrieve_user):
 def test_redirect_without_url(app):
     sanic_app, sanic_jwt = app
 
+    @sanic_app.route("/index.html")
+    def index(request):
+        return html("<html><body>Home</body></html>")
+
     @sanic_app.route("/protected/static")
     @sanic_jwt.protected(redirect_on_fail=True)
     async def my_protected_static(request):
         return text("", status=200)
 
-    _, response = sanic_app.test_client.get("/protected/static")
+    request, response = sanic_app.test_client.get("/protected/static")
 
-    assert response.status == 401
+    assert response.status == 200
+    assert response.body == b'<html><body>Home</body></html>'
+    assert response.history
+    assert response.history[0].status_code == 302
 
 
 def test_redirect_with_decorator_url(app):

@@ -1,5 +1,6 @@
-import jwt
 import pytest
+
+import jwt
 
 
 @pytest.fixture

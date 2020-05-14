@@ -26,10 +26,10 @@ class Register(BaseEndpoint):
             request, user, self.config, self.instance
         )
 
-        refresh_token = await self.instance.auth.get_refresh_token(
+        refresh_token = await self.instance.auth.generate_refresh_token(
             request, user
         )
-        output.update({self.config.refresh_token_name: refresh_token})
+        output.update({self.config.refresh_token_name(): refresh_token})
 
         response = self.responses.get_token_response(
             request,

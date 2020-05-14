@@ -1,7 +1,7 @@
+import pytest
 from sanic import Sanic
 from sanic.response import json
 
-import pytest
 from sanic_jwt import Authentication, exceptions, Initialize
 
 

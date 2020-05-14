@@ -23,7 +23,7 @@ async def authenticate(request, *args, **kwargs):
     return {"user_id": 1}
 
 
-app = Sanic()
+app = Sanic(__name__)
 
 
 sanicjwt = Initialize(blueprint, app=app, authenticate=authenticate)

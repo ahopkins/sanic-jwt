@@ -45,11 +45,11 @@ defaults = {
     "scopes_name": "scopes",
     "secret": "This is a big secret. Shhhhh",
     "strict_slashes": False,
+    "user_secret_enabled": False,
     "url_prefix": "/auth",
     "user_id": "user_id",
     "blueprint_name": "auth_bp",
     "verify_exp": True,
-    "login_redirect_url": None,
 }
 
 aliases = {

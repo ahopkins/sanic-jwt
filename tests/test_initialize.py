@@ -1,8 +1,8 @@
+import pytest
 from sanic import Blueprint, Sanic
 from sanic.response import text
 from sanic.views import HTTPMethodView
 
-import pytest
 from sanic_jwt import exceptions, Initialize, initialize
 
 
@@ -16,21 +16,19 @@ def test_store_refresh_token_and_retrieve_refresh_token_ommitted():
 
 def test_store_refresh_token_ommitted():
     app = Sanic("sanic-jwt-test")
-    app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
         Initialize(
-            app, authenticate=lambda: True, retrieve_refresh_token=lambda: True
+            app, authenticate=lambda: True, refresh_token_enabled=True, retrieve_refresh_token=lambda: True
         )
 
 
 def test_retrieve_refresh_token_ommitted():
     app = Sanic("sanic-jwt-test")
-    app.config.SANIC_JWT_REFRESH_TOKEN_ENABLED = True
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
         initialize(
-            app, authenticate=lambda: True, store_refresh_token=lambda: True
+            app, authenticate=lambda: True, refresh_token_enabled=True, store_refresh_token=lambda: True
         )
 
 

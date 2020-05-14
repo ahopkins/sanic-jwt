@@ -1,9 +1,11 @@
-from sanic import Sanic
-from sanic.response import json
+"""
+This is taken from "Simple Usage" page in the docs:
+http://sanic-jwt.readthedocs.io/en/latest/pages/simpleusage.html
+"""
+
+from sanic import Sanic, response
 from sanic_jwt import exceptions
-from sanic_jwt import Initialize
-from sanic_jwt import protected
-from sanic_jwt import Claim
+from sanic_jwt import Initialize, protected
 
 
 class User:
@@ -42,28 +44,24 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-class User2Claim(Claim):
-    key = "custom_user_id"
+async def retrieve_user_secret(user_id):
+    print(f"{user_id=}")
+    return f"user_id|{user_id}"
 
-    def setup(self, payload, user):
-        return user.user_id
-
-    def verify(self, value):
-        return value == 2
-
-
-custom_claims = [User2Claim]
 app = Sanic(__name__)
-sanicjwt = Initialize(
-    app, authenticate=authenticate, custom_claims=custom_claims, debug=True
+Initialize(
+    app,
+    authenticate=authenticate,
+    user_secret_enabled=True,
+    retrieve_user_secret=retrieve_user_secret,
 )
 
 
 @app.route("/protected")
 @protected()
 async def protected(request):
-    return json({"protected": True})
+    return response.json({"protected": True})
 
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8888, auto_reload=True)
+    app.run(host="127.0.0.1", port=8888, debug=True)

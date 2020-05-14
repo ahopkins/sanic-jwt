@@ -1,4 +1,5 @@
 import pytest
+
 from sanic_jwt import Initialize
 
 

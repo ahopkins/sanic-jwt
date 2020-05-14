@@ -47,7 +47,7 @@ def user2(payload):
 
 extra_verifications = [user2]
 
-app = Sanic()
+app = Sanic(__name__)
 Initialize(
     app, authenticate=authenticate, extra_verifications=extra_verifications
 )

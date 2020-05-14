@@ -61,4 +61,4 @@ if __name__ == "__main__":
     async def protected_cache(request):
         return json(request.app.my_cache)
 
-    app.run()
+    app.run(debug=True, port=8888)

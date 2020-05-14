@@ -34,9 +34,9 @@ async def run():
         user7, custom_claims=[UserIsPrime]
     )
 
-    payload = app.auth.verify_token(token, return_payload=True)
+    payload = await app.auth.verify_token(token, return_payload=True)
     try:
-        is_verified = app.auth.verify_token(token, custom_claims=[UserIsPrime])
+        is_verified = await app.auth.verify_token(token, custom_claims=[UserIsPrime])
     except exceptions.InvalidCustomClaimError:
         is_verified = False
     finally:
@@ -48,9 +48,9 @@ async def run():
         user8, custom_claims=[UserIsPrime]
     )
 
-    payload = app.auth.verify_token(token, return_payload=True)
+    payload = await app.auth.verify_token(token, return_payload=True)
     try:
-        is_verified = app.auth.verify_token(token, custom_claims=[UserIsPrime])
+        is_verified = await app.auth.verify_token(token, custom_claims=[UserIsPrime])
     except exceptions.InvalidCustomClaimError:
         is_verified = False
     finally:

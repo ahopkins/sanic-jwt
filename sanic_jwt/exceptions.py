@@ -113,6 +113,17 @@ class ScopesNotImplemented(SanicJWTException):
         super().__init__(message, **kwargs)
 
 
+class UserSecretNotImplemented(SanicJWTException):
+    status_code = 500
+
+    def __init__(
+        self,
+        message="User secrets have not been enabled.",
+        **kwargs
+    ):
+        super().__init__(message, **kwargs)
+
+
 class MissingRegisteredClaim(SanicJWTException):
     status_code = 500
 
@@ -146,7 +157,7 @@ class InvalidRetrieveUserObject(SanicJWTException):
     def __init__(
         self,
         message="The retrieve_user method should return either a dict or "
-        "an object with a to_dict method.",
+        "an object with a to_dict or __json__ method.",
         **kwargs
     ):
         super().__init__(message, **kwargs)

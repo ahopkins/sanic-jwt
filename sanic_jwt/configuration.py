@@ -23,6 +23,8 @@ defaults = {
     "cookie_path": "/",
     "cookie_refresh_token_name": "refresh_token",
     "cookie_set": False,
+    "cookie_split": False,
+    "cookie_split_signature_name": "access_token_signature",
     "cookie_strict": True,
     "debug": False,
     "do_protection": True,
@@ -55,6 +57,7 @@ defaults = {
 aliases = {
     "cookie_access_token_name": "cookie_token_name",
     "secret": "public_key",
+    "cookie_split": "split_cookie",
 }
 
 ignore_keys = (

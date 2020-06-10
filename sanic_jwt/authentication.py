@@ -7,12 +7,8 @@ from datetime import datetime, timedelta
 import jwt
 
 from . import exceptions, utils
-from .exceptions import (
-    InvalidCustomClaimError,
-    InvalidVerification,
-    InvalidVerificationError,
-    SanicJWTException
-)
+from .exceptions import (InvalidCustomClaimError, InvalidVerification,
+                         InvalidVerificationError, SanicJWTException)
 
 logger = logging.getLogger(__name__)
 claim_label = {"iss": "issuer", "iat": "iat", "nbf": "nbf", "aud": "audience"}
@@ -274,7 +270,11 @@ class Authentication(BaseAuthentication):
         else:
             cookie_token_name_key = "cookie_access_token_name"
         cookie_token_name = getattr(self.config, cookie_token_name_key)
-        return request.cookies.get(cookie_token_name(), None)
+        token = request.cookies.get(cookie_token_name(), None)
+        if not refresh_token and self.config.cookie_split() and token:
+            signature_name = self.config.cookie_split_signature_name()
+            token += "." + request.cookies.get(signature_name, '')
+        return token
 
     def _get_token_from_headers(self, request, refresh_token):
         """

@@ -3,9 +3,9 @@ from sanic.response import json
 from .base import BaseDerivative
 
 
-def _set_cookie(response, key, value, config):
+def _set_cookie(response, key, value, config, force_httponly=None):
     response.cookies[key] = value
-    response.cookies[key]["httponly"] = config.cookie_httponly()
+    response.cookies[key]["httponly"] = config.cookie_httponly() if force_httponly is None else force_httponly
     response.cookies[key]["path"] = config.cookie_path()
 
     domain = config.cookie_domain()
@@ -30,7 +30,14 @@ class Responses(BaseDerivative):
 
         if config.cookie_set():
             key = config.cookie_access_token_name()
-            _set_cookie(response, key, access_token, config)
+
+            if config.cookie_split():
+                signature_name = config.cookie_split_signature_name()
+                header_payload, signature = access_token.rsplit('.', maxsplit=1)
+                _set_cookie(response, key, header_payload, config, force_httponly=False)
+                _set_cookie(response, signature_name, signature, config, force_httponly=True)
+            else:
+                _set_cookie(response, key, access_token, config)
 
             if refresh_token and config.refresh_token_enabled():
                 key = config.cookie_refresh_token_name()

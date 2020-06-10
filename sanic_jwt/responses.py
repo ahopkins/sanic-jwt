@@ -2,15 +2,25 @@ from sanic.response import json
 
 from .base import BaseDerivative
 
+COOKIE_OPTIONS = (
+    ("domain", "cookie_domain"),
+    ("expires", "cookie_expires"),
+    ("max-age", "cookie_max_age"),
+    ("secure", "cookie_secure"),
+)
+
 
 def _set_cookie(response, key, value, config, force_httponly=None):
     response.cookies[key] = value
-    response.cookies[key]["httponly"] = config.cookie_httponly() if force_httponly is None else force_httponly
+    response.cookies[key]["httponly"] = (
+        config.cookie_httponly() if force_httponly is None else force_httponly
+    )
     response.cookies[key]["path"] = config.cookie_path()
 
-    domain = config.cookie_domain()
-    if domain:
-        response.cookies[key]["domain"] = domain
+    for item, option in COOKIE_OPTIONS:
+        value = getattr(config, option)()
+        if value:
+            response.cookies[key][item] = value
 
 
 class Responses(BaseDerivative):
@@ -33,9 +43,19 @@ class Responses(BaseDerivative):
 
             if config.cookie_split():
                 signature_name = config.cookie_split_signature_name()
-                header_payload, signature = access_token.rsplit('.', maxsplit=1)
-                _set_cookie(response, key, header_payload, config, force_httponly=False)
-                _set_cookie(response, signature_name, signature, config, force_httponly=True)
+                header_payload, signature = access_token.rsplit(
+                    ".", maxsplit=1
+                )
+                _set_cookie(
+                    response, key, header_payload, config, force_httponly=False
+                )
+                _set_cookie(
+                    response,
+                    signature_name,
+                    signature,
+                    config,
+                    force_httponly=True,
+                )
             else:
                 _set_cookie(response, key, access_token, config)
 

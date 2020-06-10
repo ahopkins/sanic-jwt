@@ -1,11 +1,12 @@
 import binascii
 import os
+from datetime import datetime
 
 import jwt
 import pytest
-
 from sanic import Sanic
 from sanic.response import json
+
 from sanic_jwt import Initialize, protected
 
 
@@ -426,6 +427,7 @@ def test_config_with_cookie_path(users, authenticate):
     cookie = response.raw_cookies.get("access_token")
     assert cookie.path == path
 
+
 def test_with_split_cookie(app):
     sanic_app, sanicjwt = app
     sanicjwt.config.cookie_set.update(True)
@@ -444,13 +446,17 @@ def test_with_split_cookie(app):
     assert token_cookie
     assert signature_cookie
 
-    raw_token_cookie, raw_signature_cookie = [value.decode(response.headers.encoding) for key, value in response.headers.raw if key.lower() == b'set-cookie']
-    
+    raw_token_cookie, raw_signature_cookie = [
+        value.decode(response.headers.encoding)
+        for key, value in response.headers.raw
+        if key.lower() == b"set-cookie"
+    ]
+
     assert raw_token_cookie
     assert raw_signature_cookie
 
-    assert token_cookie.value.count('.') == 1
-    assert signature_cookie.value.count('.') == 0
+    assert token_cookie.value.count(".") == 1
+    assert signature_cookie.value.count(".") == 0
     assert "HttpOnly" not in raw_token_cookie
     assert "HttpOnly" in raw_signature_cookie
 
@@ -475,3 +481,52 @@ def test_with_split_cookie(app):
 
     assert response.status == 200
     assert response.json.get("valid") == True
+
+
+def test_with_cookie_normal(app):
+    sanic_app, sanicjwt = app
+    sanicjwt.config.cookie_set.update(True)
+
+    _, response = sanic_app.test_client.post(
+        "/auth",
+        json={"username": "user1", "password": "abcxyz"},
+        raw_cookies=True,
+    )
+
+    raw_token_cookie = [
+        value.decode(response.headers.encoding)
+        for key, value in response.headers.raw
+        if key.lower() == b"set-cookie"
+    ][0]
+
+    assert raw_token_cookie
+    assert "httponly" in raw_token_cookie.lower()
+    assert "expired" not in raw_token_cookie.lower()
+    assert "secure" not in raw_token_cookie.lower()
+    assert "max-age" not in raw_token_cookie.lower()
+
+
+def test_with_cookie_config(app):
+    sanic_app, sanicjwt = app
+    sanicjwt.config.cookie_set.update(True)
+    sanicjwt.config.cookie_httponly.update(False)
+    sanicjwt.config.cookie_expires.update(datetime(2100, 1, 1))
+    sanicjwt.config.cookie_secure.update(True)
+    sanicjwt.config.cookie_max_age.update(10)
+
+    _, response = sanic_app.test_client.post(
+        "/auth",
+        json={"username": "user1", "password": "abcxyz"},
+        raw_cookies=True,
+    )
+
+    raw_token_cookie = [
+        value.decode(response.headers.encoding)
+        for key, value in response.headers.raw
+        if key.lower() == b"set-cookie"
+    ][0]
+    assert raw_token_cookie
+    assert "httponly" not in raw_token_cookie.lower()
+    assert "expires=fri, 01-jan-2100 00:00:00 gmt" in raw_token_cookie.lower()
+    assert "secure" in raw_token_cookie.lower()
+    assert "max-age=10" in raw_token_cookie.lower()

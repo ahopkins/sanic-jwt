@@ -1,6 +1,5 @@
-import pytest
-
 import jwt
+import pytest
 
 
 def test_unprotected(app):

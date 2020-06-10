@@ -48,6 +48,7 @@ async def retrieve_user_secret(user_id):
     print(f"{user_id=}")
     return f"user_id|{user_id}"
 
+
 app = Sanic(__name__)
 Initialize(
     app,

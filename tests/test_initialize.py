@@ -19,7 +19,10 @@ def test_store_refresh_token_ommitted():
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
         Initialize(
-            app, authenticate=lambda: True, refresh_token_enabled=True, retrieve_refresh_token=lambda: True
+            app,
+            authenticate=lambda: True,
+            refresh_token_enabled=True,
+            retrieve_refresh_token=lambda: True,
         )
 
 
@@ -28,7 +31,10 @@ def test_retrieve_refresh_token_ommitted():
 
     with pytest.raises(exceptions.RefreshTokenNotImplemented):
         initialize(
-            app, authenticate=lambda: True, refresh_token_enabled=True, store_refresh_token=lambda: True
+            app,
+            authenticate=lambda: True,
+            refresh_token_enabled=True,
+            store_refresh_token=lambda: True,
         )
 
 

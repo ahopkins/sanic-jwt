@@ -1,8 +1,8 @@
+import jwt
 from sanic import Sanic
 from sanic.response import json
 from sanic.views import HTTPMethodView
 
-import jwt
 from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 

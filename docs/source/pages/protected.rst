@@ -143,6 +143,40 @@ Now, Sanic JWT will reject any request that does not have a valid access token i
 
     If you are using cookies to pass JWTs, then it is recommended that you do **not** disable ``cookie_httponly``. Doing so means that any javascript running on the client can access the token. Bad news.
 
+**Cookie splitting, and suggested best practices**
+
+Sanic JWT comes with the ability to split the access token into two cookies. The reason would be to allow cookies to both (1) be secured from XSS, and (2) allow for browser clients to have access to the token and it's payload.
+
+.. note::
+    
+    This is initially disabled, and is an opt-in feature. However, if your intent is to use Sanic JWT with a browser based application, and you want to have access to the payload on the client, then it is **HIGHLY** suggested that you use this method, and not Header tokens.
+
+To use split cookies, you can enable it as follows:
+
+.. code-block:: python
+
+    Initialize(
+        app,
+        cookie_set=True,
+        cookie_split=True,
+        cookie_access_token_name='token-header-payload',)
+
+This will split the cookie in two parts:
+
+1. ``header.payload``
+2. ``signature``
+
+The first part will **not** have ``HttpOnly`` set, but the signature part will. This keeps your token safe from being used since it cannot be verified by the backend. But, the payload can be accessible from JavaScript.
+
+.. code-block:: javascript
+
+    import jwtDecode from 'jwt-decode'
+
+    const payload = jwtDecode(getCookieValue('token-header-payload'))
+
+.. note::
+
+    Setting this will override the ``cookie_httponly`` configuration for the access token. Also, the above example sets ``cookie_access_token_name``, but it is not necessary. This is just to show that ``cookie_access_token_name`` will control the name of the ``header.payload`` cookie. To change the name of the ``signature`` cookie, use ``cookie_split_signature_name``.
 
 ~~~~~~~~~~~~~~~~~~~
 Query String Tokens

@@ -129,7 +129,9 @@ class BaseAuthentication:
 
 
 class Authentication(BaseAuthentication):
-    async def _check_authentication(self, request, request_args, request_kwargs):
+    async def _check_authentication(
+        self, request, request_args, request_kwargs
+    ):
         """
         Checks a request object to determine if that request contains a valid,
         and authenticated JWT.
@@ -251,13 +253,14 @@ class Authentication(BaseAuthentication):
         if self.config.user_secret_enabled():
             if not payload:
                 algorithm = self._get_algorithm()
-                payload = jwt.decode(token, verify=False,
-                                     algorithms=[algorithm])
+                payload = jwt.decode(
+                    token, verify=False, algorithms=[algorithm]
+                )
             user_id = payload.get("user_id")
             return await utils.call(
                 self.retrieve_user_secret,
                 user_id=user_id,
-                encode=self._is_asymmetric and encode
+                encode=self._is_asymmetric and encode,
             )
 
         if self._is_asymmetric and encode:
@@ -274,7 +277,11 @@ class Authentication(BaseAuthentication):
         else:
             cookie_token_name_key = "cookie_access_token_name"
         cookie_token_name = getattr(self.config, cookie_token_name_key)
-        return request.cookies.get(cookie_token_name(), None)
+        token = request.cookies.get(cookie_token_name(), None)
+        if not refresh_token and self.config.cookie_split() and token:
+            signature_name = self.config.cookie_split_signature_name()
+            token += "." + request.cookies.get(signature_name, "")
+        return token
 
     def _get_token_from_headers(self, request, refresh_token):
         """
@@ -516,7 +523,9 @@ class Authentication(BaseAuthentication):
     async def retrieve_refresh_token_from_request(self, request):
         return await self._get_refresh_token(request)
 
-    async def verify_token(self, token, return_payload=False, custom_claims=None):
+    async def verify_token(
+        self, token, return_payload=False, custom_claims=None
+    ):
         """
         Perform an inline verification of a token.
         """

@@ -1,9 +1,9 @@
+import jwt
+
 from sanic import Sanic
 from sanic.response import json
 from sanic.views import HTTPMethodView
-
-import jwt
-from sanic_jwt import exceptions, Initialize
+from sanic_jwt import Initialize, exceptions
 from sanic_jwt.decorators import protected
 
 
@@ -80,9 +80,7 @@ class TestEndpointsCBV(object):
         _, response = sanic_app.test_client.get("/protected")
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization header not present." in response.json.get(
-            "reasons"
-        )
+        assert "Authorization header not present." in response.json.get("reasons")
 
     def test_partially_protected(self):
         _, response = sanic_app.test_client.get("/partially")
@@ -91,23 +89,19 @@ class TestEndpointsCBV(object):
         _, response = sanic_app.test_client.patch("/partially")
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
-        assert "Authorization header not present." in response.json.get(
-            "reasons"
-        )
+        assert "Authorization header not present." in response.json.get("reasons")
 
     def test_auth_invalid_method(self):
         _, response = sanic_app.test_client.get("/auth")
         assert response.status == 405
-        assert b"Error: Method GET not allowed for URL /auth" in response.body
+        assert b"Method GET not allowed for URL /auth" in response.body
 
     def test_auth_proper_credentials(self):
         _, response = sanic_app.test_client.post(
             "/auth", json={"username": "user1", "password": "abcxyz"}
         )
 
-        access_token = response.json.get(
-            sanic_jwt.config.access_token_name(), None
-        )
+        access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
         payload = jwt.decode(
             access_token,
             sanic_jwt.config.secret(),
@@ -121,13 +115,11 @@ class TestEndpointsCBV(object):
         assert "exp" in payload
 
         _, response = sanic_app.test_client.get(
-            "/protected",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/protected", headers={"Authorization": "Bearer {}".format(access_token)},
         )
         assert response.status == 200
 
         _, response = sanic_app.test_client.patch(
-            "/partially",
-            headers={"Authorization": "Bearer {}".format(access_token)},
+            "/partially", headers={"Authorization": "Bearer {}".format(access_token)},
         )
         assert response.status == 200

@@ -117,9 +117,7 @@ class UserSecretNotImplemented(SanicJWTException):
     status_code = 500
 
     def __init__(
-        self,
-        message="User secrets have not been enabled.",
-        **kwargs
+        self, message="User secrets have not been enabled.", **kwargs
     ):
         super().__init__(message, **kwargs)
 

@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
+import jwt
 import pytest
 from sanic.response import json
 
-import jwt
 from freezegun import freeze_time
 from sanic_jwt.decorators import protected
 

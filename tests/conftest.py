@@ -73,6 +73,7 @@ def retrieve_user(userid_table):
 def retrieve_user_secret():
     async def retrieve_user_secret(user_id, **kwargs):
         return f"foobar<{user_id}>"
+
     yield retrieve_user_secret
 
 

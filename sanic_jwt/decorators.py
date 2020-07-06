@@ -231,7 +231,9 @@ def inject_user(initialized_on=None, **kw):
                         f, request, *args, **kwargs
                     )  # noqa
 
-                payload = await instance.auth.extract_payload(request, verify=False)
+                payload = await instance.auth.extract_payload(
+                    request, verify=False
+                )
                 user = await utils.call(
                     instance.auth.retrieve_user, request, payload
                 )

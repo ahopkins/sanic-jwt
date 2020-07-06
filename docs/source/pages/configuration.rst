@@ -240,12 +240,28 @@ Settings
 | **Default**: ``''``
 |
 
+-----------------
+``cookie_expires``
+-----------------
+
+| **Purpose**: If set, it will add an ``expires`` field to cookies. Should be a Python ``datetime`` object, and therefore should be set in Python code and not via environment variables.
+| **Default**: ``None``
+|
+
 -------------------
 ``cookie_httponly``
 -------------------
 
 | **Purpose**: It enables HTTP only cookies. **HIGHLY recommended that you do not turn this off, unless you know what you are doing.**
 | **Default**: ``True``
+|
+
+-----------------
+``cookie_max_age``
+-----------------
+
+| **Purpose**: Should be a number. If it is greater than 0, then it will add a ``max-age`` field to the cookies. The number is expressed in seconds.
+| **Default**: ``0``
 |
 
 -----------------
@@ -264,12 +280,36 @@ Settings
 | **Default**: ``'refresh_token'``
 |
 
+-----------------
+``cookie_secure``
+-----------------
+
+| **Purpose**: Adds a ``secure`` field to cookies. This should be used in production, but is disabled by default because it might lead to unintended frustrations in development.
+| **Default**: ``False``
+|
+
 --------------
 ``cookie_set``
 --------------
 
 | **Purpose**:  By default, the application will look for access tokens in the HTTP request headers. If you would instead prefer to send them through cookies, enable this to ``True``.
 | **Default**: ``False``
+|
+
+--------------
+``cookie_split``
+--------------
+
+| **Purpose**:  If ``True``, will enable split cookies (see :doc:`protecting routes with cookies <protected>` for more details). Overrides ``cookie_httponly``.
+| **Default**: ``False``
+|
+
+--------------
+``cookie_split_signature_name``
+--------------
+
+| **Purpose**:  The name of the cookie to be set for storing the signature part of the access token if using cookie based authentication with ``cookie_split`` turned on.
+| **Default**: ``access_token_signature``
 |
 
 -----------------

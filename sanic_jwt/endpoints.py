@@ -147,7 +147,9 @@ class RefreshEndpoint(BaseEndpoint):
 
         # TODO:
         # - Add more exceptions
-        payload = await self.instance.auth.extract_payload(request, verify=False)
+        payload = await self.instance.auth.extract_payload(
+            request, verify=False
+        )
 
         try:
             user = await utils.call(

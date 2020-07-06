@@ -1,6 +1,6 @@
+import jwt
 from sanic import Sanic
 
-import jwt
 from sanic_jwt import Authentication, exceptions, Initialize
 
 # import pytest

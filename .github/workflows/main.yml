@@ -1,4 +1,4 @@
-name: Sanic JWT unit test
+name: Unit tests
 
 on: [push]
 
@@ -9,6 +9,15 @@ jobs:
     strategy:
       matrix:
         python: [3.6, 3.7, 3.8, 3.9]
+        include:
+          - python: 3.6
+            TOXENV: py36
+          - python: 3.7
+            TOXENV: py37
+          - python: 3.8
+            TOXENV: py38
+          - python: 3.9
+            TOXENV: py39
 
     steps:
       - uses: actions/checkout@v2
@@ -16,8 +25,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-      - name: Install Tox and any other packages
+      - name: Install tox
         run: pip install tox
-      - name: Run Tox
-        # Run tox using the version of Python in `PATH`
-        run: tox -e py
+      - name: Run tox
+        run: tox

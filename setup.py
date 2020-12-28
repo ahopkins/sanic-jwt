@@ -23,7 +23,7 @@ with open_local(["sanic_jwt", "__init__.py"], encoding="latin1") as fp:
 with open_local(["README.md",]) as rm:
     long_description = rm.read()
 
-extras_require = {"docs": ["Sphinx"]}
+extras_require = {"docs": ["Sphinx",]}
 
 extras_require["all"] = []
 for reqs in extras_require.values():

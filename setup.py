@@ -20,7 +20,7 @@ with open_local(["sanic_jwt", "__init__.py"], encoding="latin1") as fp:
     except IndexError:
         raise RuntimeError("Unable to determine version.")
 
-with open_local(["README.md"]) as rm:
+with open_local(["README.md",]) as rm:
     long_description = rm.read()
 
 extras_require = {"docs": ["Sphinx"]}

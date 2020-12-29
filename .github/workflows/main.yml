@@ -1,0 +1,31 @@
+name: Unit tests
+
+on: [push,pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: [3.6, 3.7, 3.8, 3.9]
+        include:
+          - python: 3.6
+            TOXENV: py36
+          - python: 3.7
+            TOXENV: py37
+          - python: 3.8
+            TOXENV: py38
+          - python: 3.9
+            TOXENV: py39
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install tox
+        run: pip install tox
+      - name: Run tox
+        run: tox

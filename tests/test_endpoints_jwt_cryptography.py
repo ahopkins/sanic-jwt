@@ -10,22 +10,22 @@ from sanic_jwt import Configuration, exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def public_rsa_key():
     yield Path(__file__).parent / "resources" / "rsa-test-public.pem"
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def private_rsa_key():
     yield Path(__file__).parent / "resources" / "rsa-test-key.pem"
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def public_ec_key():
     yield Path(__file__).parent / "resources" / "ec-test-public.pem"
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def private_ec_key():
     yield Path(__file__).parent / "resources" / "ec-test-key.pem"
 

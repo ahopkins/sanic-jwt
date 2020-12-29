@@ -26,7 +26,7 @@ class User(object):
 users = [User(1, "user1", "abcxyz")]
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_async_methods():
 
     cache = {}
@@ -106,7 +106,7 @@ def app_with_async_methods():
 
 
 class TestEndpointsAsync(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def authenticated_response(self, app_with_async_methods):
         app, sanicjwt = app_with_async_methods
         _, response = app.test_client.post(

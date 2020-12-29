@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.6, 3.7, 3.8, 3.9]
+        python: [3.6, 3.7, 3.8]
         include:
           - python: 3.6
             TOXENV: py36
@@ -19,9 +19,6 @@ jobs:
           - python: 3.8
             TOXENV: py38
             TOXPYTHON: python3.8
-          - python: 3.9
-            TOXENV: py39
-            TOXPYTHON: python3.9
 
     steps:
       - uses: actions/checkout@v2

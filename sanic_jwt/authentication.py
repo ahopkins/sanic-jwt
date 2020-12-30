@@ -495,8 +495,6 @@ class Authentication(BaseAuthentication):
             )
 
         access_token = jwt.encode(payload, secret, algorithm=algorithm)
-        if isinstance(access_token, bytes):
-            return access_token.decode("utf-8")
         return access_token
 
     async def generate_refresh_token(self, request, user):

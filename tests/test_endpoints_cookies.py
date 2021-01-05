@@ -10,7 +10,7 @@ from sanic.response import json
 from sanic_jwt import Initialize, protected
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_refresh_token_and_cookie(users, authenticate):
 
     cache = {}
@@ -66,7 +66,7 @@ def app_with_refresh_token_and_cookie(users, authenticate):
 
 
 class TestEndpointsCookies(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def authenticated_response(self, app_with_refresh_token_and_cookie):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         _, response = sanic_app.test_client.post(

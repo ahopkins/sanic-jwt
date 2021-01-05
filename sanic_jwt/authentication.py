@@ -254,7 +254,7 @@ class Authentication(BaseAuthentication):
             if not payload:
                 algorithm = self._get_algorithm()
                 payload = jwt.decode(
-                    token, verify=False, algorithms=[algorithm]
+                    token, options={"verify_signature": False}, algorithms=[algorithm]
                 )
             user_id = payload.get("user_id")
             return await utils.call(
@@ -262,7 +262,6 @@ class Authentication(BaseAuthentication):
                 user_id=user_id,
                 encode=self._is_asymmetric and encode,
             )
-
         if self._is_asymmetric and encode:
             return self.config.private_key()
 
@@ -495,7 +494,8 @@ class Authentication(BaseAuthentication):
                 extend_payload, payload=payload, user=user
             )
 
-        return jwt.encode(payload, secret, algorithm=algorithm).decode("utf-8")
+        access_token = jwt.encode(payload, secret, algorithm=algorithm)
+        return access_token
 
     async def generate_refresh_token(self, request, user):
         """

@@ -9,7 +9,7 @@ class MyCustomDict(dict):
         raise Exception("i am not supposed to be called")
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_dict_test():
 
     the_user = MyCustomDict(user_id=1)
@@ -39,7 +39,7 @@ def app_with_dict_test():
 
 
 class TestEndpointsAsync(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def authenticated_response(self, app_with_dict_test):
         app, sanicjwt = app_with_dict_test
         _, response = app.test_client.post(

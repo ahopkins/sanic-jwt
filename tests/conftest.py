@@ -5,6 +5,7 @@ from sanic.response import json, text
 from sanic_jwt import Claim, exceptions, Initialize
 from sanic_jwt.decorators import protected
 
+Sanic.test_mode = True
 
 class User:
     def __init__(self, id, username, password):

@@ -281,6 +281,14 @@ Settings
 |
 
 -----------------
+``cookie_samesite``
+-----------------
+
+| **Purpose**: Adds a ``samesite`` field to cookies. Can be set to ``'Strict'``, ``'Lax'``, ``'None'`` or ``None`` (note the difference in the quotes). This should be used in production, but is disabled by default because it might lead to unintended frustrations in development.
+| **Default**: ``None``
+|
+
+-----------------
 ``cookie_secure``
 -----------------
 

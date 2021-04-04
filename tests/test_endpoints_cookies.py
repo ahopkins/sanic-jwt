@@ -502,7 +502,7 @@ def test_with_cookie_normal(app):
     assert raw_token_cookie
     assert "httponly" in raw_token_cookie.lower()
     assert "expired" not in raw_token_cookie.lower()
-    assert "samesite" not in raw_token_cookie.lower()
+    assert "samesite=lax" in raw_token_cookie.lower()
     assert "secure" not in raw_token_cookie.lower()
     assert "max-age" not in raw_token_cookie.lower()
 

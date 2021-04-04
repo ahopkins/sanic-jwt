@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
 import jwt
+from freezegun import freeze_time
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
 
-from freezegun import freeze_time
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
 

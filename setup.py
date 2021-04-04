@@ -29,7 +29,9 @@ extras_require["all"] = []
 for reqs in extras_require.values():
     extras_require["all"].extend(reqs)
 
-install_requires = ["pyjwt==2.0.0",]
+install_requires = [
+    "pyjwt==2.0.0",
+]
 
 setup(
     name="sanic-jwt",

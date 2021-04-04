@@ -226,7 +226,7 @@ class TestEndpointsCookies(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.cookie_strict.update(False)
-        sanic_app.auth.config.cookie_strict.update(False)
+        sanic_app.ctx.auth.config.cookie_strict.update(False)
 
         key = sanicjwt.config.cookie_access_token_name()
         access_token_from_cookie = authenticated_response.cookies.get(key)
@@ -284,7 +284,7 @@ class TestEndpointsCookies(object):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.debug.update(True)
         sanicjwt.config.cookie_strict.update(True)
-        sanic_app.auth.config.cookie_strict.update(True)
+        sanic_app.ctx.auth.config.cookie_strict.update(True)
 
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -348,7 +348,7 @@ class TestEndpointsCookies(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.cookie_strict.update(False)
-        sanic_app.auth.config.cookie_strict.update(False)
+        sanic_app.ctx.auth.config.cookie_strict.update(False)
 
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None

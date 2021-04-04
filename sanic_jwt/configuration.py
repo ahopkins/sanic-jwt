@@ -5,6 +5,8 @@ import logging
 from . import exceptions, utils
 from .cache import get_cached, is_cached, to_cache
 
+DEFAULT_SECRET = "This is a big secret. Shhhhh"
+
 defaults = {
     "access_token_name": "access_token",
     "algorithm": "HS256",
@@ -48,7 +50,7 @@ defaults = {
     "refresh_token_name": "refresh_token",
     "scopes_enabled": False,
     "scopes_name": "scopes",
-    "secret": "This is a big secret. Shhhhh",
+    "secret": DEFAULT_SECRET,
     "strict_slashes": False,
     "user_secret_enabled": False,
     "url_prefix": "/auth",
@@ -79,18 +81,14 @@ logger = logging.getLogger(__name__)
 
 def _warn_key(key):
     if key not in ignore_keys:
-        logger.warning(
-            "Configuration key '%s' found is not valid for sanic-jwt", key
-        )
+        logger.warning("Configuration key '%s' found is not valid for sanic-jwt", key)
 
 
 def _create_or_overwrite_config_item(value, key, item_aliases, instance):
     setattr(
         instance,
         key,
-        ConfigItem(
-            value, item_name=key, config=instance, aliases=item_aliases
-        ),
+        ConfigItem(value, item_name=key, config=instance, aliases=item_aliases),
     )
 
 
@@ -197,13 +195,9 @@ class Configuration:
             # check if a configuration key is set with a value
             elif hasattr(instance, key):
                 val = getattr(instance, key)
-                _create_or_overwrite_config_item(
-                    val, key, item_aliases, instance
-                )
+                _create_or_overwrite_config_item(val, key, item_aliases, instance)
             else:
-                _create_or_overwrite_config_item(
-                    value, key, item_aliases, instance
-                )
+                _create_or_overwrite_config_item(value, key, item_aliases, instance)
 
             # check if a setter is available on config class
             fn_name = "set_{}".format(key)
@@ -221,9 +215,7 @@ class Configuration:
                     setattr(instance, key, val)
                     _update_config_item(key, item_aliases, instance)
                 else:
-                    _create_or_overwrite_config_item(
-                        val, key, item_aliases, instance
-                    )
+                    _create_or_overwrite_config_item(val, key, item_aliases, instance)
 
             # 'reference' aliases
             for alias in item_aliases:
@@ -248,8 +240,7 @@ class Configuration:
         return instance
 
     def get(self, item):
-        """Helper method to avoid calling getattr
-        """
+        """Helper method to avoid calling getattr"""
         if item in self:  # noqa
             item = getattr(self, item)
             return item()
@@ -307,8 +298,7 @@ class Configuration:
             isinstance(self.secret(), str) and self.secret().strip() == ""
         ):
             raise exceptions.InvalidConfiguration(
-                "the SANIC_JWT_SECRET parameter cannot be None nor an empty "
-                "string"
+                "the SANIC_JWT_SECRET parameter cannot be None nor an empty " "string"
             )
 
     def _validate_keys(self):
@@ -316,8 +306,7 @@ class Configuration:
         if utils.algorithm_is_asymmetric(self.algorithm()) and (
             self.private_key() is None
             or (
-                isinstance(self.private_key(), str)
-                and self.private_key().strip() == ""
+                isinstance(self.private_key(), str) and self.private_key().strip() == ""
             )
         ):
             raise exceptions.RequiredKeysNotFound
@@ -327,9 +316,7 @@ class Configuration:
         try:
             self.secret.update(utils.load_file_or_str(self.secret()))
             if utils.algorithm_is_asymmetric(self.algorithm()):
-                self.private_key.update(
-                    utils.load_file_or_str(self.private_key())
-                )
+                self.private_key.update(utils.load_file_or_str(self.private_key()))
         except exceptions.ProvidedPathNotFound as exc:
             if utils.algorithm_is_asymmetric(self.algorithm()):
                 raise exceptions.RequiredKeysNotFound

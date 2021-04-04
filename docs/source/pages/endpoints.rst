@@ -223,7 +223,7 @@ What if we wanted a ``/register`` endpoint? It could easily be added like this:
                 self.config,
                 self.instance)
 
-            refresh_token = await self.instance.auth.get_refresh_token(request, user)
+            refresh_token = await self.instance.ctx.auth.get_refresh_token(request, user)
             output.update({
                 self.config.refresh_token_name(): refresh_token
             })

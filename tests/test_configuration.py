@@ -329,7 +329,7 @@ def test_configuration_with_override():
 
     assert sanicjwt.config.access_token_name() == "customtoken"
 
-    with app.auth.override(access_token_name="foobar"):
+    with app.ctx.auth.override(access_token_name="foobar"):
         assert sanicjwt.config.access_token_name() == "foobar"
 
     assert sanicjwt.config.access_token_name() == "customtoken"
@@ -338,19 +338,22 @@ def test_configuration_with_override():
 def test_configuration_with_override_on_aliased():
     app = Sanic("sanic-jwt-test")
 
-    sanicjwt = Initialize(app, authenticate=lambda: True,)
+    sanicjwt = Initialize(
+        app,
+        authenticate=lambda: True,
+    )
 
     assert sanicjwt.config.public_key() == "This is a big secret. Shhhhh"
     assert sanicjwt.config.secret() == "This is a big secret. Shhhhh"
 
-    with app.auth.override(secret="foobar"):
+    with app.ctx.auth.override(secret="foobar"):
         assert sanicjwt.config.public_key() == "foobar"
         assert sanicjwt.config.secret() == "foobar"
 
     assert sanicjwt.config.public_key() == "This is a big secret. Shhhhh"
     assert sanicjwt.config.secret() == "This is a big secret. Shhhhh"
 
-    with app.auth.override(public_key="foobar"):
+    with app.ctx.auth.override(public_key="foobar"):
         assert sanicjwt.config.public_key() == "foobar"
         assert sanicjwt.config.secret() == "foobar"
 

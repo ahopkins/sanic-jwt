@@ -254,7 +254,9 @@ class Authentication(BaseAuthentication):
             if not payload:
                 algorithm = self._get_algorithm()
                 payload = jwt.decode(
-                    token, options={"verify_signature": False}, algorithms=[algorithm]
+                    token,
+                    options={"verify_signature": False},
+                    algorithms=[algorithm],
                 )
             user_id = payload.get("user_id")
             return await utils.call(

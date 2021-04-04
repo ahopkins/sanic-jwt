@@ -30,7 +30,7 @@ class AuthenticateEndpoint(BaseEndpoint):
 
         config = self.config
         user = await utils.call(
-            self.instance.auth.authenticate, request, *args, **kwargs
+            self.instance.ctx.auth.authenticate, request, *args, **kwargs
         )
 
         access_token, output = await self.responses.get_access_token_output(
@@ -39,7 +39,7 @@ class AuthenticateEndpoint(BaseEndpoint):
 
         if config.refresh_token_enabled():
             refresh_token = await utils.call(
-                self.instance.auth.generate_refresh_token, request, user
+                self.instance.ctx.auth.generate_refresh_token, request, user
             )
             output.update({config.refresh_token_name(): refresh_token})
         else:
@@ -72,14 +72,14 @@ class RetrieveUserEndpoint(BaseEndpoint):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
         config = self.config
-        if not hasattr(self.instance.auth, "retrieve_user"):
+        if not hasattr(self.instance.ctx.auth, "retrieve_user"):
             # NOTE: this condition is only true if `retrieve_user` is wipped
             # out of the `Authentication` class, so it won't happen "easily".
             raise exceptions.MeEndpointNotSetup()  # noqa
 
-        payload = await self.instance.auth.extract_payload(request)
+        payload = await self.instance.ctx.auth.extract_payload(request)
         user = await utils.call(
-            self.instance.auth.retrieve_user, request, payload
+            self.instance.ctx.auth.retrieve_user, request, payload
         )
 
         if not user:  # noqa
@@ -120,7 +120,7 @@ class VerifyEndpoint(BaseEndpoint):
     async def get(self, request, *args, **kwargs):
         request, args, kwargs = await self.do_incoming(request, args, kwargs)
 
-        is_valid, status, reason = await self.instance.auth._verify(
+        is_valid, status, reason = await self.instance.ctx.auth._verify(
             request, raise_missing=True, *args, **kwargs
         )
 
@@ -147,30 +147,32 @@ class RefreshEndpoint(BaseEndpoint):
 
         # TODO:
         # - Add more exceptions
-        payload = await self.instance.auth.extract_payload(
+        payload = await self.instance.ctx.auth.extract_payload(
             request, verify=False
         )
 
         try:
             user = await utils.call(
-                self.instance.auth.retrieve_user, request, payload=payload
+                self.instance.ctx.auth.retrieve_user, request, payload=payload
             )
         except exceptions.MeEndpointNotSetup:
             message = "Refresh tokens have not been enabled properly."
             "Perhaps you forgot to initialize with a retrieve_user handler?"
             raise exceptions.RefreshTokenNotImplemented(message=message)
 
-        user_id = await self.instance.auth._get_user_id(user)
+        user_id = await self.instance.ctx.auth._get_user_id(user)
         refresh_token = await utils.call(
-            self.instance.auth.retrieve_refresh_token,
+            self.instance.ctx.auth.retrieve_refresh_token,
             request=request,
             user_id=user_id,
         )
         if isinstance(refresh_token, bytes):
             refresh_token = refresh_token.decode("utf-8")
 
-        token = await self.instance.auth.retrieve_refresh_token_from_request(
-            request
+        token = (
+            await self.instance.ctx.auth.retrieve_refresh_token_from_request(
+                request
+            )
         )
 
         if refresh_token != token:

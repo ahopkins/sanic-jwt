@@ -9,7 +9,9 @@ def test_secret_not_enabled():
     app = Sanic(__name__)
     with pytest.raises(exceptions.UserSecretNotImplemented):
         sanicjwt = Initialize(
-            app, authenticate=lambda: {}, user_secret_enabled=True,
+            app,
+            authenticate=lambda: {},
+            user_secret_enabled=True,
         )
 
 
@@ -21,11 +23,9 @@ async def test_user_secret(app_with_user_secrets):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json().get(
-        sanicjwt.config.access_token_name(), None
-    )
+    access_token = response.json.get(sanicjwt.config.access_token_name(), None)
 
-    secret = await app.auth._get_secret(token=access_token)
+    secret = await app.ctx.auth._get_secret(token=access_token)
 
     assert access_token
     assert secret == "foobar<1>"
@@ -36,4 +36,4 @@ async def test_user_secret(app_with_user_secrets):
     )
 
     assert response.status == 200
-    assert response.json().get("protected") is True
+    assert response.json.get("protected") is True

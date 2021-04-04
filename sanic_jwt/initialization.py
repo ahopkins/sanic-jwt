@@ -1,17 +1,16 @@
 import inspect
 from collections import namedtuple
+from logging import warn
 
 from sanic import Blueprint, Sanic
 
 from sanic_jwt import endpoints, exceptions
 from sanic_jwt.authentication import Authentication
-from sanic_jwt.configuration import Configuration
+from sanic_jwt.configuration import Configuration, DEFAULT_SECRET
 from sanic_jwt.decorators import inject_user, protected, scoped
 from sanic_jwt.responses import Responses
 
-_Handler = namedtuple(
-    "_Handler", ["name", "keys", "exception", "outside_auth_mode"]
-)
+_Handler = namedtuple("_Handler", ["name", "keys", "exception", "outside_auth_mode"])
 _EndpointMapping = namedtuple(
     "_EndpointMapping",
     ["cls", "endpoint", "keys", "is_protected", "protected_kwargs"],
@@ -45,9 +44,7 @@ endpoint_mappings = (
         True,
         {},
     ),
-    _EndpointMapping(
-        endpoints.VerifyEndpoint, "verify", ["auth_mode"], False, {}
-    ),
+    _EndpointMapping(endpoints.VerifyEndpoint, "verify", ["auth_mode"], False, {}),
     _EndpointMapping(
         endpoints.RefreshEndpoint,
         "refresh",
@@ -58,9 +55,7 @@ endpoint_mappings = (
 )
 
 auth_mode_handlers = (
-    _Handler(
-        "authenticate", None, exceptions.AuthenticateNotImplemented(), False
-    ),
+    _Handler("authenticate", None, exceptions.AuthenticateNotImplemented(), False),
     _Handler(
         "store_refresh_token",
         ["refresh_token_enabled"],
@@ -191,9 +186,7 @@ class Initialize:
             class_views = self.kwargs.pop("class_views")
 
             for route, view in class_views:
-                if issubclass(view, endpoints.BaseEndpoint) and isinstance(
-                    route, str
-                ):
+                if issubclass(view, endpoints.BaseEndpoint) and isinstance(route, str):
                     self.bp.add_route(
                         view.as_view(
                             self.responses,
@@ -217,19 +210,13 @@ class Initialize:
             "an instance of {}"
         )
         if not issubclass(self.authentication_class, Authentication):
-            raise exceptions.InitializationFailure(
-                message=msg.format("Authentication")
-            )
+            raise exceptions.InitializationFailure(message=msg.format("Authentication"))
 
         if not issubclass(self.configuration_class, Configuration):
-            raise exceptions.InitializationFailure(
-                message=msg.format("Configuration")
-            )
+            raise exceptions.InitializationFailure(message=msg.format("Configuration"))
 
         if not issubclass(self.responses_class, Responses):
-            raise exceptions.InitializationFailure(
-                message=msg.format("Responses")
-            )
+            raise exceptions.InitializationFailure(message=msg.format("Responses"))
 
     def __initialize_instance(self):
         """
@@ -238,29 +225,25 @@ class Initialize:
         config = self.config
 
         # Initialize instance of the Authentication class
-        self.instance.auth = self.authentication_class(self.app, config=config)
+        self.instance.ctx.auth = self.authentication_class(self.app, config=config)
 
-        init_handlers = (
-            handlers if config.auth_mode() else auth_mode_agnostic_handlers
-        )
+        init_handlers = handlers if config.auth_mode() else auth_mode_agnostic_handlers
 
         for handler in init_handlers:
             if handler.keys is None:
                 self.__check_method_in_auth(handler.name, handler.exception)
             else:
                 if all(map(config.get, handler.keys)):
-                    self.__check_method_in_auth(
-                        handler.name, handler.exception
-                    )
+                    self.__check_method_in_auth(handler.name, handler.exception)
 
         for handler in init_handlers:
             if handler.name in self.kwargs:
                 method = self.kwargs.pop(handler.name)
-                setattr(self.instance.auth, handler.name, method)
+                setattr(self.instance.ctx.auth, handler.name, method)
 
     def __initialize_claims(self):
         if "extra_verifications" in self.kwargs:
-            self.instance.auth._extra_verifications = self.kwargs.get(
+            self.instance.ctx.auth._extra_verifications = self.kwargs.get(
                 "extra_verifications"
             )
 
@@ -273,7 +256,7 @@ class Initialize:
 
     def __check_method_in_auth(self, method_name, exc):
         if method_name not in self.kwargs:
-            method_impl = getattr(self.instance.auth, method_name)
+            method_impl = getattr(self.instance.ctx.auth, method_name)
             if not inspect.ismethod(method_impl):
                 self.__raise_if_not_none(exc)
             if method_impl.__func__ == getattr(Authentication, method_name):
@@ -296,6 +279,13 @@ class Initialize:
                     self.kwargs.update({k: True})
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
+        if self.config.secret() == DEFAULT_SECRET:
+            warn(
+                "Sanic JWT was initialized using the default secret available "
+                "to the public. DO NOT DEPLOY your application until you "
+                "change it. See https://sanic-jwt.readthedocs.io/en/latest/pages/configuration.html#secret "
+                "for more information."
+            )
 
     def __load_responses(self):
         self.responses = self.responses_class(self.config, self.instance)
@@ -329,9 +319,7 @@ class Initialize:
             )
 
     def _get_url_prefix(self):
-        bp_url_prefix = (
-            self.bp.url_prefix if self.bp.url_prefix is not None else ""
-        )
+        bp_url_prefix = self.bp.url_prefix if self.bp.url_prefix is not None else ""
         config_url_prefix = self.config.url_prefix()
         url_prefix = bp_url_prefix + config_url_prefix
         return url_prefix

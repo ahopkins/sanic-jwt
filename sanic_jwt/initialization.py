@@ -1,6 +1,7 @@
 import inspect
 from collections import namedtuple
-from logging import warn
+from warnings import warn
+from types import SimpleNamespace
 
 from sanic import Blueprint, Sanic
 
@@ -225,6 +226,10 @@ class Initialize:
         config = self.config
 
         # Initialize instance of the Authentication class
+        if not hasattr(self.instance, "ctx"):
+            # If using Sanic 20.12 or lower, there is not ctx  property,
+            # so we create one here
+            self.instance.ctx = SimpleNamespace()
         self.instance.ctx.auth = self.authentication_class(self.app, config=config)
 
         init_handlers = handlers if config.auth_mode() else auth_mode_agnostic_handlers

@@ -297,7 +297,7 @@ Sample Code
             self.scopes = scopes
 
         def __str__(self):
-            return "User(id='%s')" % self.id
+            return "User(id='%s')" % self.user_id
 
 
     users = [

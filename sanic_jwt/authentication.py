@@ -495,7 +495,7 @@ class Authentication(BaseAuthentication):
             )
 
         access_token = jwt.encode(payload, secret, algorithm=algorithm)
-        return access_token
+        return str(access_token)
 
     async def generate_refresh_token(self, request, user):
         """
@@ -509,7 +509,7 @@ class Authentication(BaseAuthentication):
             refresh_token=refresh_token,
             request=request,
         )
-        return refresh_token
+        return str(refresh_token)
 
     async def is_authenticated(self, request):
         """

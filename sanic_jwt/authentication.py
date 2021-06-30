@@ -495,13 +495,15 @@ class Authentication(BaseAuthentication):
             )
 
         access_token = jwt.encode(payload, secret, algorithm=algorithm)
-        return str(access_token)
+        access_token = None if access_token is None else access_token if type(access_token) is str else access_token.decode("utf-8") 
+        return access_token
 
     async def generate_refresh_token(self, request, user):
         """
         Generate a refresh token for a given user.
         """
         refresh_token = await utils.call(self.config.generate_refresh_token())
+        refresh_token = None if refresh_token is None else refresh_token if type(refresh_token) is str else refresh_token.decode("utf-8") 
         user_id = await self._get_user_id(user)
         await utils.call(
             self.store_refresh_token,
@@ -509,7 +511,7 @@ class Authentication(BaseAuthentication):
             refresh_token=refresh_token,
             request=request,
         )
-        return str(refresh_token)
+        return refresh_token
 
     async def is_authenticated(self, request):
         """

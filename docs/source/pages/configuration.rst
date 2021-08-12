@@ -110,8 +110,8 @@ Sometimes you may need to only change a value for a brief moment. There is an ``
 
 .. code-block:: python
 
-    with app.auth.override(expiration_delta=1440):
-        token = app.auth.generate_access_token(user)
+    with app.ctx.auth.override(expiration_delta=1440):
+        token = app.ctx.auth.generate_access_token(user)
 
 ------------
 
@@ -427,6 +427,12 @@ Alias for ``secret``
 | **Purpose**: The name of the cookie to be set for storing the refresh token if using query string based authentication.
 | **Default**: ``'access_token'``
 |
+
+.. warning::
+
+    **IMPORTANT**: Before deploying your application, set the ``secret`` to some value known only to your application.
+
+    This is a potential **SECURITY RISK**.
 
 -----------------------------------
 ``query_string_refresh_token_name``

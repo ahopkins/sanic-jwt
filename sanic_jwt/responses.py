@@ -26,7 +26,7 @@ def _set_cookie(response, key, value, config, force_httponly=None):
 class Responses(BaseDerivative):
     @staticmethod
     async def get_access_token_output(request, user, config, instance):
-        access_token = await instance.auth.generate_access_token(user)
+        access_token = await instance.ctx.auth.generate_access_token(user)
 
         output = {config.access_token_name(): access_token}
 

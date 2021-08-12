@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 @contextmanager
 def instant_config(instance, **kwargs):
-    if kwargs and hasattr(instance, "auth"):
+    if kwargs and hasattr(instance.ctx, "auth"):
         to_cache("_request", kwargs.get("request"))
         for key, val in kwargs.items():
-            if key in instance.auth.config:
+            if key in instance.ctx.auth.config:
                 if callable(val):
                     val = val()
                 to_cache(key, val)
@@ -56,12 +56,12 @@ async def _do_protection(*args, **kwargs):
                 return True, response
 
         try:
-            if instance.auth.config.do_protection():
+            if instance.ctx.auth.config.do_protection():
                 (
                     is_authenticated,
                     status,
                     reasons,
-                ) = await instance.auth._check_authentication(
+                ) = await instance.ctx.auth._check_authentication(
                     request, request_args=args, request_kwargs=use_kwargs
                 )
             else:
@@ -80,8 +80,11 @@ async def _do_protection(*args, **kwargs):
             is_authenticated = False
             status = e.status_code
             reasons = (
-                instance.auth._reasons
-                if (instance.auth._reasons and instance.auth.config.debug())
+                instance.ctx.auth._reasons
+                if (
+                    instance.ctx.auth._reasons
+                    and instance.ctx.auth.config.debug()
+                )
                 else e.args[0]
             )
 
@@ -98,7 +101,8 @@ async def _do_protection(*args, **kwargs):
         else:
             if kw.get("redirect_on_fail", False):
                 where_to = kw.get(
-                    "redirect_url", instance.auth.config.login_redirect_url()
+                    "redirect_url",
+                    instance.ctx.auth.config.login_redirect_url(),
                 )
 
                 if where_to is not None:
@@ -158,9 +162,11 @@ def scoped(
                     return instance
 
                 with instant_config(instance, request=request, **kw):
-                    user_scopes = await instance.auth.extract_scopes(request)
-                    override = instance.auth.override_scope_validator
-                    destructure = instance.auth.destructure_scopes
+                    user_scopes = await instance.ctx.auth.extract_scopes(
+                        request
+                    )
+                    override = instance.ctx.auth.override_scope_validator
+                    destructure = instance.ctx.auth.destructure_scopes
                     if user_scopes is None:
                         # If there are no defined scopes in the payload,
                         # deny access
@@ -231,11 +237,11 @@ def inject_user(initialized_on=None, **kw):
                         f, request, *args, **kwargs
                     )  # noqa
 
-                payload = await instance.auth.extract_payload(
+                payload = await instance.ctx.auth.extract_payload(
                     request, verify=False
                 )
                 user = await utils.call(
-                    instance.auth.retrieve_user, request, payload
+                    instance.ctx.auth.retrieve_user, request, payload
                 )
                 response = f(request, user=user, *args, **kwargs)
                 return await response

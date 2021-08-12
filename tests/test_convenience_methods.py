@@ -6,7 +6,7 @@ async def test_is_authenticated_on_non_authenticated_request(app):
     sanic_app, _ = app
     request, _ = await sanic_app.asgi_client.get("/protected")
 
-    is_authenticated = await sanic_app.auth.is_authenticated(request)
+    is_authenticated = await sanic_app.ctx.auth.is_authenticated(request)
 
     assert isinstance(is_authenticated, bool)
     assert is_authenticated is False
@@ -19,7 +19,7 @@ async def test_is_authenticated_on_properly_authenticated_request(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json().get(
+    access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
 
@@ -28,7 +28,7 @@ async def test_is_authenticated_on_properly_authenticated_request(app):
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
-    is_authenticated = await sanic_app.auth.is_authenticated(request)
+    is_authenticated = await sanic_app.ctx.auth.is_authenticated(request)
 
     assert isinstance(is_authenticated, bool)
     assert is_authenticated is True
@@ -41,7 +41,7 @@ async def test_extract_user_id(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json().get(
+    access_token = response.json.get(
         sanic_jwt.config.access_token_name(), None
     )
 
@@ -50,6 +50,6 @@ async def test_extract_user_id(app):
         headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
-    user_id = await sanic_app.auth.extract_user_id(request)
+    user_id = await sanic_app.ctx.auth.extract_user_id(request)
 
     assert user_id == 1

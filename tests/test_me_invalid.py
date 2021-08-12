@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 
 import jwt
 import pytest
+from freezegun import freeze_time
 from sanic.response import json
 
-from freezegun import freeze_time
 from sanic_jwt.decorators import protected
 
 
@@ -32,6 +32,8 @@ def test_expired(app_with_retrieve_user):
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
+
+    sanic_app.router.reset()
 
     @sanic_app.route("/protected/user")
     @protected()

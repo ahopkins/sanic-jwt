@@ -5,6 +5,8 @@ import logging
 from . import exceptions, utils
 from .cache import get_cached, is_cached, to_cache
 
+DEFAULT_SECRET = "This is a big secret. Shhhhh"
+
 defaults = {
     "access_token_name": "access_token",
     "algorithm": "HS256",
@@ -24,6 +26,7 @@ defaults = {
     "cookie_max_age": 0,
     "cookie_path": "/",
     "cookie_refresh_token_name": "refresh_token",
+    "cookie_samesite": "Lax",
     "cookie_secure": False,
     "cookie_set": False,
     "cookie_split": False,
@@ -48,7 +51,7 @@ defaults = {
     "refresh_token_name": "refresh_token",
     "scopes_enabled": False,
     "scopes_name": "scopes",
-    "secret": "This is a big secret. Shhhhh",
+    "secret": DEFAULT_SECRET,
     "strict_slashes": False,
     "user_secret_enabled": False,
     "url_prefix": "/auth",
@@ -248,8 +251,7 @@ class Configuration:
         return instance
 
     def get(self, item):
-        """Helper method to avoid calling getattr
-        """
+        """Helper method to avoid calling getattr"""
         if item in self:  # noqa
             item = getattr(self, item)
             return item()

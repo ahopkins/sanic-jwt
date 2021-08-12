@@ -30,13 +30,13 @@ class UserIsPrime(Claim):
 
 
 async def run():
-    token = await app.auth.generate_access_token(
+    token = await app.ctx.auth.generate_access_token(
         user7, custom_claims=[UserIsPrime]
     )
 
-    payload = await app.auth.verify_token(token, return_payload=True)
+    payload = await app.ctx.auth.verify_token(token, return_payload=True)
     try:
-        is_verified = await app.auth.verify_token(
+        is_verified = await app.ctx.auth.verify_token(
             token, custom_claims=[UserIsPrime]
         )
     except exceptions.InvalidCustomClaimError:
@@ -46,13 +46,13 @@ async def run():
         print("\t Payload:", payload)
         print("\t Is verified:", is_verified)
 
-    token = await app.auth.generate_access_token(
+    token = await app.ctx.auth.generate_access_token(
         user8, custom_claims=[UserIsPrime]
     )
 
-    payload = await app.auth.verify_token(token, return_payload=True)
+    payload = await app.ctx.auth.verify_token(token, return_payload=True)
     try:
-        is_verified = await app.auth.verify_token(
+        is_verified = await app.ctx.auth.verify_token(
             token, custom_claims=[UserIsPrime]
         )
     except exceptions.InvalidCustomClaimError:

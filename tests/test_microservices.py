@@ -14,6 +14,8 @@ def test_microservice_simple():
     microservice_app = Sanic("sanic-jwt-test")
     Initialize(microservice_app, auth_mode=False)
 
+    microservice_app.route("/")(lambda _: ...)
+
     _, response = microservice_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )

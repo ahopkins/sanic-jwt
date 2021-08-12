@@ -226,7 +226,7 @@ class TestEndpointsCookies(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.cookie_strict.update(False)
-        sanic_app.auth.config.cookie_strict.update(False)
+        sanic_app.ctx.auth.config.cookie_strict.update(False)
 
         key = sanicjwt.config.cookie_access_token_name()
         access_token_from_cookie = authenticated_response.cookies.get(key)
@@ -284,7 +284,7 @@ class TestEndpointsCookies(object):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.debug.update(True)
         sanicjwt.config.cookie_strict.update(True)
-        sanic_app.auth.config.cookie_strict.update(True)
+        sanic_app.ctx.auth.config.cookie_strict.update(True)
 
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -348,7 +348,7 @@ class TestEndpointsCookies(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token_and_cookie
         sanicjwt.config.cookie_strict.update(False)
-        sanic_app.auth.config.cookie_strict.update(False)
+        sanic_app.ctx.auth.config.cookie_strict.update(False)
 
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -502,6 +502,7 @@ def test_with_cookie_normal(app):
     assert raw_token_cookie
     assert "httponly" in raw_token_cookie.lower()
     assert "expired" not in raw_token_cookie.lower()
+    assert "samesite=lax" in raw_token_cookie.lower()
     assert "secure" not in raw_token_cookie.lower()
     assert "max-age" not in raw_token_cookie.lower()
 
@@ -511,6 +512,7 @@ def test_with_cookie_config(app):
     sanicjwt.config.cookie_set.update(True)
     sanicjwt.config.cookie_httponly.update(False)
     sanicjwt.config.cookie_expires.update(datetime(2100, 1, 1))
+    sanicjwt.config.cookie_samesite.update("strict")
     sanicjwt.config.cookie_secure.update(True)
     sanicjwt.config.cookie_max_age.update(10)
 
@@ -528,5 +530,6 @@ def test_with_cookie_config(app):
     assert raw_token_cookie
     assert "httponly" not in raw_token_cookie.lower()
     assert "expires=fri, 01-jan-2100 00:00:00 gmt" in raw_token_cookie.lower()
+    assert "samesite=strict" in raw_token_cookie.lower()
     assert "secure" in raw_token_cookie.lower()
     assert "max-age=10" in raw_token_cookie.lower()

@@ -130,7 +130,10 @@ def test_tricky_debug_option_true(app):
     @sanic_jwt.protected(debug=lambda: True)
     def another_protected(request):
         return json(
-            {"protected": True, "is_debug": request.app.auth.config.debug()}
+            {
+                "protected": True,
+                "is_debug": request.app.ctx.auth.config.debug(),
+            }
         )
 
     # @sanic_app.exception(Exception)
@@ -180,7 +183,10 @@ def test_tricky_debug_option_false(app):
     @sanic_jwt.protected(debug=lambda: False)
     def another_protected(request):
         return json(
-            {"protected": True, "is_debug": request.app.auth.config.debug()}
+            {
+                "protected": True,
+                "is_debug": request.app.ctx.auth.config.debug(),
+            }
         )
 
     # @sanic_app.exception(Exception)

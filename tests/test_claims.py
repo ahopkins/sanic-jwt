@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import jwt
-
 from freezegun import freeze_time
 
 
@@ -159,7 +158,7 @@ def test_nbf(app_with_nbf):
         sanic_jwt.config.secret(),
         algorithms=sanic_jwt.config.algorithm(),
         verify=False,
-        leeway=60*9
+        leeway=60 * 9,
     )
     exp = payload.get("exp", None)
     exp = datetime.utcfromtimestamp(exp)
@@ -266,7 +265,7 @@ def test_aud(app_with_aud):
         sanic_jwt.config.secret(),
         algorithms=sanic_jwt.config.algorithm(),
         verify=False,
-        audience=sanic_jwt.config.claim_aud()
+        audience=sanic_jwt.config.claim_aud(),
     )
 
     assert "aud" in payload

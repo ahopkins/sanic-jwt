@@ -116,7 +116,7 @@ def test_refresh_no_valid_dict(app2):
 
 
 def test_me_with_none_debug(app1):
-    app1.auth.config.debug.update(True)
+    app1.ctx.auth.config.debug.update(True)
 
     _, response = app1.test_client.get("/auth/me")
 
@@ -126,7 +126,7 @@ def test_me_with_none_debug(app1):
 
 
 def test_me_without_authorization_header_debug(app2):
-    app2.auth.config.debug.update(True)
+    app2.ctx.auth.config.debug.update(True)
 
     _, response = app2.test_client.get("/auth/me")
 
@@ -136,7 +136,7 @@ def test_me_without_authorization_header_debug(app2):
 
 
 def test_verify_no_auth_header_debug(app1):
-    app1.auth.config.debug.update(True)
+    app1.ctx.auth.config.debug.update(True)
 
     _, response = app1.test_client.get("/auth/verify")
     assert response.status == 400

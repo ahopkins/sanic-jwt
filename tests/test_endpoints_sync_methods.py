@@ -4,10 +4,10 @@ import uuid
 from datetime import datetime, timedelta
 
 import pytest
+from freezegun import freeze_time
 from sanic import Sanic
 from sanic.response import json
 
-from freezegun import freeze_time
 from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 

@@ -25,10 +25,10 @@ clean:
 test:
 	python setup.py test
 
-black:
-	black ./ -l 79 --safe
-	isort -rc sanic_jwt tests
-
 release: clean
 	python setup.py sdist
 	twine upload dist/*
+
+pretty:
+	black --line-length 79 sanic_jwt tests
+	isort --line-length 79 sanic_jwt tests --profile=black

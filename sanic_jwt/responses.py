@@ -6,6 +6,7 @@ COOKIE_OPTIONS = (
     ("domain", "cookie_domain"),
     ("expires", "cookie_expires"),
     ("max-age", "cookie_max_age"),
+    ("samesite", "cookie_samesite"),
     ("secure", "cookie_secure"),
 )
 

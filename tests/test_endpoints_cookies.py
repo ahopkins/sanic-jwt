@@ -502,6 +502,7 @@ def test_with_cookie_normal(app):
     assert raw_token_cookie
     assert "httponly" in raw_token_cookie.lower()
     assert "expired" not in raw_token_cookie.lower()
+    assert "samesite=lax" in raw_token_cookie.lower()
     assert "secure" not in raw_token_cookie.lower()
     assert "max-age" not in raw_token_cookie.lower()
 
@@ -511,6 +512,7 @@ def test_with_cookie_config(app):
     sanicjwt.config.cookie_set.update(True)
     sanicjwt.config.cookie_httponly.update(False)
     sanicjwt.config.cookie_expires.update(datetime(2100, 1, 1))
+    sanicjwt.config.cookie_samesite.update("strict")
     sanicjwt.config.cookie_secure.update(True)
     sanicjwt.config.cookie_max_age.update(10)
 
@@ -528,5 +530,6 @@ def test_with_cookie_config(app):
     assert raw_token_cookie
     assert "httponly" not in raw_token_cookie.lower()
     assert "expires=fri, 01-jan-2100 00:00:00 gmt" in raw_token_cookie.lower()
+    assert "samesite=strict" in raw_token_cookie.lower()
     assert "secure" in raw_token_cookie.lower()
     assert "max-age=10" in raw_token_cookie.lower()

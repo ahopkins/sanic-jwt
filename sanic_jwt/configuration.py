@@ -26,6 +26,7 @@ defaults = {
     "cookie_max_age": 0,
     "cookie_path": "/",
     "cookie_refresh_token_name": "refresh_token",
+    "cookie_samesite": "Lax",
     "cookie_secure": False,
     "cookie_set": False,
     "cookie_split": False,

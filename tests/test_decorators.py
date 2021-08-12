@@ -1,6 +1,6 @@
 from sanic import Sanic
 from sanic.blueprints import Blueprint
-from sanic.response import json, text, html
+from sanic.response import html, json, text
 
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import inject_user, protected, scoped
@@ -67,6 +67,8 @@ def test_inject_user_regular(app_with_retrieve_user):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
+    sanic_app.router.reset()
+
     @sanic_app.route("/protected/user")
     @inject_user()
     @protected()
@@ -96,6 +98,8 @@ def test_inject_user_on_instance(app_with_retrieve_user):
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
+
+    sanic_app.router.reset()
 
     @sanic_app.route("/protected/user")
     @sanic_jwt.inject_user()
@@ -127,6 +131,8 @@ def test_inject_user_on_instance_bp(app_with_retrieve_user):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
+    sanic_app.router.reset()
+
     @sanic_app.route("/protected/user")
     @sanic_jwt.inject_user()
     @sanic_jwt.protected()
@@ -156,6 +162,8 @@ def test_inject_user_on_instance_non_async(app_with_retrieve_user):
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
+
+    sanic_app.router.reset()
 
     @sanic_app.route("/protected/user")
     @sanic_jwt.inject_user()
@@ -233,7 +241,7 @@ def test_redirect_without_url(app):
     request, response = sanic_app.test_client.get("/protected/static")
 
     assert response.status == 200
-    assert response.body == b'<html><body>Home</body></html>'
+    assert response.body == b"<html><body>Home</body></html>"
     assert response.history
     assert response.history[0].status_code == 302
 
@@ -280,6 +288,8 @@ def test_authenticated_redirect(app_with_retrieve_user):
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
+
+    sanic_app.router.reset()
 
     @sanic_app.route("/protected/static")
     @sanic_jwt.protected(redirect_on_fail=True)

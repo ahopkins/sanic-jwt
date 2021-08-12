@@ -1,20 +1,20 @@
 from datetime import datetime, timedelta
 
+import jwt
 import pytest
+from freezegun import freeze_time
 from sanic import Sanic
 from sanic.response import json
 
-import jwt
-from freezegun import freeze_time
 from sanic_jwt import Authentication, exceptions, Initialize, protected
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def cache():
     yield {}
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def my_authentication_class(users, cache):
     class MyAuthentication(Authentication):
         async def authenticate(self, request, *args, **kwargs):
@@ -70,7 +70,7 @@ def my_authentication_class(users, cache):
     yield MyAuthentication
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def sanic_app(users, my_authentication_class, cache):
     sanic_app = Sanic("sanic-jwt-test")
 
@@ -86,7 +86,7 @@ def sanic_app(users, my_authentication_class, cache):
     yield sanic_app
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_full_auth_cls(sanic_app, my_authentication_class):
 
     sanicjwt = Initialize(
@@ -98,7 +98,7 @@ def app_full_auth_cls(sanic_app, my_authentication_class):
     yield (sanic_app, sanicjwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_full_bytes_refresh_token(
     users, sanic_app, my_authentication_class, cache
 ):

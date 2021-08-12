@@ -1,6 +1,5 @@
-import pytest
-
 import jwt
+import pytest
 
 
 def test_unprotected(app):
@@ -29,7 +28,7 @@ def test_auth_invalid_method(app):
     sanic_app, _ = app
     _, response = sanic_app.test_client.get("/auth")
     assert response.status == 405
-    assert b"Error: Method GET not allowed for URL /auth" in response.body
+    assert b"Method GET not allowed for URL /auth" in response.body
 
 
 def test_auth_proper_credentials(app):
@@ -106,7 +105,7 @@ def test_auth_refresh_not_found(app):
     sanic_app, _ = app
     _, response = sanic_app.test_client.post("/auth/refresh")
     assert response.status == 404  # since refresh_token_enabled is False
-    assert b"Error: Requested URL /auth/refresh not found" in response.body
+    assert b"Requested URL /auth/refresh not found" in response.body
 
 
 def test_auth_refresh_not_enabled(app_with_refresh_token):

@@ -300,3 +300,26 @@ Once the Payload is encrypted you may want to include all information data into 
     > curl -X GET -H "Authorization: Bearer $TOKEN" http://localhost:8000/auth/me
     {"me":{"user_id":"85bbf574f9c1469da89de82a934fec96","exp":1587035913,"name":"custom name"}}
 
+
+------------------
+User level secrets
+------------------
+
+Sometimes, you may find it useful to have a different secret for **every** user of your application. One advantage of this could be the ability to invalidate any existing NON-expired access token for a single user, without interrupting any of your other users. Essentially, this could be equivalent to "logging out" (albeit, JWTs are by definition stateless, so it is only mimicking session based login/logout).
+
+To implement this:
+
+.. code-block:: python
+
+    async def retrieve_user_secret(user_id):
+        return f"user_id|{user_id}"
+
+    Initialize(
+        app,
+        user_secret_enabled=True,
+        retrieve_user_secret=retrieve_user_secret,
+    )
+
+.. node::
+
+    You must have both ``user_secret_enabled=True`` and the ``retrieve_user_secret`` handler. You **do not** need to implement it this way. You can construct the handler any other way as outlined, for example: ``authentication_class``.

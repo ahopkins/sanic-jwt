@@ -5,6 +5,8 @@ import logging
 from . import exceptions, utils
 from .cache import get_cached, is_cached, to_cache
 
+DEFAULT_SECRET = "This is a big secret. Shhhhh"
+
 defaults = {
     "access_token_name": "access_token",
     "algorithm": "HS256",
@@ -19,10 +21,16 @@ defaults = {
     "claim_nbf_delta": 0,
     "cookie_access_token_name": "access_token",
     "cookie_domain": "",
+    "cookie_expires": None,
     "cookie_httponly": True,
+    "cookie_max_age": 0,
     "cookie_path": "/",
     "cookie_refresh_token_name": "refresh_token",
+    "cookie_samesite": "Lax",
+    "cookie_secure": False,
     "cookie_set": False,
+    "cookie_split": False,
+    "cookie_split_signature_name": "access_token_signature",
     "cookie_strict": True,
     "debug": False,
     "do_protection": True,
@@ -43,7 +51,7 @@ defaults = {
     "refresh_token_name": "refresh_token",
     "scopes_enabled": False,
     "scopes_name": "scopes",
-    "secret": "This is a big secret. Shhhhh",
+    "secret": DEFAULT_SECRET,
     "strict_slashes": False,
     "user_secret_enabled": False,
     "url_prefix": "/auth",
@@ -55,6 +63,7 @@ defaults = {
 aliases = {
     "cookie_access_token_name": "cookie_token_name",
     "secret": "public_key",
+    "cookie_split": "split_cookie",
 }
 
 ignore_keys = (
@@ -242,8 +251,7 @@ class Configuration:
         return instance
 
     def get(self, item):
-        """Helper method to avoid calling getattr
-        """
+        """Helper method to avoid calling getattr"""
         if item in self:  # noqa
             item = getattr(self, item)
             return item()

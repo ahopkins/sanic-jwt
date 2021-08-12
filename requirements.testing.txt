@@ -1,0 +1,9 @@
+cryptography
+freezegun
+pytest
+pytest-asyncio
+pytest-cov
+pytest-flake8
+pytest-pep8
+sanic_testing
+sanic

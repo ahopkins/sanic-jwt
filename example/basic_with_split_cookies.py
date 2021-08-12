@@ -3,9 +3,8 @@ This is taken from "Simple Usage" page in the docs:
 http://sanic-jwt.readthedocs.io/en/latest/pages/simpleusage.html
 """
 
-from sanic import Sanic, response
-from sanic_jwt import exceptions
-from sanic_jwt import Initialize, protected
+from sanic import Sanic
+from sanic_jwt import exceptions, initialize
 
 
 class User:
@@ -44,25 +43,14 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-async def retrieve_user_secret(user_id):
-    print(f"{user_id=}")
-    return f"user_id|{user_id}"
-
-
-app = Sanic(__name__)
-Initialize(
+app = Sanic()
+initialize(
     app,
     authenticate=authenticate,
-    user_secret_enabled=True,
-    retrieve_user_secret=retrieve_user_secret,
+    cookie_set=True,
+    cookie_split=True,
 )
 
 
-@app.route("/protected")
-@protected()
-async def protected(request):
-    return response.json({"protected": True})
-
-
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8888, debug=True)
+    app.run(host="127.0.0.1", port=8888)

@@ -297,8 +297,9 @@ Sample Code
             self.scopes = scopes
 
         def __str__(self):
-            return "User(id='%s')" % self.id
-
+            return "User(id='%s')" % self.user_id
+        def to_dict(self):
+            return {"user_id": self.user_id, "username": self.username, "scopes": self.scopes}
 
     users = [
         User(1, 'user1', 'abcxyz', ['user']),

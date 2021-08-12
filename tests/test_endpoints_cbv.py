@@ -1,8 +1,8 @@
+import jwt
 from sanic import Sanic
 from sanic.response import json
 from sanic.views import HTTPMethodView
 
-import jwt
 from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
@@ -98,7 +98,7 @@ class TestEndpointsCBV(object):
     def test_auth_invalid_method(self):
         _, response = sanic_app.test_client.get("/auth")
         assert response.status == 405
-        assert b"Error: Method GET not allowed for URL /auth" in response.body
+        assert b"Method GET not allowed for URL /auth" in response.body
 
     def test_auth_proper_credentials(self):
         _, response = sanic_app.test_client.post(

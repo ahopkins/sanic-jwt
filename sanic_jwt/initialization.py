@@ -1,11 +1,13 @@
 import inspect
 from collections import namedtuple
+from types import SimpleNamespace
+from warnings import warn
 
 from sanic import Blueprint, Sanic
 
 from sanic_jwt import endpoints, exceptions
 from sanic_jwt.authentication import Authentication
-from sanic_jwt.configuration import Configuration
+from sanic_jwt.configuration import Configuration, DEFAULT_SECRET
 from sanic_jwt.decorators import inject_user, protected, scoped
 from sanic_jwt.responses import Responses
 
@@ -238,7 +240,13 @@ class Initialize:
         config = self.config
 
         # Initialize instance of the Authentication class
-        self.instance.auth = self.authentication_class(self.app, config=config)
+        if not hasattr(self.instance, "ctx"):
+            # If using Sanic 20.12 or lower, there is not ctx  property,
+            # so we create one here
+            self.instance.ctx = SimpleNamespace()
+        self.instance.ctx.auth = self.authentication_class(
+            self.app, config=config
+        )
 
         init_handlers = (
             handlers if config.auth_mode() else auth_mode_agnostic_handlers
@@ -256,11 +264,11 @@ class Initialize:
         for handler in init_handlers:
             if handler.name in self.kwargs:
                 method = self.kwargs.pop(handler.name)
-                setattr(self.instance.auth, handler.name, method)
+                setattr(self.instance.ctx.auth, handler.name, method)
 
     def __initialize_claims(self):
         if "extra_verifications" in self.kwargs:
-            self.instance.auth._extra_verifications = self.kwargs.get(
+            self.instance.ctx.auth._extra_verifications = self.kwargs.get(
                 "extra_verifications"
             )
 
@@ -273,7 +281,7 @@ class Initialize:
 
     def __check_method_in_auth(self, method_name, exc):
         if method_name not in self.kwargs:
-            method_impl = getattr(self.instance.auth, method_name)
+            method_impl = getattr(self.instance.ctx.auth, method_name)
             if not inspect.ismethod(method_impl):
                 self.__raise_if_not_none(exc)
             if method_impl.__func__ == getattr(Authentication, method_name):
@@ -296,6 +304,15 @@ class Initialize:
                     self.kwargs.update({k: True})
 
         self.config = self.configuration_class(self.app.config, **self.kwargs)
+        if self.config.secret() == DEFAULT_SECRET:
+            warn(
+                "Sanic JWT was initialized using the default secret available "
+                "to the public. DO NOT DEPLOY your application until you "
+                "change it. See "
+                "https://sanic-jwt.readthedocs.io/en/latest/pages/"
+                "configuration.html#secret "
+                "for more information."
+            )
 
     def __load_responses(self):
         self.responses = self.responses_class(self.config, self.instance)

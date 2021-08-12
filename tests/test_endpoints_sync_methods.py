@@ -4,10 +4,10 @@ import uuid
 from datetime import datetime, timedelta
 
 import pytest
+from freezegun import freeze_time
 from sanic import Sanic
 from sanic.response import json
 
-from freezegun import freeze_time
 from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
@@ -16,7 +16,7 @@ def generate_refresh_token(*args, **kwargs):
     return str(uuid.uuid4())
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_sync_methods(users):
 
     cache = {}
@@ -92,7 +92,7 @@ def app_with_sync_methods(users):
 
 
 class TestEndpointsSync(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def authenticated_response(self, app_with_sync_methods):
         sanic_app, _ = app_with_sync_methods
         _, response = sanic_app.test_client.post(

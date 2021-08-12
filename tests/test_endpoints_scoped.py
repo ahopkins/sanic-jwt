@@ -78,7 +78,7 @@ def my_destructure_scopes(scopes, *args, **kwargs):
     return scopes.replace("|", ":")
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_scopes_base():
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -156,7 +156,7 @@ def app_with_scopes_base():
     yield sanic_app
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_scopes(app_with_scopes_base):
     sanicjwt = Initialize(
         app_with_scopes_base,
@@ -167,7 +167,7 @@ def app_with_scopes(app_with_scopes_base):
     yield (app_with_scopes_base, sanicjwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_scopes_override(app_with_scopes_base):
     sanicjwt = Initialize(
         app_with_scopes_base,
@@ -179,7 +179,7 @@ def app_with_scopes_override(app_with_scopes_base):
     yield (app_with_scopes_base, sanicjwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_scopes_destructure(app_with_scopes_base):
     sanicjwt = Initialize(
         app_with_scopes_base,
@@ -192,7 +192,7 @@ def app_with_scopes_destructure(app_with_scopes_base):
 
 
 class TestEndpointsSync(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def user1(self, app_with_scopes):
         sanic_app, _ = app_with_scopes
         _, response = sanic_app.test_client.post(
@@ -201,7 +201,7 @@ class TestEndpointsSync(object):
         assert response.status == 200
         yield response
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def user2(self, app_with_scopes):
         sanic_app, _ = app_with_scopes
         _, response = sanic_app.test_client.post(
@@ -210,7 +210,7 @@ class TestEndpointsSync(object):
         assert response.status == 200
         yield response
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def user3(self, app_with_scopes):
         sanic_app, _ = app_with_scopes
         _, response = sanic_app.test_client.post(
@@ -219,7 +219,7 @@ class TestEndpointsSync(object):
         assert response.status == 200
         yield response
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def user4(self, app_with_scopes):
         sanic_app, _ = app_with_scopes
         _, response = sanic_app.test_client.post(
@@ -228,7 +228,7 @@ class TestEndpointsSync(object):
         assert response.status == 200
         yield response
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def user5(self, app_with_scopes):
         sanic_app, _ = app_with_scopes
         _, response = sanic_app.test_client.post(
@@ -237,7 +237,7 @@ class TestEndpointsSync(object):
         assert response.status == 200
         yield response
 
-    @pytest.yield_fixture
+    @pytest.fixture
     def user6(self, app_with_scopes):
         sanic_app, _ = app_with_scopes
         _, response = sanic_app.test_client.post(

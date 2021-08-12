@@ -4,22 +4,13 @@ Changelog
 
 The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_ and this project adheres to `Semantic Versioning <http://semver.org/spec/v2.0.0.html>`_.
 
-- Deprecate
-    get_refresh_token
-    get_access_token
-    retrieve_scopes
 
+++++++++++++++++++++++++++
+Version 1.6.0 - 2020-01-05
+++++++++++++++++++++++++++
 
-
-
-
-
-
-
-
-
-
-
+| **Added**
+| - Upgrade PyJWT to v2 and add support
 
 ++++++++++++++++++++++++++
 Version 1.3.2 - 2019-05-16

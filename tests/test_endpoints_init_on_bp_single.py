@@ -109,7 +109,8 @@ def test_authentication_all_methods():
     assert refresh_token is not None
 
     _, response = app.test_client.get(
-        "/test/", headers={"Authorization": "Bearer {}".format(access_token)},
+        "/test/",
+        headers={"Authorization": "Bearer {}".format(access_token)},
     )
 
     assert response.status == 200

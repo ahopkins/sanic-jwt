@@ -5,6 +5,8 @@ from sanic.response import json, text
 from sanic_jwt import Claim, exceptions, Initialize
 from sanic_jwt.decorators import protected
 
+Sanic.test_mode = True
+
 
 class User:
     def __init__(self, id, username, password):
@@ -17,22 +19,22 @@ class User:
         return {prop: getattr(self, prop, None) for prop in properties}
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def users():
     yield [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def username_table(users):
     yield {u.username: u for u in users}
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def userid_table(users):
     yield {u.user_id: u for u in users}
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def authenticate(username_table):
     async def authenticate(request, *args, **kwargs):
         username = request.json.get("username", None)
@@ -55,7 +57,7 @@ def authenticate(username_table):
     yield authenticate
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def retrieve_user(userid_table):
     async def retrieve_user(request, payload, *args, **kwargs):
         if payload:
@@ -69,14 +71,15 @@ def retrieve_user(userid_table):
     yield retrieve_user
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def retrieve_user_secret():
     async def retrieve_user_secret(user_id, **kwargs):
         return f"foobar<{user_id}>"
+
     yield retrieve_user_secret
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -108,7 +111,7 @@ def app(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_refresh_token(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -123,7 +126,7 @@ def app_with_refresh_token(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_user_secrets(username_table, authenticate, retrieve_user_secret):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -142,7 +145,7 @@ def app_with_user_secrets(username_table, authenticate, retrieve_user_secret):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_url_prefix(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -162,7 +165,7 @@ def app_with_url_prefix(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_bp_setup_without_init(username_table, authenticate):
     sanic_app = Sanic("sanic-jwt-test")
 
@@ -189,7 +192,7 @@ def app_with_bp_setup_without_init(username_table, authenticate):
     yield (sanic_app, sanic_bp)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_bp(app_with_bp_setup_without_init):
     sanic_app, sanic_bp = app_with_bp_setup_without_init
     sanic_jwt_init = Initialize(sanic_app, authenticate=authenticate)
@@ -201,7 +204,7 @@ def app_with_bp(app_with_bp_setup_without_init):
     yield (sanic_app, sanic_jwt_init, sanic_bp, sanic_jwt_init_bp)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_extended_exp(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -221,7 +224,7 @@ def app_with_extended_exp(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_leeway(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -241,7 +244,7 @@ def app_with_leeway(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_nbf(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -264,7 +267,7 @@ def app_with_nbf(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_iat(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -284,7 +287,7 @@ def app_with_iat(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_iss(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -304,7 +307,7 @@ def app_with_iss(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_aud(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -324,7 +327,7 @@ def app_with_aud(username_table, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_retrieve_user(retrieve_user, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
@@ -344,7 +347,7 @@ def app_with_retrieve_user(retrieve_user, authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_extra_verification(authenticate):
     def user2(payload):
         return payload.get("user_id") == 2
@@ -366,7 +369,7 @@ def app_with_extra_verification(authenticate):
     yield (sanic_app, sanic_jwt)
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_custom_claims(authenticate):
     class User2Claim(Claim):
         key = "username"

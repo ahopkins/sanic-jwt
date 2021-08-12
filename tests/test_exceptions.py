@@ -24,4 +24,4 @@ def test_abort_called_in_endpoint(app):
     )
 
     assert response.status == 400
-    assert response.body == b"Error: Aborted request"
+    assert b"Aborted request" in response.body

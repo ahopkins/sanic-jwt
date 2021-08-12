@@ -1,15 +1,15 @@
 import binascii
 import os
 
+import jwt
 import pytest
 from sanic import Sanic
 from sanic.response import json
 
-import jwt
 from sanic_jwt import Initialize, protected
 
 
-@pytest.yield_fixture
+@pytest.fixture
 def app_with_refresh_token(users, authenticate):
 
     cache = {}
@@ -65,7 +65,7 @@ def app_with_refresh_token(users, authenticate):
 
 
 class TestEndpointsQueryString(object):
-    @pytest.yield_fixture
+    @pytest.fixture
     def authenticated_response(self, app_with_refresh_token):
         sanic_app, sanicjwt = app_with_refresh_token
         _, response = sanic_app.test_client.post(
@@ -133,7 +133,7 @@ class TestEndpointsQueryString(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token
         sanicjwt.config.query_string_strict.update(True)
-        sanic_app.auth.config.query_string_strict.update(True)
+        sanic_app.ctx.auth.config.query_string_strict.update(True)
         access_token_from_json = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
         )
@@ -222,7 +222,7 @@ class TestEndpointsQueryString(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token
         sanicjwt.config.query_string_strict.update(False)
-        sanic_app.auth.config.query_string_strict.update(False)
+        sanic_app.ctx.auth.config.query_string_strict.update(False)
 
         access_token_from_json = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -281,7 +281,7 @@ class TestEndpointsQueryString(object):
         sanic_app, sanicjwt = app_with_refresh_token
         sanicjwt.config.debug.update(True)
         sanicjwt.config.query_string_strict.update(True)
-        sanic_app.auth.config.query_string_strict.update(True)
+        sanic_app.ctx.auth.config.query_string_strict.update(True)
 
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None
@@ -332,7 +332,7 @@ class TestEndpointsQueryString(object):
     ):
         sanic_app, sanicjwt = app_with_refresh_token
         sanicjwt.config.query_string_strict.update(False)
-        sanic_app.auth.config.query_string_strict.update(False)
+        sanic_app.ctx.auth.config.query_string_strict.update(False)
 
         access_token = authenticated_response.json.get(
             sanicjwt.config.access_token_name(), None

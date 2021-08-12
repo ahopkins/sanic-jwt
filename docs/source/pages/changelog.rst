@@ -6,6 +6,16 @@ The format is based on `Keep a Changelog <http://keepachangelog.com/en/1.0.0/>`_
 
 
 ++++++++++++++++++++++++++
+Version 1.7.0 - 2021-08-12
+++++++++++++++++++++++++++
+
+| **Added**
+| - `#213 <https://github.com/ahopkins/sanic-jwt/pull/213>`_. Add samesite cookie option
+| - `#214 <https://github.com/ahopkins/sanic-jwt/pull/214>`_. Compat with Sanic 21.3+
+| - Documentation updates
+
+
+++++++++++++++++++++++++++
 Version 1.6.0 - 2020-01-05
 ++++++++++++++++++++++++++
 

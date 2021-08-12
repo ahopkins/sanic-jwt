@@ -216,3 +216,9 @@ Response: ::
 Excellent. Now that we can generate and verify tokens, we can get to work.
 
 Best of luck creating an authentication scheme that works for you. If you have any questions about how to implement Sanic JWT (or to make it better), please `create an issue <https://github.com/ahopkins/sanic-jwt/issues>`_ or get in touch.
+
+.. note::
+
+    **IMPORTANT**: Remember, before you deploy your application, you should set the ``config.secret``. See :doc:`configuration<configuration>`.
+
+    This is a potential **SECURITY RISK**.

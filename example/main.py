@@ -24,14 +24,14 @@ async def retrieve_user(request, *args, **kwargs):
         if "payload" in kwargs:
             payload = kwargs.get("payload")
         else:
-            payload = await request.app.auth.extract_payload(request)
+            payload = await request.app.ctx.auth.extract_payload(request)
         user_id = payload.get("user_id")
     user = userid_table.get(user_id)
     return user
 
 
 async def retrieve_refresh_token(request, *args, **kwargs):
-    user = await request.app.auth.retrieve_user(request, **kwargs)
+    user = await request.app.ctx.auth.retrieve_user(request, **kwargs)
     return user.refresh_token
 
 

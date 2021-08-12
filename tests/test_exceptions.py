@@ -1,4 +1,5 @@
 from sanic.exceptions import abort
+
 from sanic_jwt.decorators import protected
 
 
@@ -14,7 +15,9 @@ def test_abort_called_in_endpoint(app):
         "/auth", json={"username": "user1", "password": "abcxyz"}
     )
 
-    access_token = response.json.get(sanic_jwt.config.access_token_name(), None)
+    access_token = response.json.get(
+        sanic_jwt.config.access_token_name(), None
+    )
 
     _, response = sanic_app.test_client.get(
         "/abort", headers={"Authorization": "Bearer {}".format(access_token)}

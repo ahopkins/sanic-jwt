@@ -8,9 +8,9 @@ from sanic_jwt import Claim, exceptions, Initialize
 def test_claim_initialized_properly(app_with_custom_claims):
     sanic_app, sanic_jwt = app_with_custom_claims
 
-    assert len(sanic_app.auth._custom_claims) == 1
+    assert len(sanic_app.ctx.auth._custom_claims) == 1
 
-    claim = list(sanic_app.auth._custom_claims)[0]
+    claim = list(sanic_app.ctx.auth._custom_claims)[0]
     assert isinstance(claim, Claim)
 
 

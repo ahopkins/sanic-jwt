@@ -10,7 +10,7 @@ class Claim:
     @classmethod
     def _register(cls, sanicjwt):
         instance = cls()
-        sanicjwt.instance.auth._custom_claims.add(instance)
+        sanicjwt.instance.ctx.auth._custom_claims.add(instance)
 
     def get_key(self):
         return self.key

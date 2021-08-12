@@ -3,7 +3,6 @@ from sanic.views import HTTPMethodView
 
 from . import exceptions, utils
 from .base import BaseDerivative
-from .decorators import protected
 
 
 class BaseEndpoint(BaseDerivative, HTTPMethodView):

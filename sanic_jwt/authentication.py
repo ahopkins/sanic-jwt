@@ -1,6 +1,5 @@
 import inspect
 import logging
-import warnings
 from contextlib import contextmanager
 from datetime import datetime, timedelta
 
@@ -11,7 +10,7 @@ from .exceptions import (
     InvalidCustomClaimError,
     InvalidVerification,
     InvalidVerificationError,
-    SanicJWTException
+    SanicJWTException,
 )
 
 logger = logging.getLogger(__name__)

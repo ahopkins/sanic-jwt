@@ -308,7 +308,9 @@ class Initialize:
             warn(
                 "Sanic JWT was initialized using the default secret available "
                 "to the public. DO NOT DEPLOY your application until you "
-                "change it. See https://sanic-jwt.readthedocs.io/en/latest/pages/configuration.html#secret "
+                "change it. See "
+                "https://sanic-jwt.readthedocs.io/en/latest/pages/"
+                "configuration.html#secret "
                 "for more information."
             )
 

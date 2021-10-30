@@ -189,7 +189,7 @@ class Authentication(BaseAuthentication):
 
         if verify:
             if self._extra_verifications:
-                self._verify_extras(decoded)
+                await self._verify_extras(decoded)
             if self._custom_claims or inline_claims:
                 self._verify_custom_claims(
                     decoded, inline_claims=inline_claims
@@ -431,12 +431,12 @@ class Authentication(BaseAuthentication):
 
         return is_valid, status, reason
 
-    def _verify_extras(self, payload):
+    async def _verify_extras(self, payload):
         for verification in self._extra_verifications:
             if not callable(verification):
                 raise InvalidVerification()
 
-            verified = verification(payload)
+            verified = await utils.call(verification, payload)
             if not isinstance(verified, bool):
                 raise InvalidVerification()
 

@@ -37,7 +37,7 @@ def test_extra_verification_passing(app_with_extra_verification):
 
 
 def test_extra_verification_non_boolean_return(authenticate):
-    def bad_return(payload):
+    def bad_return(payload, request):
         return 123
 
     extra_verifications = [bad_return]
@@ -50,7 +50,7 @@ def test_extra_verification_non_boolean_return(authenticate):
         extra_verifications=extra_verifications,
     )
 
-    @sanic_app.route("/protected")
+    @sanic_app.route("/protected", error_format="json")
     @protected()
     async def protected_request(request):
         return json({"protected": True})
@@ -84,7 +84,7 @@ def test_extra_verification_non_callable(authenticate):
         extra_verifications=extra_verifications,
     )
 
-    @sanic_app.route("/protected")
+    @sanic_app.route("/protected", error_format="json")
     @protected()
     async def protected_request(request):
         return json({"protected": True})

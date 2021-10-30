@@ -126,7 +126,7 @@ def test_wrong_header(app):
 def test_tricky_debug_option_true(app):
     sanic_app, sanic_jwt = app
 
-    @sanic_app.route("/another_protected")
+    @sanic_app.route("/another_protected", error_format="json")
     @sanic_jwt.protected(debug=lambda: True)
     def another_protected(request):
         return json(

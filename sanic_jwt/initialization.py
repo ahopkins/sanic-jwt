@@ -184,6 +184,10 @@ class Initialize:
             url_prefix = self._get_url_prefix()
             self.instance.blueprint(self.bp, url_prefix=url_prefix)
 
+            self.instance.exception(exceptions.Unauthorized)(
+                self.responses.exception_response
+            )
+
     def __add_class_views(self):
         """
         Include any custom class views on the Sanic JWT Blueprint

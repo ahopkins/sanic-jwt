@@ -1,4 +1,3 @@
-import pytest
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json

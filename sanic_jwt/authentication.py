@@ -387,7 +387,7 @@ class Authentication(BaseAuthentication):
         if token:
             try:
                 payload = await self._decode(token, verify=verify)
-                if self._extra_verifications:
+                if self._extra_verifications and verify is True:
                     await self._verify_extras(payload, request)
             except (
                 jwt.exceptions.ExpiredSignatureError,

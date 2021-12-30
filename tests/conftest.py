@@ -353,7 +353,10 @@ def app_with_extra_verification(authenticate):
     def user2(payload, request):
         return payload.get("user_id") == 2
 
-    extra_verifications = [user2]
+    async def async_user2(payload, request):
+        return payload.get("user_id") == 2
+
+    extra_verifications = [user2, async_user2]
 
     sanic_app = Sanic("sanic-jwt-test")
     sanic_jwt = Initialize(

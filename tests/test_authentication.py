@@ -116,8 +116,8 @@ def test_wrong_header(app):
     )
 
     assert response.status == 401
-    assert response.json.get("exception") == "Unauthorized"
-    assert "Authorization header is invalid." in response.json.get("reasons")
+    assert response.json.get("description") == "Unauthorized"
+    assert "Authorization header is invalid." in response.json.get("message")
 
 
 # assert "Auth required." in response.json.get('reasons')
@@ -162,18 +162,18 @@ def test_tricky_debug_option_true(app):
 
     _, response = sanic_app.test_client.get("/another_protected")
 
-    assert response.json.get("exception") == "Unauthorized"
+    assert response.json.get("description") == "Bad Request"
     assert response.status == 400
-    assert "Authorization header not present." in response.json.get("reasons")
+    assert "Authorization header not present." in response.json.get("message")
 
     _, response = sanic_app.test_client.get(
         "/another_protected",
         headers={"Authorization": "Foobar {}".format(access_token)},
     )
 
-    assert response.json.get("exception") == "Unauthorized"
+    assert response.json.get("description") == "Bad Request"
     assert response.status == 400
-    assert "Authorization header is invalid." in response.json.get("reasons")
+    assert "Authorization header is invalid." in response.json.get("message")
 
 
 def test_tricky_debug_option_false(app):
@@ -215,15 +215,15 @@ def test_tricky_debug_option_false(app):
 
     _, response = sanic_app.test_client.get("/another_protected")
 
-    assert response.json.get("exception") == "Unauthorized"
+    assert response.json.get("description") == "Unauthorized"
     assert response.status == 401
-    assert "Authorization header not present." in response.json.get("reasons")
+    assert "Authorization header not present." in response.json.get("message")
 
     _, response = sanic_app.test_client.get(
         "/another_protected",
         headers={"Authorization": "Foobar {}".format(access_token)},
     )
 
-    assert response.json.get("exception") == "Unauthorized"
+    assert response.json.get("description") == "Unauthorized"
     assert response.status == 401
-    assert "Authorization header is invalid." in response.json.get("reasons")
+    assert "Authorization header is invalid." in response.json.get("message")

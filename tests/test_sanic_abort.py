@@ -1,4 +1,4 @@
-from sanic.exceptions import abort
+from sanic.exceptions import SanicException, ServerError
 
 
 def test_sanic_abort_401(app):
@@ -6,7 +6,7 @@ def test_sanic_abort_401(app):
 
     @sanic_app.route("/abort")
     async def abort_request(request):
-        abort(401)
+        raise SanicException(status_code=401)
 
     _, response = sanic_app.test_client.get("/abort")
 

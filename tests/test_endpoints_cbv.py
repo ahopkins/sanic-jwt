@@ -1,4 +1,5 @@
 import jwt
+import pytest
 from sanic import Sanic
 from sanic.response import json
 from sanic.views import HTTPMethodView
@@ -7,76 +8,77 @@ from sanic_jwt import exceptions, Initialize
 from sanic_jwt.decorators import protected
 
 
-class User(object):
-    def __init__(self, id, username, password):
-        self.id = id
-        self.username = username
-        self.password = password
+@pytest.fixture
+def fixtures():
+    class User(object):
+        def __init__(self, id, username, password):
+            self.id = id
+            self.username = username
+            self.password = password
 
-    def to_dict(self):
-        properties = ["user_id", "username"]
-        return {prop: getattr(self, prop, None) for prop in properties}
+        def to_dict(self):
+            properties = ["user_id", "username"]
+            return {prop: getattr(self, prop, None) for prop in properties}
 
+    users = [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
 
-users = [User(1, "user1", "abcxyz"), User(2, "user2", "abcxyz")]
+    username_table = {u.username: u for u in users}
+    # userid_table = {u.user_id: u for u in users}
 
-username_table = {u.username: u for u in users}
-# userid_table = {u.user_id: u for u in users}
+    async def authenticate(request, *args, **kwargs):
+        username = request.json.get("username", None)
+        password = request.json.get("password", None)
 
+        if not username or not password:
+            raise exceptions.AuthenticationFailed(
+                "Missing username or password."
+            )
 
-async def authenticate(request, *args, **kwargs):
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
+        user = username_table.get(username, None)
+        if user is None:
+            raise exceptions.AuthenticationFailed("User not found.")
 
-    if not username or not password:
-        raise exceptions.AuthenticationFailed("Missing username or password.")
+        if password != user.password:
+            raise exceptions.AuthenticationFailed("Password is incorrect.")
 
-    user = username_table.get(username, None)
-    if user is None:
-        raise exceptions.AuthenticationFailed("User not found.")
+        return user
 
-    if password != user.password:
-        raise exceptions.AuthenticationFailed("Password is incorrect.")
+    sanic_app = Sanic("sanic-jwt-test")
+    sanic_jwt = Initialize(sanic_app, authenticate=authenticate)
 
-    return user
+    class PublicView(HTTPMethodView):
+        def get(self, request):
+            return json({"hello": "world"})
 
+    class ProtectedView(HTTPMethodView):
+        decorators = [protected()]
 
-sanic_app = Sanic("sanic-jwt-test")
-sanic_jwt = Initialize(sanic_app, authenticate=authenticate)
+        async def get(self, request):
+            return json({"protected": True})
 
+    class PartiallyProtectedView(HTTPMethodView):
+        async def get(self, request):
+            return json({"protected": True})
 
-class PublicView(HTTPMethodView):
-    def get(self, request):
-        return json({"hello": "world"})
+        @protected()
+        async def patch(self, request):
+            return json({"protected": True})
 
+    sanic_app.add_route(PublicView.as_view(), "/")
+    sanic_app.add_route(ProtectedView.as_view(), "/protected")
+    sanic_app.add_route(PartiallyProtectedView.as_view(), "/partially")
 
-class ProtectedView(HTTPMethodView):
-    decorators = [protected()]
-
-    async def get(self, request):
-        return json({"protected": True})
-
-
-class PartiallyProtectedView(HTTPMethodView):
-    async def get(self, request):
-        return json({"protected": True})
-
-    @protected()
-    async def patch(self, request):
-        return json({"protected": True})
-
-
-sanic_app.add_route(PublicView.as_view(), "/")
-sanic_app.add_route(ProtectedView.as_view(), "/protected")
-sanic_app.add_route(PartiallyProtectedView.as_view(), "/partially")
+    return sanic_app, sanic_jwt
 
 
 class TestEndpointsCBV(object):
-    def test_unprotected(self):
+    def test_unprotected(self, fixtures):
+        sanic_app, sanic_jwt = fixtures
         _, response = sanic_app.test_client.get("/")
         assert response.status == 200
 
-    def test_protected(self):
+    def test_protected(self, fixtures):
+        sanic_app, sanic_jwt = fixtures
         _, response = sanic_app.test_client.get("/protected")
         assert response.status == 401
         assert response.json.get("exception") == "Unauthorized"
@@ -84,7 +86,8 @@ class TestEndpointsCBV(object):
             "reasons"
         )
 
-    def test_partially_protected(self):
+    def test_partially_protected(self, fixtures):
+        sanic_app, sanic_jwt = fixtures
         _, response = sanic_app.test_client.get("/partially")
         assert response.status == 200
 
@@ -95,12 +98,14 @@ class TestEndpointsCBV(object):
             "reasons"
         )
 
-    def test_auth_invalid_method(self):
+    def test_auth_invalid_method(self, fixtures):
+        sanic_app, sanic_jwt = fixtures
         _, response = sanic_app.test_client.get("/auth")
         assert response.status == 405
         assert b"Method GET not allowed for URL /auth" in response.body
 
-    def test_auth_proper_credentials(self):
+    def test_auth_proper_credentials(self, fixtures):
+        sanic_app, sanic_jwt = fixtures
         _, response = sanic_app.test_client.post(
             "/auth", json={"username": "user1", "password": "abcxyz"}
         )

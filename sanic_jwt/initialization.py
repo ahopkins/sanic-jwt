@@ -176,7 +176,7 @@ class Initialize:
                     mapping.protected_kwargs,
                 )
 
-        self.bp.exception(exceptions.SanicJWTException)(
+        self.app.exception(exceptions.SanicJWTException)(
             self.responses.exception_response
         )
 

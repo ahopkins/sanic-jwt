@@ -1,3 +1,4 @@
+import pytest
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -5,27 +6,31 @@ from sanic.response import json
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
 
-blueprint = Blueprint("Test", "/test")
+
+@pytest.fixture
+def app():
+    blueprint = Blueprint("Test", "/test")
+
+    @blueprint.get("/", strict_slashes=True)
+    @protected()
+    def protected_hello_world(request):
+        return json({"message": "hello world"})
+
+    app = Sanic("sanic-jwt-test")
+    app.blueprint(blueprint)
+
+    return app
 
 
-@blueprint.get("/", strict_slashes=True)
-@protected()
-def protected_hello_world(request):
-    return json({"message": "hello world"})
+@pytest.fixture
+def sanicjwt(app):
+    async def authenticate(request, *args, **kwargs):
+        return {"user_id": 1}
+
+    return Initialize(app, authenticate=authenticate)
 
 
-async def authenticate(request, *args, **kwargs):
-    return {"user_id": 1}
-
-
-app = Sanic("sanic-jwt-test")
-
-app.blueprint(blueprint)
-
-sanicjwt = Initialize(app, authenticate=authenticate)
-
-
-def test_protected_blueprint():
+def test_protected_blueprint(app, sanicjwt):
     _, response = app.test_client.get("/test/")
 
     assert response.status == 401

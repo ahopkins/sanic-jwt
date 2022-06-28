@@ -1,4 +1,4 @@
-from sanic.exceptions import abort
+from sanic.exceptions import InvalidUsage
 
 from sanic_jwt.decorators import protected
 
@@ -9,7 +9,7 @@ def test_abort_called_in_endpoint(app):
     @sanic_app.route("/abort", methods=["GET"])
     @protected()
     async def test(request):
-        abort(400, "Aborted request")
+        raise InvalidUsage("Aborted request")
 
     _, response = sanic_app.test_client.post(
         "/auth", json={"username": "user1", "password": "abcxyz"}

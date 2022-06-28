@@ -113,7 +113,7 @@ def test_initialize_class_on_multiple_blueprints():
     app = Sanic("sanic-jwt-test")
     bp1 = Blueprint("test1")
     app.blueprint(bp1)
-    bp2 = Blueprint("test2")
+    bp2 = Blueprint("test2", version=2)
     app.blueprint(bp2)
 
     sanicjwt1 = Initialize(bp1, app=app, authenticate=lambda: True)
@@ -127,7 +127,7 @@ def test_initialize_class_on_multiple_blueprints():
 
 def test_initialize_class_on_app_and_blueprint():
     app = Sanic("sanic-jwt-test")
-    bp = Blueprint("test")
+    bp = Blueprint("test", url_prefix="/bp")
     app.blueprint(bp)
 
     sanicjwt1 = Initialize(app, authenticate=lambda: True)

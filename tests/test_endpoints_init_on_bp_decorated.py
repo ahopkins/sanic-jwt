@@ -1,3 +1,4 @@
+import pytest
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -9,33 +10,34 @@ async def authenticate(request, *args, **kwargs):
     return {"user_id": 1}
 
 
-blueprint = Blueprint("Test")
-app = Sanic("sanic-jwt-test")
-sanicjwt = Initialize(blueprint, app=app, authenticate=authenticate)
+@pytest.fixture
+def fixtures():
+    blueprint = Blueprint("Test")
+    app = Sanic("sanic-jwt-test")
+    sanicjwt = Initialize(blueprint, app=app, authenticate=authenticate)
+
+    @blueprint.get("/", strict_slashes=True)
+    @sanicjwt.protected()
+    def protected_hello_world(request):
+        return json({"message": "hello world"})
+
+    @blueprint.get("/user/<id>", strict_slashes=True)
+    @sanicjwt.protected(authorization_header="foobar")
+    def protected_user(request, id):
+        return json({"user": id})
+
+    @blueprint.route("/scoped_empty")
+    @sanicjwt.scoped("something")
+    async def scoped(request):
+        return json({"scoped": True})
+
+    app.blueprint(blueprint, url_prefix="/test")
+
+    return blueprint, app, sanicjwt
 
 
-@blueprint.get("/", strict_slashes=True)
-@sanicjwt.protected()
-def protected_hello_world(request):
-    return json({"message": "hello world"})
-
-
-@blueprint.get("/user/<id>", strict_slashes=True)
-@sanicjwt.protected(authorization_header="foobar")
-def protected_user(request, id):
-    return json({"user": id})
-
-
-@blueprint.route("/scoped_empty")
-@sanicjwt.scoped("something")
-async def scoped(request):
-    return json({"scoped": True})
-
-
-app.blueprint(blueprint, url_prefix="/test")
-
-
-def test_protected_blueprint():
+def test_protected_blueprint(fixtures):
+    blueprint, app, sanicjwt = fixtures
     _, response = app.test_client.get("/test/")
 
     assert response.status == 401
@@ -76,7 +78,8 @@ def test_protected_blueprint():
     assert response.json.get("user") == "1"
 
 
-def test_scoped_empty():
+def test_scoped_empty(fixtures):
+    blueprint, app, sanicjwt = fixtures
     _, response = app.test_client.get("/test/scoped_empty")
     assert response.status == 401
     assert response.json.get("exception") == "Unauthorized"

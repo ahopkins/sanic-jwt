@@ -49,7 +49,7 @@ class CustomAuth(Authentication):
 
 @pytest.fixture
 def app():
-    app = Sanic(__name__)
+    app = Sanic("Test")
     app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX = "JWT"
     app.config.SANIC_JWT_EXPIRATION_DELTA = 360000
     app.config.SANIC_JWT_USER_ID = "username"

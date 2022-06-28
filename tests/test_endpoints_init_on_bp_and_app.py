@@ -1,3 +1,4 @@
+import pytest
 from sanic import Sanic
 from sanic.blueprints import Blueprint
 from sanic.response import json
@@ -5,13 +6,29 @@ from sanic.response import json
 from sanic_jwt import Initialize
 from sanic_jwt.decorators import protected
 
-blueprint = Blueprint("Test1")
+
+@pytest.fixture
+def bp():
+    blueprint = Blueprint("Test1", url_prefix="/test1")
+
+    @blueprint.get("/", strict_slashes=True)
+    @protected(blueprint)
+    def protected_hello_world_bp(request):
+        return json({"type": "bp"})
+
+    return blueprint
 
 
-@blueprint.get("/", strict_slashes=True)
-@protected(blueprint)
-def protected_hello_world_bp(request):
-    return json({"type": "bp"})
+@pytest.fixture
+def app(bp):
+    app = Sanic("sanic-jwt-test")
+
+    @app.get("/", strict_slashes=True)
+    @protected()
+    def protected_hello_world_app(request):
+        return json({"type": "app"})
+
+    return app
 
 
 async def authenticate1(request, *args, **kwargs):
@@ -22,32 +39,27 @@ async def authenticate2(request, *args, **kwargs):
     return {"user_id": 2}
 
 
-app = Sanic("sanic-jwt-test")
+@pytest.fixture
+def sanicjwt1(bp, app):
+    return Initialize(bp, app=app, authenticate=authenticate1)
 
 
-@app.get("/", strict_slashes=True)
-@protected()
-def protected_hello_world_app(request):
-    return json({"type": "app"})
+@pytest.fixture
+def sanicjwt2(app):
+    return Initialize(
+        app,
+        authenticate=authenticate2,
+        url_prefix="/a",
+        access_token_name="token",
+        cookie_access_token_name="token",
+        cookie_set=True,
+        secret="somethingdifferent",
+    )
 
 
-sanicjwt1 = Initialize(blueprint, app=app, authenticate=authenticate1)
+def test_protected_blueprints(app, bp, sanicjwt1, sanicjwt2):
+    app.blueprint(bp)
 
-
-sanicjwt2 = Initialize(
-    app,
-    authenticate=authenticate2,
-    url_prefix="/a",
-    access_token_name="token",
-    cookie_access_token_name="token",
-    cookie_set=True,
-    secret="somethingdifferent",
-)
-
-app.blueprint(blueprint, url_prefix="/test1")
-
-
-def test_protected_blueprints():
     _, response1 = app.test_client.post(
         "/test1/auth", json={"username": "user1", "password": "abcxyz"}
     )
@@ -109,7 +121,9 @@ def test_protected_blueprints():
     assert "Auth required." in response2.json.get("reasons")
 
 
-def test_protected_blueprints_debug():
+def test_protected_blueprints_debug(app, bp, sanicjwt1, sanicjwt2):
+    app.blueprint(bp, url_prefix="/test1")
+
     sanicjwt1.config.debug.update(True)
     sanicjwt2.config.debug.update(True)
 

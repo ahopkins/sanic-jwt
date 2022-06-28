@@ -152,7 +152,6 @@ class Authentication(BaseAuthentication):
                 raise e
 
             args = e.args if isinstance(e, SanicJWTException) else []
-
             raise exceptions.Unauthorized(*args)
 
         return is_valid, status, reasons

@@ -24,7 +24,7 @@ def test_microservice_simple():
 
 
 def test_microservice_interaction():
-    microservice_app = Sanic("sanic-jwt-test")
+    microservice_app = Sanic("sanic-jwt-test-microservice")
     microservice_sanic_jwt = Initialize(microservice_app, auth_mode=False)
 
     @microservice_app.route("/protected")
@@ -32,7 +32,7 @@ def test_microservice_interaction():
     async def protected_request(request):
         return json({"protected": True})
 
-    app = Sanic("sanic-jwt-test")
+    app = Sanic("sanic-jwt-test-app")
     sanic_jwt = Initialize(app, authenticate=authenticate)
 
     _, response = microservice_app.test_client.get("/protected")

@@ -372,4 +372,3 @@ def test_configuration_no_set_secret():
     )
     with pytest.warns(UserWarning, match=message):
         Initialize(app, authenticate=lambda: True)
-

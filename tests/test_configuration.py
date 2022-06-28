@@ -364,13 +364,12 @@ def test_configuration_with_override_on_aliased():
 def test_configuration_no_set_secret():
     app = Sanic("sanic-jwt-test")
 
-    with pytest.warns(UserWarning) as record:
-        Initialize(app, authenticate=lambda: True)
-
-    assert len(record) == 1
-    assert record[0].message.args[0] == (
+    message = (
         "Sanic JWT was initialized using the default secret available to the "
         "public. DO NOT DEPLOY your application until you change it. "
         "See https://sanic-jwt.readthedocs.io/en/latest/pages/configuration.html#secret "
         "for more information."
     )
+    with pytest.warns(UserWarning, match=message):
+        Initialize(app, authenticate=lambda: True)
+

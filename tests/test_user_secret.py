@@ -1,4 +1,3 @@
-import jwt
 import pytest
 from sanic import Sanic
 
@@ -6,9 +5,9 @@ from sanic_jwt import exceptions, Initialize
 
 
 def test_secret_not_enabled():
-    app = Sanic(__name__)
+    app = Sanic("Test")
     with pytest.raises(exceptions.UserSecretNotImplemented):
-        sanicjwt = Initialize(
+        Initialize(
             app,
             authenticate=lambda: {},
             user_secret_enabled=True,

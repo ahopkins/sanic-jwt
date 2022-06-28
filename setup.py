@@ -14,7 +14,9 @@ def open_local(paths, mode="r", encoding="utf8"):
 
 with open_local(["sanic_jwt", "__init__.py"], encoding="latin1") as fp:
     try:
-        version = re.findall(r"^__version__ = \"([0-9\.]+)\"", fp.read(), re.M)[0]
+        version = re.findall(
+            r"^__version__ = \"([0-9\.]+)\"", fp.read(), re.M
+        )[0]
     except IndexError:
         raise RuntimeError("Unable to determine version.")
 
@@ -28,7 +30,7 @@ for reqs in extras_require.values():
     extras_require["all"].extend(reqs)
 
 install_requires = [
-    "pyjwt~=2.1.0",
+    "pyjwt>=2.1.0,<3.0.0",
 ]
 
 setup(

@@ -30,7 +30,7 @@ for reqs in extras_require.values():
     extras_require["all"].extend(reqs)
 
 install_requires = [
-    "pyjwt>=2.1.0,<3.0.0",
+    "pyjwt>=2.4.0,<3.0.0",
 ]
 
 setup(

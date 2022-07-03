@@ -83,14 +83,13 @@ def retrieve_user_secret():
 def app(username_table, authenticate):
 
     sanic_app = Sanic("sanic-jwt-test")
-    sanic_app.config.FALLBACK_ERROR_FORMAT = "json"
     sanic_jwt = Initialize(sanic_app, authenticate=authenticate)
 
     @sanic_app.route("/")
     async def helloworld(request):
         return json({"hello": "world"})
 
-    @sanic_app.route("/protected", error_format="json")
+    @sanic_app.route("/protected")
     @protected()
     async def protected_request(request):
         return json({"protected": True})

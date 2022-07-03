@@ -53,11 +53,11 @@ def app_with_refresh_token_and_cookie(users, authenticate):
         secret=secret,
     )
 
-    @sanic_app.route("/", error_format="json")
+    @sanic_app.route("/")
     async def helloworld(request):
         return json({"hello": "world"})
 
-    @sanic_app.route("/protected", error_format="json")
+    @sanic_app.route("/protected")
     @protected()
     async def protected_request(request):
         return json({"protected": True})

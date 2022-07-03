@@ -84,7 +84,7 @@ def test_extra_verification_non_callable(authenticate):
         extra_verifications=extra_verifications,
     )
 
-    @sanic_app.route("/protected", error_format="json")
+    @sanic_app.route("/protected")
     @protected()
     async def protected_request(request):
         return json({"protected": True})

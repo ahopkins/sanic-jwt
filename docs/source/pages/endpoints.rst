@@ -278,13 +278,13 @@ You can customize how Sanic JWT handles responses on an exception by subclassing
     from sanic_jwt import Responses
 
     class MyResponses(Responses):
-    @staticmethod
-    def exception_response(request, exception):
-        exception_message = str(exception)
-        return json({
-            'error': True,
-            'message': f'You encountered an exception: {exception_message}'
-        }, status=exception.status_code)
+        @staticmethod
+        def exception_response(request, exception):
+            exception_message = str(exception)
+            return json({
+                'error': True,
+                'message': f'You encountered an exception: {exception_message}'
+            }, status=exception.status_code)
 
     Initialize(app, response_class=MyResponses)
 

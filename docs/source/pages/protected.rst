@@ -65,8 +65,8 @@ Using the standard `Sanic methodology <http://sanic.readthedocs.io/en/latest/san
 .. code-block:: python
 
     class PublicView(HTTPMethodView):
-    def get(self, request):
-        return json({"protected": False})
+        def get(self, request):
+            return json({"protected": False})
 
 
     class ProtectedView(HTTPMethodView):

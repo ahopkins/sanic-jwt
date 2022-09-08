@@ -143,7 +143,7 @@ class MeEndpointNotSetup(SanicJWTException):
     def __init__(
         self,
         message="/me endpoint has not been setup. Pass retrieve_user if "
-        "you with to proceeed.",
+        "you wish to proceed.",
         **kwargs
     ):
         super().__init__(message, **kwargs)

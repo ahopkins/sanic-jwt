@@ -188,8 +188,6 @@ class Authentication(BaseAuthentication):
         )
 
         if verify:
-            if self._extra_verifications:
-                self._verify_extras(decoded)
             if self._custom_claims or inline_claims:
                 self._verify_custom_claims(
                     decoded, inline_claims=inline_claims
@@ -389,6 +387,8 @@ class Authentication(BaseAuthentication):
         if token:
             try:
                 payload = await self._decode(token, verify=verify)
+                if self._extra_verifications and verify is True:
+                    await self._verify_extras(payload, request)
             except (
                 jwt.exceptions.ExpiredSignatureError,
                 jwt.exceptions.InvalidIssuerError,
@@ -431,12 +431,11 @@ class Authentication(BaseAuthentication):
 
         return is_valid, status, reason
 
-    def _verify_extras(self, payload):
+    async def _verify_extras(self, payload, request):
         for verification in self._extra_verifications:
             if not callable(verification):
                 raise InvalidVerification()
-
-            verified = verification(payload)
+            verified = await utils.call(verification, payload, request)
             if not isinstance(verified, bool):
                 raise InvalidVerification()
 

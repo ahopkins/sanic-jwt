@@ -349,10 +349,13 @@ def app_with_retrieve_user(retrieve_user, authenticate):
 
 @pytest.fixture
 def app_with_extra_verification(authenticate):
-    def user2(payload):
+    def user2(payload, request):
         return payload.get("user_id") == 2
 
-    extra_verifications = [user2]
+    async def async_user2(payload, request):
+        return payload.get("user_id") == 2
+
+    extra_verifications = [user2, async_user2]
 
     sanic_app = Sanic("sanic-jwt-test")
     sanic_jwt = Initialize(
@@ -361,7 +364,7 @@ def app_with_extra_verification(authenticate):
         extra_verifications=extra_verifications,
     )
 
-    @sanic_app.route("/protected")
+    @sanic_app.route("/protected", error_format="json")
     @protected()
     async def protected_request(request):
         return json({"protected": True})

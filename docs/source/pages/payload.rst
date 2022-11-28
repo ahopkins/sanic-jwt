@@ -138,7 +138,7 @@ To accomplish this, you can register a list of methods (that each return a ``boo
 
 .. code-block:: python
 
-    def check_number_of_claims(payload):
+    def check_number_of_claims(payload, request):
         return len(payload.keys()) == 5
 
     extra_verifications = [check_number_of_claims]

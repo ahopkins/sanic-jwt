@@ -28,7 +28,7 @@ class Tester(TestMethodView):
 
 
 bp = Blueprint("bp")
-bp.add_route(Tester.as_view(), "/test", methods=ALL_METHODS)
+bp.add_route(Tester.as_view(), "/test", methods=ALL_METHODS, error_format="json")
 
 
 class CustomAuth(Authentication):
@@ -53,7 +53,7 @@ def app():
     app.config.SANIC_JWT_AUTHORIZATION_HEADER_PREFIX = "JWT"
     app.config.SANIC_JWT_EXPIRATION_DELTA = 360000
     app.config.SANIC_JWT_USER_ID = "username"
-
+    app.config.FALLBACK_ERROR_FORMAT = "json"
     sanicjwt = initialize(app, authentication_class=CustomAuth)
     app.blueprint(bp)
 

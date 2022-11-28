@@ -22,6 +22,11 @@ def app():
     return app
 
 
+async def authenticate(request, *args, **kwargs):
+    return {"user_id": 1}
+
+
+
 @pytest.fixture
 def sanicjwt(app):
     async def authenticate(request, *args, **kwargs):

@@ -41,7 +41,7 @@ async def authenticate(request, *args, **kwargs):
     return user
 
 
-def user2(payload):
+def user2(payload, request):
     return payload.get("user_id") == 2
 
 

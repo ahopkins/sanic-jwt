@@ -131,10 +131,7 @@ class ConfigItem:
         if self._override:
             return self._override_value
 
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        if loop.is_running():
+        if asyncio.get_event_loop().is_running():
             if is_cached(self._item_name):
                 return get_cached(self._item_name)
 

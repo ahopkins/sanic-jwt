@@ -84,7 +84,7 @@ Using the standard `Sanic methodology <http://sanic.readthedocs.io/en/latest/san
 Passing the Token
 +++++++++++++++++
 
-There are two general methodologies for passing a token: cookie based, and header based. By default, Sanic JWT will expect you to send tokens thru HTTP headers. ::
+There are two general methodologies for passing a token: cookie based, and header based. By default, Sanic JWT will expect you to send tokens through HTTP headers. ::
 
     curl -X GET -H "Authorization: Bearer <JWT>" http://localhost:8000/auth/me
 
@@ -273,7 +273,7 @@ This also works for blueprints (and has the added advantage that you no longer n
 ``@inject_user`` decorator
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You've gone thru the hard work and added a ``retrieve_user`` method. You might as well be able to reap the benefits by leveraging that method to inject your user data into your endpoints.
+You've gone through the hard work and added a ``retrieve_user`` method. You might as well be able to reap the benefits by leveraging that method to inject your user data into your endpoints.
 
 .. code-block:: python
 

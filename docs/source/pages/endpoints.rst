@@ -286,7 +286,7 @@ You can customize how Sanic JWT handles responses on an exception by subclassing
                 'message': f'You encountered an exception: {exception_message}'
             }, status=exception.status_code)
 
-    Initialize(app, response_class=MyResponses)
+    Initialize(app, responses_class=MyResponses)
 
 
 ------------

@@ -1,5 +1,3 @@
-from typing import Any
-
 from sanic.response import json
 from sanic import HTTPResponse
 

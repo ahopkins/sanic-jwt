@@ -1,28 +1,25 @@
+from typing import Any
+
 from sanic.response import json
+from sanic import HTTPResponse
 
 from .base import BaseDerivative
 
-COOKIE_OPTIONS = (
-    ("domain", "cookie_domain"),
-    ("expires", "cookie_expires"),
-    ("max-age", "cookie_max_age"),
-    ("samesite", "cookie_samesite"),
-    ("secure", "cookie_secure"),
-)
+def _set_cookie(response : HTTPResponse, key : str, value : str, config, force_httponly : bool = None):
+    def value_or(val, def_val):
+        return val if val is not None else def_val
 
-
-def _set_cookie(response, key, value, config, force_httponly=None):
-    response.cookies[key] = value
-    response.cookies[key]["httponly"] = (
-        config.cookie_httponly() if force_httponly is None else force_httponly
+    response.cookies.add_cookie(
+        key=key,
+        value=value,
+        httponly=config.cookie_httponly() if force_httponly is None else force_httponly,
+        path=config.cookie_path(),
+        domain=value_or(config.cookie_domain(), None),
+        expires=value_or(config.cookie_expires(), None),
+        max_age=value_or(config.cookie_max_age(), None),
+        samesite=value_or(config.cookie_samesite(), "Lax"),
+        secure=value_or(config.cookie_secure(), True)
     )
-    response.cookies[key]["path"] = config.cookie_path()
-
-    for item, option in COOKIE_OPTIONS:
-        value = getattr(config, option)()
-        if value:
-            response.cookies[key][item] = value
-
 
 class Responses(BaseDerivative):
     @staticmethod

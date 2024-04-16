@@ -1,22 +1,21 @@
+from typing import Optional
+
 from sanic.response import json
 from sanic import HTTPResponse
 
 from .base import BaseDerivative
 
-def _set_cookie(response : HTTPResponse, key : str, value : str, config, force_httponly : bool = None):
-    def value_or(val, def_val):
-        return val if val is not None else def_val
-
+def _set_cookie(response : HTTPResponse, key : str, value : str, config, force_httponly : Optional[bool] = None):
     response.cookies.add_cookie(
         key=key,
         value=value,
         httponly=config.cookie_httponly() if force_httponly is None else force_httponly,
         path=config.cookie_path(),
-        domain=value_or(config.cookie_domain(), None),
-        expires=value_or(config.cookie_expires(), None),
-        max_age=value_or(config.cookie_max_age(), None),
-        samesite=value_or(config.cookie_samesite(), "Lax"),
-        secure=value_or(config.cookie_secure(), True)
+        domain=config.cookie_domain() or None, # cookie_domain() may be '' (empty string)
+        expires=config.cookie_expires() or None, # cookie_expires() may be `0`
+        max_age=config.cookie_max_age() or None,
+        samesite=config.cookie_samesite() or "Lax",
+        secure=is_secure if (is_secure := config.cookie_secure()) is not None else True
     )
 
 class Responses(BaseDerivative):
